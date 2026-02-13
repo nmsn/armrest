@@ -100,11 +100,11 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-8">
+    <div className="min-h-screen flex flex-col items-center p-8 relative">
       <h1 className="text-3xl font-bold mb-4">Armrest Dashboard</h1>
       <Clock />
 
-      <div className="mt-6 flex items-center gap-2">
+      <div className="mt-6">
         <div className="relative">
           <Input
             type="text"
@@ -123,10 +123,54 @@ export default function App() {
             <Search className="h-4 w-4 text-muted-foreground" />
           </Button>
         </div>
+      </div>
+
+      <div className="mt-8 w-full max-w-4xl flex gap-4">
+        <div className="w-48 flex-shrink-0">
+          <div className="border rounded-lg p-2 space-y-1">
+            {folders.map((folder) => {
+              const Icon = activeFolder === folder.id ? FolderOpen : folder.icon
+              return (
+                <button
+                  key={folder.id}
+                  onClick={() => setActiveFolder(folder.id)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${activeFolder === folder.id
+                    ? "bg-secondary text-secondary-foreground"
+                    : "hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{folder.name}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <div className="grid grid-cols-5 gap-3">
+            {placeholderBookmarks.map((bookmark, index) => (
+              <button
+                key={index}
+                onClick={() => handleBookmarkClick(bookmark.url)}
+                className="aspect-square rounded-lg border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-3 flex flex-col items-center justify-center gap-2 group"
+              >
+                <div className={`w-10 h-10 rounded-lg ${bookmark.color} flex items-center justify-center text-white text-xs font-bold`}>
+                  {bookmark.name.charAt(0)}
+                </div>
+                <span className="text-xs text-center line-clamp-2">{bookmark.name}</span>
+                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-6 right-6">
         <Drawer direction="right">
           <DrawerTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Settings className="h-5 w-5" />
+            <Button variant="outline" size="icon" className="h-12 w-12 rounded-full shadow-lg">
+              <Settings className="h-6 w-6" />
             </Button>
           </DrawerTrigger>
           <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none">
@@ -165,47 +209,6 @@ export default function App() {
             </div>
           </DrawerContent>
         </Drawer>
-      </div>
-
-      <div className="mt-8 w-full max-w-4xl flex gap-4">
-        <div className="w-48 flex-shrink-0">
-          <div className="border rounded-lg p-2 space-y-1">
-            {folders.map((folder) => {
-              const Icon = activeFolder === folder.id ? FolderOpen : folder.icon
-              return (
-                <button
-                  key={folder.id}
-                  onClick={() => setActiveFolder(folder.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${activeFolder === folder.id
-                      ? "bg-secondary text-secondary-foreground"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                    }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{folder.name}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="flex-1">
-          <div className="grid grid-cols-5 gap-3">
-            {placeholderBookmarks.map((bookmark, index) => (
-              <button
-                key={index}
-                onClick={() => handleBookmarkClick(bookmark.url)}
-                className="aspect-square rounded-lg border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-3 flex flex-col items-center justify-center gap-2 group"
-              >
-                <div className={`w-10 h-10 rounded-lg ${bookmark.color} flex items-center justify-center text-white text-xs font-bold`}>
-                  {bookmark.name.charAt(0)}
-                </div>
-                <span className="text-xs text-center line-clamp-2">{bookmark.name}</span>
-                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   )
