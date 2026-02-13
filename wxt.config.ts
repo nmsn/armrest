@@ -1,11 +1,17 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 export default defineConfig({
   vite: () => ({
     plugins: [
       tailwindcss(),
     ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './'),
+      },
+    },
   }),
   manifest: {
     name: 'Armrest Dashboard',
