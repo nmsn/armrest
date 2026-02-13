@@ -1,6 +1,12 @@
 import { defineConfig } from 'wxt';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+  vite: () => ({
+    plugins: [
+      tailwindcss(),
+    ],
+  }),
   manifest: {
     name: 'Armrest Dashboard',
     description: 'Browser extension with custom new tab page',
