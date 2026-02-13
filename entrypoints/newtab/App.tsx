@@ -1,4 +1,4 @@
-import { useState } from "react"
+
 import { Settings } from "lucide-react"
 import Clock from "./components/Clock"
 import {
