@@ -1,0 +1,25 @@
+.popup {
+  padding: 16px;
+  width: 200px;
+  text-align: center;
+}
+
+.popup h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.popup button {
+  background: #007AFF;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.popup button:hover {
+  background: #0056b3;
+}
