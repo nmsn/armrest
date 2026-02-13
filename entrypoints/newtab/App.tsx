@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Settings, Search } from "lucide-react"
+import { Settings, Search, Palette, Bookmark } from "lucide-react"
 import Clock from "./components/Clock"
 import {
   Drawer,
@@ -12,8 +12,48 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
+type SettingsTab = "background" | "bookmarks"
+
+function BackgroundSettings() {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="text-sm font-medium">Background Color</label>
+        <Input type="color" className="h-10 w-full mt-1" defaultValue="#f5f5f5" />
+      </div>
+      <div>
+        <label className="text-sm font-medium">Background Image URL</label>
+        <Input type="text" placeholder="https://..." className="mt-1" />
+      </div>
+      <Button className="w-full">Apply</Button>
+    </div>
+  )
+}
+
+function BookmarksSettings() {
+  const [bookmarks, setBookmarks] = useState([
+    { name: "Google", url: "https://google.com" },
+    { name: "GitHub", url: "https://github.com" },
+  ])
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        {bookmarks.map((bookmark, index) => (
+          <div key={index} className="flex items-center gap-2 p-2 border rounded-md">
+            <span className="text-sm flex-1">{bookmark.name}</span>
+            <Button variant="ghost" size="sm">Edit</Button>
+          </div>
+        ))}
+      </div>
+      <Button variant="outline" className="w-full">Add Bookmark</Button>
+    </div>
+  )
+}
+
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [activeTab, setActiveTab] = useState<SettingsTab>("background")
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -56,17 +96,39 @@ export default function App() {
               <Settings className="h-5 w-5" />
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="h-full max-w-sm top-0 right-0 left-auto mt-0 rounded-none">
+          <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none">
             <DrawerHeader>
               <DrawerTitle>Settings</DrawerTitle>
               <DrawerDescription>
                 Configure your dashboard preferences.
               </DrawerDescription>
             </DrawerHeader>
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground">
-                Settings panel content goes here.
-              </p>
+            <div className="flex h-[calc(100vh-120px)]">
+              <div className="w-16 border-r flex flex-col items-center py-4 gap-2">
+                <Button
+                  variant={activeTab === "background" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => setActiveTab("background")}
+                  title="Background"
+                >
+                  <Palette className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant={activeTab === "bookmarks" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => setActiveTab("bookmarks")}
+                  title="Bookmarks"
+                >
+                  <Bookmark className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="flex-1 p-4 overflow-y-auto">
+                {activeTab === "background" ? (
+                  <BackgroundSettings />
+                ) : (
+                  <BookmarksSettings />
+                )}
+              </div>
             </div>
           </DrawerContent>
         </Drawer>
