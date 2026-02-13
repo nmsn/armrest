@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Settings, Search, Palette, Bookmark } from "lucide-react"
+import { Settings, Search, Palette, Bookmark, Folder, FolderOpen, ExternalLink } from "lucide-react"
 import Clock from "./components/Clock"
 import {
   Drawer,
@@ -51,9 +51,37 @@ function BookmarksSettings() {
   )
 }
 
+interface BookmarkItem {
+  name: string
+  url: string
+  icon?: string
+  color?: string
+}
+
+const placeholderBookmarks: BookmarkItem[] = [
+  { name: "Google", url: "https://google.com", color: "bg-blue-500" },
+  { name: "GitHub", url: "https://github.com", color: "bg-gray-800" },
+  { name: "YouTube", url: "https://youtube.com", color: "bg-red-600" },
+  { name: "Twitter", url: "https://twitter.com", color: "bg-blue-400" },
+  { name: "Notion", url: "https://notion.so", color: "bg-black" },
+  { name: "Slack", url: "https://slack.com", color: "bg-purple-600" },
+  { name: "Figma", url: "https://figma.com", color: "bg-purple-500" },
+  { name: "Stack Overflow", url: "https://stackoverflow.com", color: "bg-orange-500" },
+  { name: "Reddit", url: "https://reddit.com", color: "bg-orange-600" },
+  { name: "Medium", url: "https://medium.com", color: "bg-green-500" },
+]
+
+const folders = [
+  { id: "work", name: "Work", icon: Folder },
+  { id: "personal", name: "Personal", icon: Folder },
+  { id: "tools", name: "Tools", icon: Folder },
+  { id: "social", name: "Social", icon: Folder },
+]
+
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState<SettingsTab>("background")
+  const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>("background")
+  const [activeFolder, setActiveFolder] = useState("work")
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -67,11 +95,16 @@ export default function App() {
     }
   }
 
+  const handleBookmarkClick = (url: string) => {
+    chrome.tabs.create({ url })
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
-      <h1 className="text-3xl font-bold mb-8">Armrest Dashboard</h1>
+    <div className="min-h-screen flex flex-col items-center p-8">
+      <h1 className="text-3xl font-bold mb-4">Armrest Dashboard</h1>
       <Clock />
-      <div className="mt-8 flex items-center gap-2">
+
+      <div className="mt-6 flex items-center gap-2">
         <div className="relative">
           <Input
             type="text"
@@ -106,24 +139,24 @@ export default function App() {
             <div className="flex h-[calc(100vh-120px)]">
               <div className="w-16 border-r flex flex-col items-center py-4 gap-2">
                 <Button
-                  variant={activeTab === "background" ? "secondary" : "ghost"}
+                  variant={activeSettingsTab === "background" ? "secondary" : "ghost"}
                   size="icon"
-                  onClick={() => setActiveTab("background")}
+                  onClick={() => setActiveSettingsTab("background")}
                   title="Background"
                 >
                   <Palette className="h-5 w-5" />
                 </Button>
                 <Button
-                  variant={activeTab === "bookmarks" ? "secondary" : "ghost"}
+                  variant={activeSettingsTab === "bookmarks" ? "secondary" : "ghost"}
                   size="icon"
-                  onClick={() => setActiveTab("bookmarks")}
+                  onClick={() => setActiveSettingsTab("bookmarks")}
                   title="Bookmarks"
                 >
                   <Bookmark className="h-5 w-5" />
                 </Button>
               </div>
               <div className="flex-1 p-4 overflow-y-auto">
-                {activeTab === "background" ? (
+                {activeSettingsTab === "background" ? (
                   <BackgroundSettings />
                 ) : (
                   <BookmarksSettings />
@@ -132,6 +165,47 @@ export default function App() {
             </div>
           </DrawerContent>
         </Drawer>
+      </div>
+
+      <div className="mt-8 w-full max-w-4xl flex gap-4">
+        <div className="w-48 flex-shrink-0">
+          <div className="border rounded-lg p-2 space-y-1">
+            {folders.map((folder) => {
+              const Icon = activeFolder === folder.id ? FolderOpen : folder.icon
+              return (
+                <button
+                  key={folder.id}
+                  onClick={() => setActiveFolder(folder.id)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${activeFolder === folder.id
+                      ? "bg-secondary text-secondary-foreground"
+                      : "hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{folder.name}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <div className="grid grid-cols-5 gap-3">
+            {placeholderBookmarks.map((bookmark, index) => (
+              <button
+                key={index}
+                onClick={() => handleBookmarkClick(bookmark.url)}
+                className="aspect-square rounded-lg border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-3 flex flex-col items-center justify-center gap-2 group"
+              >
+                <div className={`w-10 h-10 rounded-lg ${bookmark.color} flex items-center justify-center text-white text-xs font-bold`}>
+                  {bookmark.name.charAt(0)}
+                </div>
+                <span className="text-xs text-center line-clamp-2">{bookmark.name}</span>
+                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
