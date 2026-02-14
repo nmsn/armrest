@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WriteFlow AI - 智能写作助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#171717',
+                        secondary: '#404040',
+                        muted: '#737373',
+                        accent: '#8B5CF6',
+                        'accent-light': '#A78BFA',
+                        'accent-dark': '#7C3AED',
+                        surface: '#FAFAFA',
+                        border: '#E5E5E5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.5); }
+        }
+        .cursor-blink {
+            animation: blink 1s infinite;
+        }
+        .fade-up {
+            animation: fade-up 0.6s ease-out forwards;
+        }
+        .fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .fade-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .fade-up-delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .typing-text {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid #8B5CF6;
+            animation: typing 3s steps(40) forwards, blink 0.8s infinite;
+        }
+        .glow-card:hover {
+            animation: pulse-glow 2s infinite;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 50%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .demo-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #8B5CF6;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white text-primary font-sans antialiased">
+    
+    <!-- Minimal Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-border/50">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="font-display font-bold text-xl tracking-tight flex items-center gap-2">
+                <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                    <path d="M2 2l7.586 7.586"/>
+                    <circle cx="11" cy="11" r="2"/>
+                </svg>
+                <span>WriteFlow<span class="text-accent">AI</span></span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#demo" class="text-secondary hover:text-primary transition-colors text-sm font-medium">演示</a>
+                <a href="#use-cases" class="text-secondary hover:text-primary transition-colors text-sm font-medium">用例</a>
+                <a href="#integrations" class="text-secondary hover:text-primary transition-colors text-sm font-medium">集成</a>
+                <a href="#pricing" class="text-secondary hover:text-primary transition-colors text-sm font-medium">定价</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="#" class="text-secondary hover:text-primary transition-colors text-sm font-medium">登录</a>
+                <a href="#" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary transition-colors cursor-pointer">
+                    免费开始
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="fade-up">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    AI 驱动的下一代写作体验
+                </span>
+            </div>
+            <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 fade-up fade-up-delay-1">
+                让文字流淌<br>
+                <span class="gradient-text">如思维般自然</span>
+            </h1>
+            <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-10 fade-up fade-up-delay-2">
+                WriteFlow AI 理解你的意图，在你思考的瞬间完成表达。告别写作瓶颈，释放创意潜能。
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 fade-up fade-up-delay-3">
+                <a href="#" class="w-full sm:w-auto bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-xl text-base font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2">
+                    开始免费试用
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="#demo" class="w-full sm:w-auto border border-border hover:border-primary text-primary px-8 py-4 rounded-xl text-base font-semibold transition-colors cursor-pointer">
+                    观看演示
+                </a>
+            </div>
+            <p class="text-sm text-muted mt-6 fade-up fade-up-delay-4">
+                无需信用卡 · 免费试用 14 天 · 随时取消
+            </p>
+        </div>
+    </section>
+
+    <!-- Live Writing Demo -->
+    <section id="demo" class="py-20 px-6 bg-surface">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                    实时写作演示
+                </h2>
+                <p class="text-secondary text-lg">
+                    体验 AI 如何理解你的意图并实时生成内容
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
+                <!-- Editor Header -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-surface/50">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-xs text-muted">自动保存</span>
+                        <span class="text-xs text-accent font-medium">AI 已就绪</span>
+                    </div>
+                </div>
+                
+                <!-- Editor Content -->
+                <div class="p-8">
+                    <div class="mb-6">
+                        <input type="text" value="产品发布邮件" class="w-full text-2xl font-display font-semibold text-primary border-none outline-none bg-transparent placeholder:text-muted" placeholder="输入标题...">
+                    </div>
+                    <div class="prose prose-lg max-w-none text-secondary leading-relaxed" id="demo-content">
+                        <p>亲爱的用户，</p>
+                        <p>我们很高兴地宣布，<span class="text-accent font-medium">WriteFlow AI 正式上线</span>！</p>
+                        <p>经过两年的精心打磨，我们为您带来了一款真正理解您写作意图的智能助手。无论您是撰写商业邮件、创作营销文案，还是编写技术文档，WriteFlow AI 都能在您思考的瞬间，将想法转化为流畅的文字。</p>
+                        <p class="text-muted italic">核心特性：</p>
+                        <ul class="text-secondary">
+                            <li>实时智能补全，预测您的下一个想法</li>
+                            <li>多语言支持，无缝切换中英文写作</li>
+                            <li>风格适配，从正式商务到轻松社交</li>
+                        </ul>
+                        <p>立即体验，开启高效写作新纪元。</p>
+                        <p class="text-primary font-medium">此致，<br>WriteFlow AI 团队<span class="demo-cursor cursor-blink"></span></p>
+                    </div>
+                </div>
+                
+                <!-- AI Suggestion Bar -->
+                <div class="px-6 py-4 border-t border-border bg-accent/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-primary font-medium">AI 建议</p>
+                            <p class="text-xs text-muted">按 Tab 接受 · 按 Esc 忽略</p>
+                        </div>
+                        <div class="text-sm text-secondary bg-white px-4 py-2 rounded-lg border border-border">
+                            期待您的反馈与建议，让我们一起打造更好的写作体验。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section id="use-cases" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                    无限写作场景
+                </h2>
+                <p class="text-secondary text-lg max-w-2xl mx-auto">
+                    从日常沟通到专业创作，WriteFlow AI 适配您的每一个写作需求
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Use Case 1 -->
+                <div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-white">
+                    <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                        <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-2">商务邮件</h3>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        专业、得体、高效。自动生成商务邮件，从问候到结尾，每一句话都恰到好处。
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-muted">
+                        <span class="px-2 py-1 bg-surface rounded">正式语气</span>
+                        <span class="px-2 py-1 bg-surface rounded">多语言</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 2 -->
+                <div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-white">
+                    <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                        <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-2">营销文案</h3>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        吸引眼球的标题、引人入胜的故事、转化率飙升的 CTA，让营销内容脱颖而出。
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-muted">
+                        <span class="px-2 py-1 bg-surface rounded">A/B 测试</span>
+                        <span class="px-2 py-1 bg-surface rounded">SEO 优化</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 3 -->
+                <div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-white">
+                    <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                        <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-2">技术文档</h3>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        清晰的 API 文档、详细的用户指南、专业的技术规范，让复杂概念变得简单易懂。
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-muted">
+                        <span class="px-2 py-1 bg-surface rounded">代码高亮</span>
+                        <span class="px-2 py-1 bg-surface rounded">版本控制</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 4 -->
+                <div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-white">
+                    <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                        <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-2">多语言翻译</h3>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        不只是翻译，更是本地化。保留原文风格与语气，让跨语言沟通如母语般自然。
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-muted">
+                        <span class="px-2 py-1 bg-surface rounded">40+ 语言</span>
+                        <span class="px-2 py-1 bg-surface rounded">实时翻译</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 5 -->
+                <div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-white">
+                    <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                        <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-2">创意写作</h3>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        小说、诗歌、剧本——释放您的创意。AI 是您的灵感伙伴，而非替代者。
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-muted">
+                        <span class="px-2 py-1 bg-surface rounded">风格定制</span>
+                        <span class="px-2 py-1 bg-surface rounded">角色设定</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 6 -->
+                <div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-white">
+                    <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                        <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-2">语法校对</h3>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        智能检测语法错误、拼写问题、风格不一致。让每一篇文档都完美无瑕。
+                    </p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-muted">
+                        <span class="px-2 py-1 bg-surface rounded">实时检测</span>
+                        <span class="px-2 py-1 bg-surface rounded">一键修复</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations -->
+    <section id="integrations" class="py-20 px-6 bg-surface">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                    无缝集成您的工作流
+                </h2>
+                <p class="text-secondary text-lg max-w-2xl mx-auto">
+                    在您熟悉的工具中享受 AI 写作助手，无需改变现有习惯
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Integration Items -->
+                <div class="group flex flex-col items-center p-6 rounded-2xl border border-border hover:border-accent/30 bg-white transition-all duration-300 cursor-pointer">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="#4285F4">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-primary">Google Docs</span>
+                </div>
+                
+                <div class="group flex flex-col items-center p-6 rounded-2xl border border-border hover:border-accent/30 bg-white transition-all duration-300 cursor-pointer">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="#2563EB">
+                            <path d="M23 1.5v21c0 .8-.7 1.5-1.5 1.5H2.5C1.7 24 1 23.3 1 22.5V1.5C1 .7 1.7 0 2.5 0h19C22.3 0 23 .7 23 1.5zM12 6.5c-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5-2.9-6.5-6.5-6.5zm0 10.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-primary">Microsoft Word</span>
+                </div>
+                
+                <div class="group flex flex-col items-center p-6 rounded-2xl border border-border hover:border-accent/30 bg-white transition-all duration-300 cursor-pointer">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="#FF4500">
+                            <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-primary">Notion</span>
+                </div>
+                
+                <div class="group flex flex-col items-center p-6 rounded-2xl border border-border hover:border-accent/30 bg-white transition-all duration-300 cursor-pointer">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="#611f69">
+                            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-primary">Slack</span>
+                </div>
+                
+                <div class="group flex flex-col items-center p-6 rounded-2xl border border-border hover:border-accent/30 bg-white transition-all duration-300 cursor-pointer">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="#0052CC">
+                            <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.762a1.005 1.005 0 0 0-1.001-1.005zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-primary">Jira</span>
+                </div>
+                
+                <div class="group flex flex-col items-center p-6 rounded-2xl border border-border hover:border-accent/30 bg-white transition-all duration-300 cursor-pointer">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="#0066FF">
+                            <path d="M12.001 0C5.326 0 0 5.326 0 12.001c0 6.674 5.326 12 12.001 12 6.674 0 12-5.326 12-12C24.001 5.326 18.675 0 12.001 0zm-.599 17.719c-.638 0-1.08-.458-1.08-1.098 0-.651.456-1.099 1.08-1.099.649 0 1.096.448 1.096 1.099 0 .64-.447 1.098-1.096 1.098zm2.464-5.053c-.815.612-1.08 1.08-1.08 1.728v.456h-1.644v-.564c0-1.044.372-1.8 1.32-2.496.744-.552 1.092-1.044 1.092-1.788 0-.828-.636-1.392-1.596-1.392-.876 0-1.524.516-1.692 1.368H8.28c.18-1.692 1.452-2.844 3.3-2.844 1.884 0 3.192 1.188 3.192 2.904 0 1.092-.444 1.896-1.404 2.628h.001z"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium text-primary">Intercom</span>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <p class="text-secondary mb-4">还有更多集成正在开发中</p>
+                <div class="flex items-center justify-center gap-3">
+                    <span class="px-3 py-1 text-xs bg-white border border-border rounded-full text-muted">Gmail</span>
+                    <span class="px-3 py-1 text-xs bg-white border border-border rounded-full text-muted">Outlook</span>
+                    <span class="px-3 py-1 text-xs bg-white border border-border rounded-full text-muted">Figma</span>
+                    <span class="px-3 py-1 text-xs bg-white border border-border rounded-full text-muted">VS Code</span>
+                    <span class="px-3 py-1 text-xs bg-white border border-border rounded-full text-muted">Chrome</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                    简单透明的定价
+                </h2>
+                <p class="text-secondary text-lg max-w-2xl mx-auto">
+                    选择适合您的方案，随时升级或降级
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Free Plan -->
+                <div class="p-8 rounded-2xl border border-border bg-white">
+                    <div class="mb-6">
+                        <h3 class="font-display font-semibold text-lg mb-2">免费版</h3>
+                        <p class="text-sm text-muted">适合个人轻度使用</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-display font-bold">¥0</span>
+                        <span class="text-muted">/月</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">每日 10 次 AI 写作</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">基础语法检查</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">3 种写作风格</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            <span class="text-muted">无集成功能</span>
+                        </li>
+                    </ul>
+                    <a href="#" class="block w-full text-center py-3 rounded-xl border border-border hover:border-primary text-primary font-medium transition-colors cursor-pointer">
+                        免费开始
+                    </a>
+                </div>
+                
+                <!-- Pro Plan -->
+                <div class="p-8 rounded-2xl border-2 border-accent bg-white relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full">最受欢迎</span>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="font-display font-semibold text-lg mb-2">专业版</h3>
+                        <p class="text-sm text-muted">适合专业写作者</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-display font-bold">¥79</span>
+                        <span class="text-muted">/月</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">无限 AI 写作</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">高级语法 + 风格检查</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">20+ 写作风格模板</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">所有集成功能</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">优先客服支持</span>
+                        </li>
+                    </ul>
+                    <a href="#" class="block w-full text-center py-3 rounded-xl bg-accent hover:bg-accent-dark text-white font-medium transition-colors cursor-pointer">
+                        开始 14 天免费试用
+                    </a>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="p-8 rounded-2xl border border-border bg-white">
+                    <div class="mb-6">
+                        <h3 class="font-display font-semibold text-lg mb-2">企业版</h3>
+                        <p class="text-sm text-muted">适合团队与企业</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-display font-bold">定制</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">专业版所有功能</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">团队协作空间</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">自定义品牌风格</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">API 访问</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <svg class="w-5 h-5 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span class="text-secondary">专属客户成功经理</span>
+                        </li>
+                    </ul>
+                    <a href="#" class="block w-full text-center py-3 rounded-xl border border-border hover:border-primary text-primary font-medium transition-colors cursor-pointer">
+                        联系销售
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-6 bg-primary">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight text-white mb-6">
+                准备好提升您的写作效率了吗？
+            </h2>
+            <p class="text-lg text-white/70 mb-10 max-w-2xl mx-auto">
+                加入超过 10,000 名写作者，体验 AI 驱动的写作新方式
+            </p>
+            <a href="#" class="inline-flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-xl text-base font-semibold hover:bg-white/90 transition-colors cursor-pointer">
+                免费开始使用
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-border">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <a href="#" class="font-display font-bold text-xl tracking-tight flex items-center gap-2 mb-4">
+                        <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                            <path d="M2 2l7.586 7.586"/>
+                            <circle cx="11" cy="11" r="2"/>
+                        </svg>
+                        <span>WriteFlow<span class="text-accent">AI</span></span>
+                    </a>
+                    <p class="text-sm text-muted">
+                        AI 驱动的智能写作助手<br>
+                        让文字流淌如思维般自然
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-sm mb-4">产品</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">功能介绍</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">定价</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">更新日志</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">路线图</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-sm mb-4">资源</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">帮助中心</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">API 文档</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">博客</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">社区</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-sm mb-4">公司</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">关于我们</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">加入我们</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-sm text-muted hover:text-primary transition-colors">服务条款</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border">
+                <p class="text-sm text-muted mb-4 md:mb-0">
+                    © 2024 WriteFlow AI. All rights reserved.
+                </p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-muted hover:text-primary transition-colors cursor-pointer">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-muted hover:text-primary transition-colors cursor-pointer">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-muted hover:text-primary transition-colors cursor-pointer">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
-import { useState, useRef } from "react"
-import { Settings, Search, Bookmark, FolderOpen, Sparkles, Code, Palette, Wrench, Users } from "lucide-react"
+import { useState, useRef, useEffect, useCallback } from "react"
+import { Settings, Search, Bookmark, FolderOpen, Sparkles, Code } from "lucide-react"
 import Clock from "./components/Clock"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -12,139 +12,45 @@ import {
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { BackgroundSettings } from "./components/BackgroundSettings"
+import { BookmarksSettings } from "./components/BookmarksSettings"
+import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
 
 type SettingsTab = "background" | "bookmarks"
-
-interface BookmarkItem {
-  name: string
-  url: string
-  color: string
-}
-
-interface FolderData {
-  id: string
-  name: string
-  icon: React.ElementType
-  bookmarks: BookmarkItem[]
-}
-
-const foldersData: FolderData[] = [
-  {
-    id: "work",
-    name: "Work",
-    icon: Code,
-    bookmarks: [
-      { name: "GitHub", url: "https://github.com", color: "bg-[#24292F]" },
-      { name: "GitLab", url: "https://gitlab.com", color: "bg-[#FC6D26]" },
-      { name: "Jira", url: "https://jira.com", color: "bg-[#0052CC]" },
-      { name: "Slack", url: "https://slack.com", color: "bg-[#4A154B]" },
-      { name: "Notion", url: "https://notion.so", color: "bg-primary" },
-      { name: "Figma", url: "https://figma.com", color: "bg-[#F24E1E]" },
-      { name: "Linear", url: "https://linear.app", color: "bg-[#5E6AD2]" },
-      { name: "Vercel", url: "https://vercel.com", color: "bg-primary" },
-      { name: "AWS", url: "https://aws.amazon.com", color: "bg-[#FF9900]" },
-      { name: "Docker", url: "https://docker.com", color: "bg-[#2496ED]" },
-    ],
-  },
-  {
-    id: "tools",
-    name: "Tools",
-    icon: Wrench,
-    bookmarks: [
-      { name: "Google", url: "https://google.com", color: "bg-[#4285F4]" },
-      { name: "YouTube", url: "https://youtube.com", color: "bg-[#FF0000]" },
-      { name: "Stack Overflow", url: "https://stackoverflow.com", color: "bg-[#F48024]" },
-      { name: "MDN", url: "https://developer.mozilla.org", color: "bg-[#000000]" },
-      { name: "Can I Use", url: "https://caniuse.com", color: "bg-[#60AB9F]" },
-      { name: "Regex101", url: "https://regex101.com", color: "bg-[#336791]" },
-      { name: "JSONPlaceholder", url: "https://jsonplaceholder.typicode.com", color: "bg-[#FF6C37]" },
-      { name: "CodePen", url: "https://codepen.io", color: "bg-[#000000]" },
-      { name: "JSFiddle", url: "https://jsfiddle.net", color: "bg-[#1B1F24]" },
-      { name: "Replit", url: "https://replit.com", color: "bg-[#F26207]" },
-    ],
-  },
-  {
-    id: "design",
-    name: "Design",
-    icon: Palette,
-    bookmarks: [
-      { name: "Dribbble", url: "https://dribbble.com", color: "bg-[#EA4C89]" },
-      { name: "Behance", url: "https://behance.net", color: "bg-[#1769FF]" },
-      { name: "Awwwards", url: "https://awwwards.com", color: "bg-[#000000]" },
-      { name: "Unsplash", url: "https://unsplash.com", color: "bg-[#000000]" },
-      { name: "Pexels", url: "https://pexels.com", color: "bg-[#05A081]" },
-      { name: "Icons8", url: "https://icons8.com", color: "bg-[#1A1919]" },
-      { name: "Heroicons", url: "https://heroicons.com", color: "bg-[#3B82F6]" },
-      { name: "Lucide", url: "https://lucide.dev", color: "bg-[#10B981]" },
-      { name: "ColorHunt", url: "https://colorhunt.co", color: "bg-[#FF6B6B]" },
-      { name: "Coolors", url: "https://coolors.co", color: "bg-[#000000]" },
-    ],
-  },
-  {
-    id: "social",
-    name: "Social",
-    icon: Users,
-    bookmarks: [
-      { name: "Twitter", url: "https://twitter.com", color: "bg-[#1DA1F2]" },
-      { name: "Reddit", url: "https://reddit.com", color: "bg-[#FF4500]" },
-      { name: "Medium", url: "https://medium.com", color: "bg-primary" },
-      { name: "LinkedIn", url: "https://linkedin.com", color: "bg-[#0A66C2]" },
-      { name: "Hacker News", url: "https://news.ycombinator.com", color: "bg-[#FF6600]" },
-      { name: "Product Hunt", url: "https://producthunt.com", color: "bg-[#DA552F]" },
-      { name: "IndieHackers", url: "https://indiehackers.com", color: "bg-[#0C0C0C]" },
-      { name: "Dev.to", url: "https://dev.to", color: "bg-[#0A0A0A]" },
-      { name: "Hashnode", url: "https://hashnode.com", color: "bg-[#000000]" },
-      { name: "V2EX", url: "https://v2ex.com", color: "bg-[#1B1F23]" },
-    ],
-  },
-]
-
-function BackgroundSettings() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <label className="text-sm font-medium text-primary">Background Color</label>
-        <Input type="color" className="h-10 w-full mt-2 rounded-lg border-border" defaultValue="#FAFAFA" />
-      </div>
-      <div>
-        <label className="text-sm font-medium text-primary">Background Image URL</label>
-        <Input type="text" placeholder="https://..." className="mt-2 rounded-lg border-border" />
-      </div>
-      <Button className="w-full bg-accent hover:bg-accent-dark text-white rounded-xl font-medium transition-colors">
-        Apply
-      </Button>
-    </div>
-  )
-}
-
-function BookmarksSettings() {
-  const [bookmarks] = useState([
-    { name: "Google", url: "https://google.com" },
-    { name: "GitHub", url: "https://github.com" },
-  ])
-
-  return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        {bookmarks.map((bookmark, index) => (
-          <div key={index} className="flex items-center gap-3 p-3 border border-border rounded-xl hover:border-accent/30 transition-colors">
-            <span className="text-sm text-primary flex-1 font-medium">{bookmark.name}</span>
-            <Button variant="ghost" size="sm" className="text-muted hover:text-primary">Edit</Button>
-          </div>
-        ))}
-      </div>
-      <Button variant="outline" className="w-full border-border hover:border-primary text-primary rounded-xl font-medium transition-colors">
-        Add Bookmark
-      </Button>
-    </div>
-  )
-}
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>("background")
   const [activeFolderIndex, setActiveFolderIndex] = useState(0)
+  const [foldersData, setFoldersData] = useState<BookmarkFolder[]>([])
   const prevFolderIndexRef = useRef(0)
+
+  const loadFolders = useCallback(async () => {
+    try {
+      const data = await getBookmarks()
+      setFoldersData(data.folders)
+    } catch (error) {
+      console.error("Failed to load folders:", error)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadFolders()
+  }, [loadFolders])
+
+
+  console.log(chrome, chrome.storage);
+  useEffect(() => {
+    const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "sync" && changes.armrest_bookmarks) {
+        loadFolders()
+      }
+    }
+    chrome.storage.onChanged.addListener(handleStorageChange)
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange)
+    }
+  }, [loadFolders])
 
   const handleFolderChange = (index: number) => {
     prevFolderIndexRef.current = activeFolderIndex
@@ -169,6 +75,10 @@ export default function App() {
 
   const direction = activeFolderIndex > prevFolderIndexRef.current ? 1 : -1
   const currentFolder = foldersData[activeFolderIndex]
+
+  const handleBookmarkAdded = () => {
+    loadFolders()
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center p-8 bg-surface">
@@ -202,59 +112,86 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex gap-6">
-          <div className="w-44 shrink-0">
-            <div className="border border-border rounded-2xl p-3 space-y-1 bg-white">
-              {foldersData.map((folder, index) => {
-                const Icon = activeFolderIndex === index ? FolderOpen : folder.icon
-                return (
-                  <button
-                    key={folder.id}
-                    onClick={() => handleFolderChange(index)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${activeFolderIndex === index
-                      ? "bg-accent text-white"
-                      : "text-secondary hover:text-primary hover:bg-surface"
-                      }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{folder.name}</span>
-                  </button>
-                )
-              })}
+        {foldersData.length > 0 ? (
+          <div className="flex gap-6">
+            <div className="w-44 shrink-0">
+              <div className="border border-border rounded-2xl p-3 space-y-1 bg-white">
+                {foldersData.map((folder, index) => {
+                  const Icon = activeFolderIndex === index ? FolderOpen : folder.icon as React.ElementType || Code
+                  return (
+                    <button
+                      key={folder.id}
+                      onClick={() => handleFolderChange(index)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${activeFolderIndex === index
+                        ? "bg-accent text-white"
+                        : "text-secondary hover:text-primary hover:bg-surface"
+                        }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{folder.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-hidden">
+              <AnimatePresence mode="popLayout" custom={direction}>
+                <motion.div
+                  key={activeFolderIndex}
+                  custom={direction}
+                  initial={{ y: direction > 0 ? 20 : -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: direction > 0 ? -20 : 20, opacity: 0 }}
+                  transition={{
+                    duration: 0.25,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }}
+                >
+                  <div className="grid grid-cols-5 gap-3">
+                    {currentFolder?.bookmarks.map((bookmark, index) => (
+                      <button
+                        key={bookmark.id}
+                        onClick={() => handleBookmarkClick(bookmark.url)}
+                        className="group p-4 rounded-2xl border border-border bg-white hover:border-accent/30 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3"
+                      >
+                        {bookmark.logo ? (
+                          <img
+                            src={bookmark.logo}
+                            alt=""
+                            className="w-11 h-11 rounded-xl object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = "none"
+                              const parent = target.parentElement
+                              if (parent) {
+                                parent.innerHTML = `<span>${bookmark.name.charAt(0).toUpperCase()}</span>`
+                                parent.className += ` w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold`
+                                parent.style.backgroundColor = bookmark.color || "#6366F1"
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div
+                            className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold transition-transform duration-200 group-hover:scale-105"
+                            style={{ backgroundColor: bookmark.color || "#6366F1" }}
+                          >
+                            {bookmark.name.charAt(0)}
+                          </div>
+                        )}
+                        <span className="text-xs text-secondary text-center line-clamp-1 font-medium group-hover:text-primary transition-colors">{bookmark.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
-
-          <div className="flex-1 overflow-hidden">
-            <AnimatePresence mode="popLayout" custom={direction}>
-              <motion.div
-                key={activeFolderIndex}
-                custom={direction}
-                initial={{ y: direction > 0 ? 20 : -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: direction > 0 ? -20 : 20, opacity: 0 }}
-                transition={{
-                  duration: 0.25,
-                  ease: [0.25, 0.1, 0.25, 1]
-                }}
-              >
-                <div className="grid grid-cols-5 gap-3">
-                  {currentFolder.bookmarks.map((bookmark, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleBookmarkClick(bookmark.url)}
-                      className="group p-4 rounded-2xl border border-border bg-white hover:border-accent/30 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3"
-                    >
-                      <div className={`w-11 h-11 rounded-xl ${bookmark.color} flex items-center justify-center text-white text-sm font-bold transition-transform duration-200 group-hover:scale-105`}>
-                        {bookmark.name.charAt(0)}
-                      </div>
-                      <span className="text-xs text-secondary text-center line-clamp-1 font-medium group-hover:text-primary transition-colors">{bookmark.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            </AnimatePresence>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted">No bookmarks yet. Open settings to add some!</p>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="fixed bottom-6 right-6">
@@ -300,7 +237,7 @@ export default function App() {
                 {activeSettingsTab === "background" ? (
                   <BackgroundSettings />
                 ) : (
-                  <BookmarksSettings />
+                  <BookmarksSettings folders={foldersData} onBookmarkAdded={handleBookmarkAdded} />
                 )}
               </div>
             </div>

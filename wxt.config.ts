@@ -12,7 +12,11 @@ export default defineConfig({
     },
     chrome_url_overrides: {
       newtab: 'newtab.html'
-    }
+    },
+    permissions: [
+      'storage',
+      'tabs'
+    ]
   },
   alias: {
     '@': '.',
