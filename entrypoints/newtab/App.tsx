@@ -14,7 +14,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BackgroundSettings } from "./components/BackgroundSettings"
 import { BookmarksSettings } from "./components/BookmarksSettings"
-import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
+import { BookmarkEditModal } from "./components/BookmarkEditModal"
+import { FolderEditModal } from "./components/FolderEditModal"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, deleteFolder, BookmarkFolder } from "@/lib/bookmarks"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -34,6 +36,10 @@ export default function App() {
   const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>("background")
   const [activeFolderIndex, setActiveFolderIndex] = useState(0)
   const [foldersData, setFoldersData] = useState<BookmarkFolder[]>([])
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false)
+  const [editingBookmark, setEditingBookmark] = useState<{ id: string; name: string; url: string; color?: string } | null>(null)
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false)
+  const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
   const prevFolderIndexRef = useRef(0)
 
   const loadFolders = useCallback(async () => {
@@ -89,6 +95,62 @@ export default function App() {
 
   const handleBookmarkAdded = () => {
     loadFolders()
+  }
+
+  const handleEditBookmark = (bookmark: { id: string; name: string; url: string; color?: string }) => {
+    setEditingBookmark(bookmark)
+    setIsBookmarkModalOpen(true)
+  }
+
+  const handleOpenBookmarkModal = () => {
+    setEditingBookmark(null)
+    setIsBookmarkModalOpen(true)
+  }
+
+  const handleSaveBookmark = async (data: { name: string; url: string; logo?: string; description?: string; color?: string }) => {
+    const currentFolder = foldersData[activeFolderIndex]
+    if (!currentFolder) return
+
+    if (editingBookmark) {
+      await updateBookmark(currentFolder.id, editingBookmark.id, {
+        name: data.name,
+        url: data.url,
+        logo: data.logo,
+        description: data.description,
+      })
+    } else {
+      const colors = ["#6366F1", "#10B981", "#EC4899", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6", "#14B8A6"]
+      await addBookmark(currentFolder.id, {
+        name: data.name,
+        url: data.url,
+        logo: data.logo,
+        description: data.description,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      })
+    }
+    loadFolders()
+    setIsBookmarkModalOpen(false)
+    setEditingBookmark(null)
+  }
+
+  const handleOpenFolderModal = (folder?: { id: string; data: { name: string; icon: string; color: string } }) => {
+    if (folder) {
+      setEditingFolder(folder)
+    } else {
+      setEditingFolder(null)
+    }
+    setIsFolderModalOpen(true)
+  }
+
+  const handleSaveFolder = async (data: { name: string; icon: string; color: string }) => {
+    if (editingFolder) {
+      await updateFolder(editingFolder.id, data)
+    } else {
+      await addFolder(data.name, data.icon, data.color)
+    }
+    loadFolders()
+    setIsFolderModalOpen(false)
+    setEditingFolder(null)
   }
 
   return (
@@ -254,13 +316,55 @@ export default function App() {
                 {activeSettingsTab === "background" ? (
                   <BackgroundSettings />
                 ) : (
-                  <BookmarksSettings folders={foldersData} onBookmarkAdded={handleBookmarkAdded} />
+                  <BookmarksSettings
+                    folders={foldersData}
+                    onBookmarkAdded={handleBookmarkAdded}
+                    isBookmarkModalOpen={isBookmarkModalOpen}
+                    onBookmarkModalClose={() => {
+                      setIsBookmarkModalOpen(false)
+                      setEditingBookmark(null)
+                    }}
+                    onBookmarkModalOpen={handleOpenBookmarkModal}
+                    editingBookmark={editingBookmark}
+                    onSaveBookmark={handleSaveBookmark}
+                    onEditBookmark={handleEditBookmark}
+                    isFolderModalOpen={isFolderModalOpen}
+                    onFolderModalClose={() => {
+                      setIsFolderModalOpen(false)
+                      setEditingFolder(null)
+                    }}
+                    editingFolder={editingFolder}
+                    onSaveFolder={handleSaveFolder}
+                    onOpenFolderModal={handleOpenFolderModal}
+                  />
                 )}
               </div>
             </div>
           </DrawerContent>
         </Drawer>
       </div>
+
+      <BookmarkEditModal
+        isOpen={isBookmarkModalOpen}
+        onClose={() => {
+          setIsBookmarkModalOpen(false)
+          setEditingBookmark(null)
+        }}
+        onSave={handleSaveBookmark}
+        initialData={editingBookmark || undefined}
+        title={editingBookmark ? "Edit Bookmark" : "Add Bookmark"}
+      />
+
+      <FolderEditModal
+        isOpen={isFolderModalOpen}
+        onClose={() => {
+          setIsFolderModalOpen(false)
+          setEditingFolder(null)
+        }}
+        onSave={handleSaveFolder}
+        initialData={editingFolder?.data}
+        title={editingFolder ? "Edit Folder" : "Add Folder"}
+      />
     </div>
   )
 }

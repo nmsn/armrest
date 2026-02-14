@@ -1,20 +1,16 @@
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, X, Loader2, Pencil, FolderPlus, Code, Wrench, Palette, Users, Bookmark, Upload, Download, Settings, Folder, Star } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Plus, Trash2, Pencil, FolderPlus, Code, Wrench, Palette, Users, Bookmark, Upload, Download, Settings, Folder, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { fetchWebsiteInfo, normalizeUrl, isValidUrl, WebsiteMetadata } from "@/lib/website"
 import {
   BookmarkFolder,
   getBookmarks,
-  addFolder,
-  updateFolder,
   deleteFolder,
-  addBookmark,
   deleteBookmark,
   exportBookmarks,
   importBookmarks,
 } from "@/lib/bookmarks"
 import { FolderEditModal, FolderFormData } from "./FolderEditModal"
+import { BookmarkEditModal } from "./BookmarkEditModal"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -38,22 +34,27 @@ function generateColor(): string {
 }
 
 interface BookmarksSettingsProps {
-  folders: { id: string; name: string; icon?: string }[]
+  folders?: BookmarkFolder[]
   onBookmarkAdded?: () => void
+  isBookmarkModalOpen: boolean
+  onBookmarkModalClose: () => void
+  onBookmarkModalOpen?: () => void
+  editingBookmark: { id: string; name: string; url: string; color?: string } | null
+  onSaveBookmark: (data: { name: string; url: string; logo?: string; description?: string; color?: string }) => Promise<void>
+  onEditBookmark?: (bookmark: { id: string; name: string; url: string; color?: string }) => void
+  isFolderModalOpen: boolean
+  onFolderModalClose: () => void
+  onFolderModalOpen?: () => void
+  editingFolder: { id: string; data: { name: string; icon: string; color: string } } | null
+  onSaveFolder: (data: { name: string; icon: string; color: string }) => Promise<void>
+  onOpenFolderModal?: (folder?: { id: string; data: { name: string; icon: string; color: string } }) => void
 }
 
-export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: BookmarksSettingsProps) {
+export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isBookmarkModalOpen, onBookmarkModalClose, onBookmarkModalOpen, editingBookmark, onSaveBookmark, onEditBookmark, isFolderModalOpen, onFolderModalClose, onFolderModalOpen, editingFolder, onSaveFolder, onOpenFolderModal }: BookmarksSettingsProps) {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
   const [activeFolderId, setActiveFolderId] = useState<string>("")
-  const [isAdding, setIsAdding] = useState(false)
-  const [newName, setNewName] = useState("")
-  const [newUrl, setNewUrl] = useState("")
-  const [websiteInfo, setWebsiteInfo] = useState<WebsiteMetadata | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingFolder, setEditingFolder] = useState<{ id: string; data: FolderFormData } | null>(null)
 
   const loadBookmarks = useCallback(async () => {
     try {
@@ -71,58 +72,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
     loadBookmarks()
   }, [loadBookmarks])
 
-  useEffect(() => {
-    const fetchInfo = async () => {
-      const normalizedUrl = normalizeUrl(newUrl)
-      if (isValidUrl(normalizedUrl)) {
-        setIsLoading(true)
-        try {
-          const info = await fetchWebsiteInfo(normalizedUrl)
-          setWebsiteInfo(info)
-          if (!newName) {
-            setNewName(info.title)
-          }
-        } catch {
-          setWebsiteInfo(null)
-        } finally {
-          setIsLoading(false)
-        }
-      } else {
-        setWebsiteInfo(null)
-      }
-    }
-
-    const timer = setTimeout(() => {
-      if (newUrl.trim()) {
-        fetchInfo()
-      }
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [newUrl, newName])
-
   const activeFolder = folders.find(f => f.id === activeFolderId)
-
-  const handleAddFolder = async (data: FolderFormData) => {
-    try {
-      await addFolder(data.name, data.icon, data.color)
-      await loadBookmarks()
-      onBookmarkAdded?.()
-    } catch (error) {
-      console.error("Failed to add folder:", error)
-    }
-  }
-
-  const handleUpdateFolder = async (data: FolderFormData) => {
-    if (!editingFolder) return
-    try {
-      await updateFolder(editingFolder.id, { name: data.name, icon: data.icon, color: data.color })
-      await loadBookmarks()
-      onBookmarkAdded?.()
-    } catch (error) {
-      console.error("Failed to update folder:", error)
-    }
-  }
 
   const handleDeleteFolder = async (folderId: string) => {
     if (!confirm("Are you sure you want to delete this folder and all its bookmarks?")) return
@@ -138,37 +88,9 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
     }
   }
 
-  const handleModalSave = (data: FolderFormData) => {
-    if (editingFolder) {
-      handleUpdateFolder(data)
-    } else {
-      handleAddFolder(data)
-    }
-    setIsModalOpen(false)
-    setEditingFolder(null)
-  }
-
-  const handleAdd = async () => {
-    const normalizedUrl = normalizeUrl(newUrl)
-    if (!newName.trim() || !normalizedUrl || !activeFolderId) return
-
-    try {
-      await addBookmark(activeFolderId, {
-        name: newName.trim(),
-        url: normalizedUrl,
-        description: websiteInfo?.description,
-        logo: websiteInfo?.logo,
-        color: generateColor(),
-      })
-      await loadBookmarks()
-      onBookmarkAdded?.()
-      setNewName("")
-      setNewUrl("")
-      setWebsiteInfo(null)
-      setIsAdding(false)
-    } catch (error) {
-      console.error("Failed to add bookmark:", error)
-    }
+  const handleModalSave = (data: { name: string; icon: string; color: string }) => {
+    onSaveFolder(data)
+    onFolderModalClose()
   }
 
   const handleDelete = async (bookmarkId: string) => {
@@ -225,27 +147,6 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
     input.click()
   }
 
-  const getDisplayIcon = () => {
-    if (isLoading) {
-      return <Loader2 className="w-8 h-8 animate-spin text-muted" />
-    }
-    if (websiteInfo?.logo) {
-      return (
-        <img
-          src={websiteInfo.logo}
-          alt=""
-          className="w-8 h-8 rounded-lg object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none'
-            const parent = (e.target as HTMLImageElement).parentElement
-            if (parent) parent.innerHTML = (newName || newUrl || '?').charAt(0).toUpperCase()
-          }}
-        />
-      )
-    }
-    return null
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -274,15 +175,15 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2">
         {folders.map((folder) => {
           const IconComponent = ICON_MAP[folder.icon || "folder"]
           return (
             <div
               key={folder.id}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-colors ${activeFolderId === folder.id
-                  ? "border-accent bg-accent/10"
-                  : "border-border hover:border-accent/50"
+              className={`group flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-colors ${activeFolderId === folder.id
+                ? "border-accent bg-accent/10"
+                : "border-border hover:border-accent/50"
                 }`}
             >
               <div
@@ -293,26 +194,23 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
               </div>
               <button
                 onClick={() => setActiveFolderId(folder.id)}
-                className="text-sm font-medium text-primary"
+                className="flex-1 text-left text-sm font-medium text-primary"
               >
                 {folder.name}
               </button>
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setEditingFolder({
-                      id: folder.id,
-                      data: {
-                        name: folder.name,
-                        icon: folder.icon || "folder",
-                        color: folder.color || "#6366F1"
-                      }
-                    })
-                    setIsModalOpen(true)
-                  }}
-                  className="h-5 w-5 p-0 text-muted hover:text-accent"
+                  onClick={() => onOpenFolderModal?.({
+                    id: folder.id,
+                    data: {
+                      name: folder.name,
+                      icon: folder.icon || "folder",
+                      color: folder.color || "#6366F1"
+                    }
+                  })}
+                  className="h-5 w-5 p-0 text-muted hover:bg-gray-100"
                 >
                   <Pencil className="h-3 w-3" />
                 </Button>
@@ -320,7 +218,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDeleteFolder(folder.id)}
-                  className="h-5 w-5 p-0 text-muted hover:text-red-500"
+                  className="h-5 w-5 p-0 text-muted hover:bg-gray-100"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -330,13 +228,11 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
         })}
         <Button
           variant="ghost"
-          onClick={() => {
-            setEditingFolder(null)
-            setIsModalOpen(true)
-          }}
-          className="h-7 px-2 border border-dashed border-border text-muted hover:text-accent hover:border-accent"
+          onClick={() => onOpenFolderModal?.()}
+          className="h-8 px-2 border border-dashed border-border text-muted hover:border-accent rounded-lg bg-surface hover:bg-gray-100"
         >
-          <FolderPlus className="w-4 h-4" />
+          <FolderPlus className="w-3.5 h-3.5 mr-1" />
+          <span className="text-sm">新增</span>
         </Button>
       </div>
 
@@ -347,66 +243,16 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
               Bookmarks in "{activeFolder.name}"
             </h3>
 
-            {isAdding ? (
-              <div className="space-y-3 p-4 border border-border rounded-xl bg-surface">
-                <div className="flex justify-center">
-                  <div className="w-14 h-14 rounded-xl bg-white border border-border flex items-center justify-center">
-                    {getDisplayIcon() || (
-                      <span className="text-lg font-bold text-muted">
-                        {(newName || newUrl || '?').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-muted mb-1 block">Website Name</label>
-                  <Input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g., GitHub"
-                    className="rounded-lg border-border"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted mb-1 block">Website URL</label>
-                  <Input
-                    value={newUrl}
-                    onChange={(e) => setNewUrl(e.target.value)}
-                    placeholder="github.com"
-                    className="rounded-lg border-border"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleAdd}
-                    className="flex-1 bg-accent hover:bg-accent-dark text-white rounded-lg font-medium transition-colors"
-                  >
-                    Add
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsAdding(false)
-                      setNewName("")
-                      setNewUrl("")
-                      setWebsiteInfo(null)
-                    }}
-                    className="border-border hover:border-primary text-primary rounded-lg font-medium transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => setIsAdding(true)}
-                className="w-full border-border hover:border-primary text-primary rounded-xl font-medium transition-colors"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Bookmark
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => {
+                onBookmarkModalOpen?.()
+              }}
+              className="w-full border-border hover:border-primary text-primary rounded-xl font-medium transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Bookmark
+            </Button>
           </div>
 
           <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -431,8 +277,18 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => {
+                      onEditBookmark?.({ id: bookmark.id, name: bookmark.name, url: bookmark.url, color: bookmark.color })
+                    }}
+                    className="text-muted hover:bg-gray-100"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleDelete(bookmark.id)}
-                    className="text-muted hover:text-red-500"
+                    className="text-muted hover:bg-gray-100"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -443,16 +299,27 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
         </>
       )}
 
-      <FolderEditModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setEditingFolder(null)
-        }}
+      {/* <FolderEditModal
+        isOpen={isFolderModalOpen}
+        onClose={onFolderModalClose}
         onSave={handleModalSave}
         initialData={editingFolder?.data}
         title={editingFolder ? "Edit Folder" : "Add Folder"}
-      />
+      /> */}
+
+      {/* <BookmarkEditModal
+        isOpen={isBookmarkModalOpen}
+        onClose={() => {
+          setIsAdding(false)
+          onBookmarkModalClose()
+        }}
+        onSave={async (data) => {
+          await onSaveBookmark(data)
+          setIsAdding(false)
+        }}
+        initialData={editingBookmark || undefined}
+        title={editingBookmark ? "Edit Bookmark" : "Add Bookmark"}
+      /> */}
     </div>
   )
 }
