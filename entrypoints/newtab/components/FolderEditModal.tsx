@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react"
-import { Code, Wrench, Palette, Users, Bookmark, Settings, Folder, Star, X, Check } from "lucide-react"
+import { Code, Wrench, Palette, Users, Bookmark, Settings, Folder, Star, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 const ICON_OPTIONS = [
   { id: "code", icon: Code, label: "Code" },
@@ -15,14 +22,14 @@ const ICON_OPTIONS = [
 ]
 
 const COLOR_OPTIONS = [
-  "#6366F1", // Indigo
-  "#10B981", // Emerald
-  "#EC4899", // Pink
-  "#F59E0B", // Amber
-  "#EF4444", // Red
-  "#3B82F6", // Blue
-  "#8B5CF6", // Violet
-  "#14B8A6", // Teal
+  "#6366F1",
+  "#10B981",
+  "#EC4899",
+  "#F59E0B",
+  "#EF4444",
+  "#3B82F6",
+  "#8B5CF6",
+  "#14B8A6",
 ]
 
 export interface FolderFormData {
@@ -51,14 +58,16 @@ export function FolderEditModal({
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0])
 
   useEffect(() => {
-    if (initialData) {
-      setName(initialData.name)
-      setSelectedIcon(initialData.icon)
-      setSelectedColor(initialData.color)
-    } else {
-      setName("")
-      setSelectedIcon("folder")
-      setSelectedColor(COLOR_OPTIONS[0])
+    if (isOpen) {
+      if (initialData) {
+        setName(initialData.name)
+        setSelectedIcon(initialData.icon)
+        setSelectedColor(initialData.color)
+      } else {
+        setName("")
+        setSelectedIcon("folder")
+        setSelectedColor(COLOR_OPTIONS[0])
+      }
     }
   }, [initialData, isOpen])
 
@@ -72,18 +81,12 @@ export function FolderEditModal({
     onClose()
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-primary">{title}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
 
         <div className="space-y-6">
           <div>
@@ -125,12 +128,12 @@ export function FolderEditModal({
                   <button
                     key={option.id}
                     onClick={() => setSelectedIcon(option.id)}
-                    className={`p-3 rounded-xl border transition-all ${
-                      isSelected
+                    className={`p-3 rounded-xl border transition-all ${isSelected
                         ? "border-accent bg-accent/10"
                         : "border-border hover:border-accent/50"
-                    }`}
+                      }`}
                     title={option.label}
+                    type="button"
                   >
                     <Icon className={`w-5 h-5 mx-auto ${isSelected ? "text-accent" : "text-secondary"}`} />
                   </button>
@@ -148,10 +151,10 @@ export function FolderEditModal({
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`h-10 rounded-xl transition-all ${
-                      isSelected ? "ring-2 ring-offset-2 ring-primary" : ""
-                    }`}
+                    className={`h-10 rounded-xl transition-all ${isSelected ? "ring-2 ring-offset-2 ring-primary" : ""
+                      }`}
                     style={{ backgroundColor: color }}
+                    type="button"
                   >
                     {isSelected && <Check className="w-5 h-5 text-white mx-auto" />}
                   </button>
@@ -159,25 +162,25 @@ export function FolderEditModal({
               })}
             </div>
           </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 border-border text-primary"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!name.trim()}
-              className="flex-1 bg-accent hover:bg-accent-dark text-white"
-            >
-              Save
-            </Button>
-          </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-border text-primary"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={!name.trim()}
+            className="bg-accent hover:bg-accent-dark text-white"
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

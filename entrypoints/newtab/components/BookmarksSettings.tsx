@@ -298,28 +298,6 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
           </div>
         </>
       )}
-
-      {/* <FolderEditModal
-        isOpen={isFolderModalOpen}
-        onClose={onFolderModalClose}
-        onSave={handleModalSave}
-        initialData={editingFolder?.data}
-        title={editingFolder ? "Edit Folder" : "Add Folder"}
-      /> */}
-
-      {/* <BookmarkEditModal
-        isOpen={isBookmarkModalOpen}
-        onClose={() => {
-          setIsAdding(false)
-          onBookmarkModalClose()
-        }}
-        onSave={async (data) => {
-          await onSaveBookmark(data)
-          setIsAdding(false)
-        }}
-        initialData={editingBookmark || undefined}
-        title={editingBookmark ? "Edit Bookmark" : "Add Bookmark"}
-      /> */}
     </div>
   )
 }

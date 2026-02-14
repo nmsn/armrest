@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react"
-import { X, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { WebsiteMetadata, fetchWebsiteInfo, normalizeUrl, isValidUrl } from "@/lib/website"
 
 interface BookmarkFormData {
@@ -98,18 +105,12 @@ export function BookmarkEditModal({
     return null
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-primary">{title}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
 
         <div className="space-y-4">
           <div className="flex justify-center">
@@ -149,23 +150,24 @@ export function BookmarkEditModal({
               </Button>
             </div>
           </div>
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={handleSave}
-              className="flex-1 bg-accent hover:bg-accent-dark text-white rounded-lg font-medium transition-colors"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="border-border hover:border-primary text-primary rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </Button>
-          </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-border hover:border-primary text-primary rounded-lg font-medium transition-colors"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            className="bg-accent hover:bg-accent-dark text-white rounded-lg font-medium transition-colors"
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
