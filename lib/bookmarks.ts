@@ -13,6 +13,7 @@ export interface BookmarkFolder {
   id: string
   name: string
   icon?: string
+  color?: string
   bookmarks: Bookmark[]
   createdAt: number
   updatedAt: number
@@ -38,6 +39,7 @@ function getDefaultState(): BookmarkState {
         id: generateId(),
         name: "Work",
         icon: "code",
+        color: "#6366F1",
         bookmarks: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -46,6 +48,7 @@ function getDefaultState(): BookmarkState {
         id: generateId(),
         name: "Tools",
         icon: "wrench",
+        color: "#10B981",
         bookmarks: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -54,6 +57,7 @@ function getDefaultState(): BookmarkState {
         id: generateId(),
         name: "Design",
         icon: "palette",
+        color: "#EC4899",
         bookmarks: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -62,6 +66,7 @@ function getDefaultState(): BookmarkState {
         id: generateId(),
         name: "Social",
         icon: "users",
+        color: "#F59E0B",
         bookmarks: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -97,12 +102,13 @@ export async function saveBookmarks(state: BookmarkState): Promise<void> {
   })
 }
 
-export async function addFolder(name: string, icon?: string): Promise<BookmarkState> {
+export async function addFolder(name: string, icon?: string, color?: string): Promise<BookmarkState> {
   const state = await getBookmarks()
   const newFolder: BookmarkFolder = {
     id: generateId(),
     name,
     icon,
+    color,
     bookmarks: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -114,7 +120,7 @@ export async function addFolder(name: string, icon?: string): Promise<BookmarkSt
 
 export async function updateFolder(
   folderId: string,
-  updates: Partial<Pick<BookmarkFolder, "name" | "icon">>
+  updates: Partial<Pick<BookmarkFolder, "name" | "icon" | "color">>
 ): Promise<BookmarkState> {
   const state = await getBookmarks()
   const folderIndex = state.folders.findIndex((f) => f.id === folderId)

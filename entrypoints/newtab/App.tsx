@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Settings, Search, Bookmark, FolderOpen, Sparkles, Code } from "lucide-react"
+import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star } from "lucide-react"
 import Clock from "./components/Clock"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -15,6 +15,17 @@ import { Input } from "@/components/ui/input"
 import { BackgroundSettings } from "./components/BackgroundSettings"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
+
+const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  code: Code,
+  wrench: Wrench,
+  palette: Palette,
+  users: Users,
+  bookmark: BookmarkIcon,
+  settings: Settings,
+  folder: Folder,
+  star: Star,
+}
 
 type SettingsTab = "background" | "bookmarks"
 
@@ -117,17 +128,23 @@ export default function App() {
             <div className="w-44 shrink-0">
               <div className="border border-border rounded-2xl p-3 space-y-1 bg-white">
                 {foldersData.map((folder, index) => {
-                  const Icon = activeFolderIndex === index ? FolderOpen : folder.icon as React.ElementType || Code
+                  const FolderIcon = FOLDER_ICON_MAP[folder.icon || "folder"] || Folder
+                  const isActive = activeFolderIndex === index
                   return (
                     <button
                       key={folder.id}
                       onClick={() => handleFolderChange(index)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${activeFolderIndex === index
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${isActive
                         ? "bg-accent text-white"
                         : "text-secondary hover:text-primary hover:bg-surface"
                         }`}
                     >
-                      <Icon className="h-4 w-4" />
+                      <div
+                        className="w-6 h-6 rounded-md flex items-center justify-center"
+                        style={{ backgroundColor: folder.color || "#6366F1" }}
+                      >
+                        <FolderIcon className="w-3.5 h-3.5 text-white" />
+                      </div>
                       <span>{folder.name}</span>
                     </button>
                   )
@@ -149,7 +166,7 @@ export default function App() {
                   }}
                 >
                   <div className="grid grid-cols-5 gap-3">
-                    {currentFolder?.bookmarks.map((bookmark, index) => (
+                    {currentFolder?.bookmarks.map((bookmark) => (
                       <button
                         key={bookmark.id}
                         onClick={() => handleBookmarkClick(bookmark.url)}

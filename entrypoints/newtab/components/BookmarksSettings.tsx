@@ -1,21 +1,31 @@
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, X, Loader2, Upload, Download, Pencil, Check, FolderPlus } from "lucide-react"
+import { Plus, Trash2, X, Loader2, Pencil, FolderPlus, Code, Wrench, Palette, Users, Bookmark, Upload, Download, Settings, Folder, Star } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { fetchWebsiteInfo, normalizeUrl, isValidUrl, WebsiteMetadata } from "@/lib/website"
 import {
-  Bookmark,
   BookmarkFolder,
   getBookmarks,
   addFolder,
   updateFolder,
   deleteFolder,
   addBookmark,
-  updateBookmark,
   deleteBookmark,
   exportBookmarks,
   importBookmarks,
 } from "@/lib/bookmarks"
+import { FolderEditModal, FolderFormData } from "./FolderEditModal"
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  code: Code,
+  wrench: Wrench,
+  palette: Palette,
+  users: Users,
+  bookmark: Bookmark,
+  settings: Settings,
+  folder: Folder,
+  star: Star,
+}
 
 function generateColor(): string {
   const colors = [
@@ -36,16 +46,14 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
   const [activeFolderId, setActiveFolderId] = useState<string>("")
   const [isAdding, setIsAdding] = useState(false)
-  const [isAddingFolder, setIsAddingFolder] = useState(false)
-  const [isEditingFolder, setIsEditingFolder] = useState(false)
-  const [editingFolderId, setEditingFolderId] = useState<string | null>(null)
   const [newName, setNewName] = useState("")
   const [newUrl, setNewUrl] = useState("")
-  const [newFolderName, setNewFolderName] = useState("")
   const [websiteInfo, setWebsiteInfo] = useState<WebsiteMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingFolder, setEditingFolder] = useState<{ id: string; data: FolderFormData } | null>(null)
 
   const loadBookmarks = useCallback(async () => {
     try {
@@ -95,28 +103,22 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
 
   const activeFolder = folders.find(f => f.id === activeFolderId)
 
-  const handleAddFolder = async () => {
-    if (!newFolderName.trim()) return
+  const handleAddFolder = async (data: FolderFormData) => {
     try {
-      await addFolder(newFolderName.trim())
+      await addFolder(data.name, data.icon, data.color)
       await loadBookmarks()
       onBookmarkAdded?.()
-      setNewFolderName("")
-      setIsAddingFolder(false)
     } catch (error) {
       console.error("Failed to add folder:", error)
     }
   }
 
-  const handleUpdateFolder = async (folderId: string) => {
-    if (!newFolderName.trim()) return
+  const handleUpdateFolder = async (data: FolderFormData) => {
+    if (!editingFolder) return
     try {
-      await updateFolder(folderId, { name: newFolderName.trim() })
+      await updateFolder(editingFolder.id, { name: data.name, icon: data.icon, color: data.color })
       await loadBookmarks()
       onBookmarkAdded?.()
-      setNewFolderName("")
-      setIsEditingFolder(false)
-      setEditingFolderId(null)
     } catch (error) {
       console.error("Failed to update folder:", error)
     }
@@ -136,18 +138,27 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
     }
   }
 
+  const handleModalSave = (data: FolderFormData) => {
+    if (editingFolder) {
+      handleUpdateFolder(data)
+    } else {
+      handleAddFolder(data)
+    }
+    setIsModalOpen(false)
+    setEditingFolder(null)
+  }
+
   const handleAdd = async () => {
     const normalizedUrl = normalizeUrl(newUrl)
     if (!newName.trim() || !normalizedUrl || !activeFolderId) return
 
     try {
-      const color = websiteInfo?.logo ? generateColor() : generateColor()
       await addBookmark(activeFolderId, {
         name: newName.trim(),
         url: normalizedUrl,
         description: websiteInfo?.description,
         logo: websiteInfo?.logo,
-        color,
+        color: generateColor(),
       })
       await loadBookmarks()
       onBookmarkAdded?.()
@@ -264,108 +275,69 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {folders.map((folder) => (
-          <div
-            key={folder.id}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors ${activeFolderId === folder.id
-              ? "border-accent bg-accent/10 text-accent"
-              : "border-border text-secondary hover:border-accent/50"
-              }`}
-          >
-            {editingFolderId === folder.id ? (
-              <div className="flex items-center gap-1">
-                <Input
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  className="h-6 w-24 text-xs py-1 px-2"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleUpdateFolder(folder.id)
-                    if (e.key === "Escape") {
-                      setIsEditingFolder(false)
-                      setEditingFolderId(null)
-                    }
-                  }}
-                />
+        {folders.map((folder) => {
+          const IconComponent = ICON_MAP[folder.icon || "folder"]
+          return (
+            <div
+              key={folder.id}
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-colors ${activeFolderId === folder.id
+                  ? "border-accent bg-accent/10"
+                  : "border-border hover:border-accent/50"
+                }`}
+            >
+              <div
+                className="w-6 h-6 rounded-md flex items-center justify-center"
+                style={{ backgroundColor: folder.color || "#6366F1" }}
+              >
+                {IconComponent && <IconComponent className="w-3.5 h-3.5 text-white" />}
+              </div>
+              <button
+                onClick={() => setActiveFolderId(folder.id)}
+                className="text-sm font-medium text-primary"
+              >
+                {folder.name}
+              </button>
+              <div className="flex items-center gap-0.5">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleUpdateFolder(folder.id)}
-                  className="h-6 w-6 p-0 text-accent"
+                  onClick={() => {
+                    setEditingFolder({
+                      id: folder.id,
+                      data: {
+                        name: folder.name,
+                        icon: folder.icon || "folder",
+                        color: folder.color || "#6366F1"
+                      }
+                    })
+                    setIsModalOpen(true)
+                  }}
+                  className="h-5 w-5 p-0 text-muted hover:text-accent"
                 >
-                  <Check className="h-3 w-3" />
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteFolder(folder.id)}
+                  className="h-5 w-5 p-0 text-muted hover:text-red-500"
+                >
+                  <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => setActiveFolderId(folder.id)}
-                  className="text-sm font-medium"
-                >
-                  {folder.name}
-                </button>
-                <div className="flex items-center gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditingFolderId(folder.id)
-                      setNewFolderName(folder.name)
-                      setIsEditingFolder(true)
-                    }}
-                    className="h-5 w-5 p-0 text-muted hover:text-accent"
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteFolder(folder.id)}
-                    className="h-5 w-5 p-0 text-muted hover:text-red-500"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-        {isAddingFolder ? (
-          <div className="flex items-center gap-1">
-            <Input
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="Folder name"
-              className="h-7 w-28 text-xs py-1"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleAddFolder()
-                if (e.key === "Escape") {
-                  setIsAddingFolder(false)
-                  setNewFolderName("")
-                }
-              }}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleAddFolder}
-              className="h-7 w-7 p-0 text-accent"
-            >
-              <Check className="h-3 w-3" />
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsAddingFolder(true)}
-            className="h-7 text-muted hover:text-accent"
-          >
-            <FolderPlus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
-        )}
+            </div>
+          )
+        })}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setEditingFolder(null)
+            setIsModalOpen(true)
+          }}
+          className="h-7 px-2 border border-dashed border-border text-muted hover:text-accent hover:border-accent"
+        >
+          <FolderPlus className="w-4 h-4" />
+        </Button>
       </div>
 
       {activeFolder && (
@@ -470,6 +442,17 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded }: B
           </div>
         </>
       )}
+
+      <FolderEditModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingFolder(null)
+        }}
+        onSave={handleModalSave}
+        initialData={editingFolder?.data}
+        title={editingFolder ? "Edit Folder" : "Add Folder"}
+      />
     </div>
   )
 }
