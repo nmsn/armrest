@@ -18,7 +18,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "types": ["chrome"]
   },
-  "include": ["entrypoints", "lib", "components"]
+  "include": ["entrypoints", "components", "lib", ".wxt/types/**/*.d.ts"]
 }

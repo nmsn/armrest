@@ -9,7 +9,7 @@ export default function Clock() {
   }, []);
 
   return (
-    <div className="clock">
+    <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary">
       {time.toLocaleTimeString()}
     </div>
   );
