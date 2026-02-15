@@ -406,6 +406,321 @@ font-family: {
 
 ---
 
+# 暗黑模式 (Dark Mode)
+
+## 概述
+
+暗黑模式是浅色模式的完整替代方案，通过 CSS 变量实现主题切换。暗黑模式保持与浅色模式相同的设计语言，同时优化深色环境下的阅读体验。
+
+---
+
+## 色彩系统
+
+### 暗黑模式色板
+
+| 角色 | 色值 | CSS 变量 | 用途 |
+|------|------|----------|------|
+| Primary | `#FAFAFA` | `--color-primary` | 主要文字、标题、重要元素 |
+| Secondary | `#A3A3A3` | `--color-secondary` | 次要文字、描述文本 |
+| Muted | `#737373` | `--color-muted` | 辅助文字、标签、占位符 |
+| Accent | `#A78BFA` | `--color-accent` | AI 紫色强调、CTA 按钮、交互元素 |
+| Accent Light | `#C4B5FD` | `--color-accent-light` | 悬停状态、渐变过渡 |
+| Accent Dark | `#8B5CF6` | `--color-accent-dark` | 按钮按下状态、深色强调 |
+| Surface | `#171717` | `--color-surface` | 背景色、卡片背景 |
+| Border | `#262626` | `--color-border` | 边框、分割线 |
+| Background | `#0A0A0A` | `--color-background` | 页面背景 |
+
+### 暗黑模式 Tailwind 配置
+
+```javascript
+tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            colors: {
+                primary: '#FAFAFA',
+                secondary: '#A3A3A3',
+                muted: '#737373',
+                accent: '#A78BFA',
+                'accent-light': '#C4B5FD',
+                'accent-dark': '#8B5CF6',
+                surface: '#171717',
+                border: '#262626',
+            }
+        }
+    }
+}
+```
+
+### 暗黑模式 CSS 变量
+
+```css
+.dark {
+    --color-primary: #FAFAFA;
+    --color-secondary: #A3A3A3;
+    --color-muted: #737373;
+    --color-accent: #A78BFA;
+    --color-accent-light: #C4B5FD;
+    --color-accent-dark: #8B5CF6;
+    --color-surface: #171717;
+    --color-border: #262626;
+    --color-background: #0A0A0A;
+}
+```
+
+### 色彩转换原则
+
+| 浅色模式 | 暗黑模式 | 转换原因 |
+|----------|----------|----------|
+| `#171717` → `#FAFAFA` | 反转 | 深色文字在浅色背景更易读 |
+| `#404040` → `#A3A3A3` | 提高亮度 | 增加对比度 |
+| `#FAFAFA` → `#171717` | 反转 | 卡片背景变深 |
+| `#FFFFFF` → `#0A0A0A` | 接近黑色 | 页面背景更深邃 |
+| `#E5E5E5` → `#262626` | 降低亮度 | 边框更加柔和 |
+| `#8B5CF6` → `#A78BFA` | 提亮 | 紫色在深色背景更显眼 |
+
+---
+
+## 字体系统
+
+暗黑模式下的字体系统保持不变，但需要注意：
+
+- **字重增加**: 考虑将部分 400 字重改为 500，以提高对比度
+- **行高增加**: 建议将行高增加 0.1，提高可读性
+- **字间距**: 保持不变
+
+### 暗黑模式字体调整建议
+
+| 元素 | 浅色模式 | 暗黑模式建议 |
+|------|----------|--------------|
+| 正文 | 400 normal | 400 normal 或 500 medium |
+| 辅助文字 | 400 normal | 500 medium |
+| 按钮文字 | 500/600 | 600 semibold |
+
+---
+
+## 组件规范
+
+### 按钮
+
+#### Primary 按钮 (暗黑模式)
+
+```html
+<a class="bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-xl text-base font-semibold transition-all duration-200 cursor-pointer">
+    按钮文字
+</a>
+<!-- 暗黑模式下 accent 变为 #A78BFA -->
+```
+
+#### Secondary 按钮 (暗黑模式)
+
+```html
+<a class="border border-border hover:border-primary text-primary px-8 py-4 rounded-xl text-base font-semibold transition-colors cursor-pointer">
+    按钮文字
+</a>
+<!-- 暗黑模式下 border 变为 #262626，primary 变为 #FAFAFA -->
+```
+
+#### 导航栏 (暗黑模式)
+
+```html
+<nav class="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+    <!-- 暗黑模式下背景变为 #0A0A0A/80 -->
+</nav>
+```
+
+### 卡片 (暗黑模式)
+
+```html
+<div class="group p-6 rounded-2xl border border-border hover:border-accent/30 transition-all duration-300 cursor-pointer glow-card bg-surface">
+    <!-- 暗黑模式下 bg-surface 变为 #171717 -->
+</div>
+```
+
+### 输入框 (暗黑模式)
+
+```html
+<input type="text" class="bg-surface border border-border text-primary placeholder:text-muted rounded-lg px-4 py-2">
+    <!-- 暗黑模式下背景变深，边框变浅 -->
+</input>
+```
+
+---
+
+## 阴影系统
+
+暗黑模式下发光效果更加明显：
+
+```css
+/* 暗黑模式卡片悬停发光效果 */
+.dark .glow-card:hover {
+    animation: pulse-glow-dark 2s infinite;
+}
+
+@keyframes pulse-glow-dark {
+    0%, 100% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.4); }
+    50% { box-shadow: 0 0 40px rgba(167, 139, 250, 0.6); }
+}
+```
+
+### 暗黑模式阴影调整
+
+| 浅色模式 | 暗黑模式 | 说明 |
+|----------|----------|------|
+| `shadow-sm` | `shadow-none` | 减少阴影 |
+| `shadow-md` | `shadow-sm` | 降低阴影强度 |
+| 无发光 | 发光效果 | 增强视觉层次 |
+
+---
+
+## 动画系统
+
+暗黑模式动画与浅色模式一致，但建议：
+
+- **过渡时长增加**: 从 200ms 增加到 300ms，使过渡更平滑
+- **发光动画**: 增加发光效果的透明度
+
+---
+
+## 暗黑模式切换按钮
+
+### 按钮设计
+
+```html
+<button 
+    id="theme-toggle"
+    class="p-2 rounded-lg border border-border hover:border-accent/50 transition-colors cursor-pointer"
+    aria-label="切换主题模式"
+    aria-pressed="false"
+>
+    <!-- 太阳图标 (浅色模式显示) -->
+    <svg class="w-5 h-5 text-secondary dark:text-primary hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <!-- 月亮图标 (深色模式显示) -->
+    <svg class="w-5 h-5 text-secondary block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+</button>
+```
+
+### 按钮位置
+
+推荐位置：导航栏右侧，与登录/CTA 按钮相邻
+
+---
+
+## 实现指南
+
+### JavaScript 实现
+
+```javascript
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+    } else {
+        document.documentElement.classList.remove('dark')
+    }
+}
+
+function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark')
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+    
+    // 更新 ARIA 属性
+    const toggleBtn = document.getElementById('theme-toggle')
+    if (toggleBtn) {
+        toggleBtn.setAttribute('aria-pressed', isDark.toString())
+    }
+}
+
+// 监听系统主题变化
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+        if (e.matches) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    }
+})
+```
+
+### Tailwind 暗黑模式配置
+
+```javascript
+tailwind.config = {
+    darkMode: 'class',
+    // ... 其他配置
+}
+```
+
+---
+
+## 可访问性 (暗黑模式)
+
+### 对比度要求
+
+暗黑模式下对比度更加重要：
+
+- 正文文字: 最小 7:1 (WCAG AAA)
+- 大标题: 最小 4.5:1
+- 辅助文字: 最小 4.5:1
+
+### 避免的问题
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| 纯黑背景 | 过于刺眼 | 使用 `#0A0A0A` 而非 `#000000` |
+| 纯白文字 | 过于刺眼 | 使用 `#FAFAFA` 而非 `#FFFFFF` |
+| 高饱和度颜色 | 视觉疲劳 | 降低饱和度 |
+| 过多发光效果 | 注意力分散 | 适度使用 |
+
+### prefers-reduced-motion 暗黑模式
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    .dark *, .dark *::before, .dark *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+```
+
+---
+
+## 暗黑模式检查清单
+
+### 视觉质量
+- [ ] 所有文字在深色背景上有足够对比度
+- [ ] 边框在深色背景上可见但不过于突出
+- [ ] 卡片与背景有清晰区分
+- [ ] 按钮状态在两种模式下一致
+- [ ] 无纯黑 (#000000) 或纯白 (#FFFFFF)
+
+### 功能
+- [ ] 切换按钮正确切换两种模式
+- [ ] 切换后状态正确保存到 localStorage
+- [ ] 页面刷新后保持选择的主题
+- [ ] 系统主题变化时正确响应
+
+### 可访问性
+- [ ] 切换按钮有正确的 ARIA 属性
+- [ ] 键盘可以切换主题
+- [ ] prefers-reduced-motion 正确处理
+- [ ] 焦点状态在两种模式下可见
+
+---
+
 ## 反模式 (避免)
 
 | 问题 | 避免 | 推荐 |

@@ -150,14 +150,14 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-primary">Folders</h3>
+        <h3 className="text-sm font-medium text-foreground">Folders</h3>
         <div className="flex gap-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleExport}
             disabled={isExporting}
-            className="text-muted hover:text-accent h-8 w-8 p-0"
+            className="text-muted-foreground hover:text-accent h-8 w-8 p-0"
             title="Export"
           >
             <Download className="h-4 w-4" />
@@ -167,7 +167,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
             size="sm"
             onClick={handleImport}
             disabled={isImporting}
-            className="text-muted hover:text-accent h-8 w-8 p-0"
+            className="text-muted-foreground hover:text-accent h-8 w-8 p-0"
             title="Import"
           >
             <Upload className="h-4 w-4" />
@@ -194,7 +194,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
               </div>
               <button
                 onClick={() => setActiveFolderId(folder.id)}
-                className="flex-1 text-left text-sm font-medium text-primary"
+                className="flex-1 text-left text-sm font-medium text-foreground"
               >
                 {folder.name}
               </button>
@@ -210,7 +210,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
                       color: folder.color || "#6366F1"
                     }
                   })}
-                  className="h-5 w-5 p-0 text-muted hover:bg-gray-100"
+                  className="h-5 w-5 p-0 text-muted-foreground hover:bg-accent/10"
                 >
                   <Pencil className="h-3 w-3" />
                 </Button>
@@ -218,7 +218,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDeleteFolder(folder.id)}
-                  className="h-5 w-5 p-0 text-muted hover:bg-gray-100"
+                  className="h-5 w-5 p-0 text-muted-foreground hover:bg-accent/10"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -229,7 +229,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
         <Button
           variant="ghost"
           onClick={() => onOpenFolderModal?.()}
-          className="h-8 px-2 border border-dashed border-border text-muted hover:border-accent rounded-lg bg-surface hover:bg-gray-100"
+          className="h-8 px-2 border border-dashed border-border text-muted-foreground hover:border-accent rounded-lg bg-surface hover:bg-accent/10"
         >
           <FolderPlus className="w-3.5 h-3.5 mr-1" />
           <span className="text-sm">新增</span>
@@ -239,7 +239,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
       {activeFolder && (
         <>
           <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-medium text-primary mb-3">
+            <h3 className="text-sm font-medium text-foreground mb-3">
               Bookmarks in "{activeFolder.name}"
             </h3>
 
@@ -248,7 +248,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
               onClick={() => {
                 onBookmarkModalOpen?.()
               }}
-              className="w-full border-border hover:border-primary text-primary rounded-xl font-medium transition-colors"
+              className="w-full border-border hover:border-accent text-foreground rounded-xl font-medium transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Bookmark
@@ -257,7 +257,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
 
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {activeFolder.bookmarks.length === 0 ? (
-              <p className="text-sm text-muted text-center py-4">No bookmarks yet</p>
+              <p className="text-sm text-muted-foreground text-center py-4">No bookmarks yet</p>
             ) : (
               activeFolder.bookmarks.map((bookmark) => (
                 <div
@@ -271,8 +271,8 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
                     {bookmark.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-primary font-medium truncate">{bookmark.name}</p>
-                    <p className="text-xs text-muted truncate">{bookmark.url}</p>
+                    <p className="text-sm text-foreground font-medium truncate">{bookmark.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{bookmark.url}</p>
                   </div>
                   <Button
                     variant="ghost"
@@ -280,7 +280,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
                     onClick={() => {
                       onEditBookmark?.({ id: bookmark.id, name: bookmark.name, url: bookmark.url, color: bookmark.color })
                     }}
-                    className="text-muted hover:bg-gray-100"
+                    className="text-muted-foreground hover:bg-accent/10"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -288,7 +288,7 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(bookmark.id)}
-                    className="text-muted hover:bg-gray-100"
+                    className="text-muted-foreground hover:bg-accent/10"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

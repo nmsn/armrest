@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star } from "lucide-react"
+import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Moon, Sun } from "lucide-react"
 import Clock from "./components/Clock"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -190,16 +190,16 @@ export default function App() {
           <div className="relative w-full max-w-md">
             <Input
               type="text"
-              placeholder="Search Google..."
+              placeholder="Search or enter URL..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full pr-12 h-12 rounded-xl border-border bg-white text-primary placeholder:text-muted focus:border-accent focus:ring-accent/20 transition-colors"
+              className="w-full pr-12 h-12 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/20 transition-colors"
             />
             <Button
               size="icon"
               variant="ghost"
-              className="absolute right-1 top-1 h-10 w-10 rounded-lg text-muted hover:text-accent hover:bg-accent/10 transition-colors"
+              className="absolute right-1 top-1 h-10 w-10 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
               onClick={handleSearch}
             >
               <Search className="h-5 w-5" />
@@ -210,7 +210,7 @@ export default function App() {
         {foldersData.length > 0 ? (
           <div className="flex gap-6">
             <div className="w-44 shrink-0">
-              <div className="border border-border rounded-2xl p-3 space-y-1 bg-white">
+              <div className="border border-border rounded-2xl p-3 space-y-1 bg-card">
                 {foldersData.map((folder, index) => {
                   const FolderIcon = FOLDER_ICON_MAP[folder.icon || "folder"] || Folder
                   const isActive = activeFolderIndex === index
@@ -219,8 +219,8 @@ export default function App() {
                       key={folder.id}
                       onClick={() => handleFolderChange(index)}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${isActive
-                        ? "bg-accent text-white"
-                        : "text-secondary hover:text-primary hover:bg-surface"
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
                         }`}
                     >
                       <div
@@ -254,7 +254,7 @@ export default function App() {
                       <button
                         key={bookmark.id}
                         onClick={() => handleBookmarkClick(bookmark.url)}
-                        className="group p-4 rounded-2xl border border-border bg-white hover:border-accent/30 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3"
+                        className="group p-4 rounded-2xl border border-border bg-card hover:border-accent/30 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3"
                       >
                         {bookmark.logo ? (
                           <img
@@ -280,7 +280,7 @@ export default function App() {
                             {bookmark.name.charAt(0)}
                           </div>
                         )}
-                        <span className="text-xs text-secondary text-center line-clamp-1 font-medium group-hover:text-primary transition-colors">{bookmark.name}</span>
+                        <span className="text-xs text-muted-foreground text-center line-clamp-1 font-medium group-hover:text-foreground transition-colors">{bookmark.name}</span>
                       </button>
                     ))}
                   </div>
@@ -290,7 +290,7 @@ export default function App() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted">No bookmarks yet. Open settings to add some!</p>
+            <p className="text-muted-foreground">No bookmarks yet. Open settings to add some!</p>
           </div>
         )}
       </div>
@@ -301,15 +301,15 @@ export default function App() {
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 rounded-xl border-border bg-white hover:border-accent/30 hover:bg-white shadow-sm transition-all duration-200"
+              className="h-12 w-12 rounded-xl border-border bg-card hover:border-accent/30 hover:bg-card shadow-sm transition-all duration-200"
             >
-              <Settings className="h-5 w-5 text-secondary hover:text-accent transition-colors" />
+              <Settings className="h-5 w-5 text-muted-foreground hover:text-accent transition-colors" />
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none border-l border-border bg-white">
+          <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none border-l border-border bg-card">
             <DrawerHeader className="border-b border-border">
-              <DrawerTitle className="text-primary font-semibold">Settings</DrawerTitle>
-              <DrawerDescription className="text-muted">
+              <DrawerTitle className="text-foreground font-semibold">Settings</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
                 Configure your dashboard preferences.
               </DrawerDescription>
             </DrawerHeader>
@@ -320,7 +320,7 @@ export default function App() {
                   size="icon"
                   onClick={() => setActiveSettingsTab("background")}
                   title="Background"
-                  className={`rounded-xl transition-colors ${activeSettingsTab === "background" ? "bg-accent hover:bg-accent-dark text-white" : "text-muted hover:text-accent hover:bg-accent/10"}`}
+                  className={`rounded-xl transition-colors ${activeSettingsTab === "background" ? "bg-accent hover:bg-accent-dark text-accent-foreground" : "text-muted-foreground hover:text-accent hover:bg-accent/10"}`}
                 >
                   <Settings className="h-5 w-5" />
                 </Button>
@@ -329,7 +329,7 @@ export default function App() {
                   size="icon"
                   onClick={() => setActiveSettingsTab("bookmarks")}
                   title="Bookmarks"
-                  className={`rounded-xl transition-colors ${activeSettingsTab === "bookmarks" ? "bg-accent hover:bg-accent-dark text-white" : "text-muted hover:text-accent hover:bg-accent/10"}`}
+                  className={`rounded-xl transition-colors ${activeSettingsTab === "bookmarks" ? "bg-accent hover:bg-accent-dark text-accent-foreground" : "text-muted-foreground hover:text-accent hover:bg-accent/10"}`}
                 >
                   <Bookmark className="h-5 w-5" />
                 </Button>

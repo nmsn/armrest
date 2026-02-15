@@ -90,7 +90,7 @@ export function FolderEditModal({
 
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-primary mb-2 block">Preview</label>
+            <label className="text-sm font-medium text-foreground mb-2 block">Preview</label>
             <div className="flex items-center justify-center py-4 border border-border rounded-xl bg-surface">
               <div
                 className="w-16 h-16 rounded-xl flex items-center justify-center"
@@ -102,24 +102,24 @@ export function FolderEditModal({
                   return <Icon className="w-8 h-8 text-white" />
                 })()}
               </div>
-              <span className="ml-4 text-lg font-medium text-primary">
+              <span className="ml-4 text-lg font-medium text-foreground">
                 {name || "Folder Name"}
               </span>
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-primary mb-2 block">Name</label>
+            <label className="text-sm font-medium text-foreground mb-2 block">Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter folder name"
-              className="rounded-lg border-border"
+              className="rounded-lg border-border bg-background text-foreground"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-primary mb-2 block">Icon</label>
+            <label className="text-sm font-medium text-foreground mb-2 block">Icon</label>
             <div className="grid grid-cols-4 gap-2">
               {ICON_OPTIONS.map((option) => {
                 const Icon = option.icon
@@ -129,13 +129,13 @@ export function FolderEditModal({
                     key={option.id}
                     onClick={() => setSelectedIcon(option.id)}
                     className={`p-3 rounded-xl border transition-all ${isSelected
-                        ? "border-accent bg-accent/10"
-                        : "border-border hover:border-accent/50"
+                      ? "border-accent bg-accent/10"
+                      : "border-border hover:border-accent/50"
                       }`}
                     title={option.label}
                     type="button"
                   >
-                    <Icon className={`w-5 h-5 mx-auto ${isSelected ? "text-accent" : "text-secondary"}`} />
+                    <Icon className={`w-5 h-5 mx-auto ${isSelected ? "text-accent" : "text-muted-foreground"}`} />
                   </button>
                 )
               })}
@@ -143,7 +143,7 @@ export function FolderEditModal({
           </div>
 
           <div>
-            <label className="text-sm font-medium text-primary mb-2 block">Color</label>
+            <label className="text-sm font-medium text-foreground mb-2 block">Color</label>
             <div className="grid grid-cols-4 gap-2">
               {COLOR_OPTIONS.map((color) => {
                 const isSelected = selectedColor === color
@@ -168,7 +168,7 @@ export function FolderEditModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-border text-primary"
+            className="border-border text-foreground"
           >
             Cancel
           </Button>

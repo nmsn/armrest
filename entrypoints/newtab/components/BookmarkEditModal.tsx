@@ -86,7 +86,7 @@ export function BookmarkEditModal({
 
   const getDisplayIcon = () => {
     if (isLoading) {
-      return <Loader2 className="w-8 h-8 animate-spin text-muted" />
+      return <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
     }
     if (websiteInfo?.logo) {
       return (
@@ -114,37 +114,37 @@ export function BookmarkEditModal({
 
         <div className="space-y-4">
           <div className="flex justify-center">
-            <div className="w-14 h-14 rounded-xl bg-white border border-border flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center">
               {getDisplayIcon() || (
-                <span className="text-lg font-bold text-muted">
+                <span className="text-lg font-bold text-muted-foreground">
                   {(name || url || '?').charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted mb-1 block">Website Name</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Website Name</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., GitHub"
-              className="rounded-lg border-border"
+              className="rounded-lg border-border bg-background text-foreground"
             />
           </div>
           <div>
-            <label className="text-xs text-muted mb-1 block">Website URL</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Website URL</label>
             <div className="flex gap-2">
               <Input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="github.com"
-                className="rounded-lg border-border flex-1"
+                className="rounded-lg border-border flex-1 bg-background text-foreground"
               />
               <Button
                 variant="outline"
                 onClick={handleFetchInfo}
                 disabled={isLoading}
-                className="border-border hover:border-primary text-primary rounded-lg font-medium transition-colors"
+                className="border-border hover:border-accent text-foreground rounded-lg font-medium transition-colors"
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "获取"}
               </Button>
@@ -156,7 +156,7 @@ export function BookmarkEditModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-border hover:border-primary text-primary rounded-lg font-medium transition-colors"
+            className="border-border hover:border-accent text-foreground rounded-lg font-medium transition-colors"
           >
             Cancel
           </Button>
