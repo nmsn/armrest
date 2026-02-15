@@ -17,6 +17,7 @@ import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, deleteFolder, BookmarkFolder } from "@/lib/bookmarks"
+import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -40,6 +41,8 @@ export default function App() {
   const [editingBookmark, setEditingBookmark] = useState<{ id: string; name: string; url: string; color?: string } | null>(null)
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
+  const [backgroundColor, setBackgroundColor] = useState(defaultThemeConfig.backgroundColor)
+  const [backgroundImage, setBackgroundImage] = useState(defaultThemeConfig.backgroundImage)
   const prevFolderIndexRef = useRef(0)
 
   const loadFolders = useCallback(async () => {
@@ -54,6 +57,16 @@ export default function App() {
   useEffect(() => {
     loadFolders()
   }, [loadFolders])
+
+  useEffect(() => {
+    async function initTheme() {
+      const config = await getThemeConfig()
+      applyTheme(config.mode)
+      setBackgroundColor(config.backgroundColor)
+      setBackgroundImage(config.backgroundImage)
+    }
+    initTheme()
+  }, [])
 
 
   console.log(chrome, chrome.storage);
@@ -154,7 +167,16 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-8 bg-surface">
+    <div
+      className="min-h-screen flex flex-col items-center p-8 bg-surface"
+      style={{
+        backgroundColor: backgroundColor,
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+        backgroundSize: backgroundImage ? 'cover' : undefined,
+        backgroundPosition: backgroundImage ? 'center' : undefined,
+        backgroundRepeat: backgroundImage ? 'no-repeat' : undefined,
+      }}
+    >
       <div className="w-full max-w-5xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-sm font-medium mb-4">
@@ -314,7 +336,14 @@ export default function App() {
               </div>
               <div className="flex-1 p-6 overflow-y-auto">
                 {activeSettingsTab === "background" ? (
-                  <BackgroundSettings />
+                  <BackgroundSettings
+                    backgroundColor={backgroundColor}
+                    backgroundImage={backgroundImage}
+                    onBackgroundChange={(color, image) => {
+                      setBackgroundColor(color)
+                      setBackgroundImage(image)
+                    }}
+                  />
                 ) : (
                   <BookmarksSettings
                     folders={foldersData}
