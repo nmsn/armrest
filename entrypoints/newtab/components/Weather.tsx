@@ -30,7 +30,7 @@ export function Weather({ city = "北京" }: WeatherProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/70">
         <Loader2 className="w-3 h-3 animate-spin" />
         <span>加载天气...</span>
       </div>
@@ -39,7 +39,7 @@ export function Weather({ city = "北京" }: WeatherProps) {
 
   if (error || !weather) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/70">
         <Cloud className="w-3 h-3" />
         <span>天气不可用</span>
       </div>
@@ -47,7 +47,7 @@ export function Weather({ city = "北京" }: WeatherProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
+    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80">
       <Cloud className="w-3 h-3" />
       <span>{weather.city}</span>
       <span>·</span>
