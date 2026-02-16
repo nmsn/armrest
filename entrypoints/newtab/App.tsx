@@ -170,7 +170,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center p-8 bg-surface"
+      className="h-screen flex flex-col items-center p-4 overflow-hidden bg-surface"
       style={{
         backgroundColor: backgroundColor,
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
@@ -179,16 +179,16 @@ export default function App() {
         backgroundRepeat: backgroundImage ? 'no-repeat' : undefined,
       }}
     >
-      <div className="w-full max-w-5xl flex flex-col min-h-screen">
-        <div className="text-center mb-8 mt-8">
+      <div className="w-full max-w-5xl flex flex-col h-full">
+        <div className="text-center mb-4 mt-2">
           <Clock />
         </div>
 
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-2">
           <Weather />
         </div>
 
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-4">
           <div className="relative w-full max-w-md">
             <Input
               type="text"
@@ -397,7 +397,7 @@ export default function App() {
         title={editingFolder ? "Edit Folder" : "Add Folder"}
       />
 
-      <div className="mt-auto pt-8 pb-4">
+      <div className="mt-auto pt-4 pb-2">
         <DailyQuote className="justify-center" />
       </div>
     </div>
