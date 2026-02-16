@@ -179,14 +179,12 @@ export default function App() {
         backgroundRepeat: backgroundImage ? 'no-repeat' : undefined,
       }}
     >
-      <div className="w-full max-w-5xl">
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex-1 text-center">
-            <Clock />
-          </div>
-          <div className="shrink-0">
-            <DailyQuote />
-          </div>
+      <div className="w-full max-w-5xl relative">
+        <div className="text-center mb-8">
+          <Clock />
+        </div>
+        <div className="absolute top-0 right-0">
+          <DailyQuote />
         </div>
 
         <div className="flex justify-center mb-4">
