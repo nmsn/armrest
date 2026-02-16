@@ -188,7 +188,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-8">
           <div className="relative w-full max-w-md">
             <Input
               type="text"
