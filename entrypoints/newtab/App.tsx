@@ -180,7 +180,7 @@ export default function App() {
       }}
     >
       <div className="w-full max-w-5xl flex flex-col h-full">
-        <div className="text-center mb-4 mt-2">
+        <div className="text-center mb-4 mt-8">
           <Clock />
         </div>
 
