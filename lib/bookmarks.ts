@@ -24,8 +24,10 @@ export interface BookmarkState {
   version: number
 }
 
-const STORAGE_KEY = "armrest_bookmarks"
-const CURRENT_VERSION = 1
+import { STORAGE_KEYS, BOOKMARK_CONFIG } from "./constants"
+
+const STORAGE_KEY = STORAGE_KEYS.BOOKMARKS
+const CURRENT_VERSION = BOOKMARK_CONFIG.CURRENT_VERSION
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -34,40 +36,14 @@ function generateId(): string {
 function getDefaultState(): BookmarkState {
   return {
     version: CURRENT_VERSION,
-    folders: [
-      {
-        id: generateId(),
-        name: "Work",
-        icon: "code",
-        bookmarks: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: generateId(),
-        name: "Tools",
-        icon: "wrench",
-        bookmarks: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: generateId(),
-        name: "Design",
-        icon: "palette",
-        bookmarks: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: generateId(),
-        name: "Social",
-        icon: "users",
-        bookmarks: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    ],
+    folders: BOOKMARK_CONFIG.DEFAULT_FOLDERS.map((folder) => ({
+      id: generateId(),
+      name: folder.name,
+      icon: folder.icon,
+      bookmarks: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })),
   }
 }
 

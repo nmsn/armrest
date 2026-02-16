@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Moon, Sun, Cloud, Wind, Droplets, MapPin } from "lucide-react"
+import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Cloud, Wind, Droplets, MapPin } from "lucide-react"
 import Clock from "./components/Clock"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -16,10 +16,11 @@ import { BackgroundSettings } from "./components/BackgroundSettings"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
-import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, deleteFolder, BookmarkFolder } from "@/lib/bookmarks"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
 import { getAllDailyData, WeatherData, DailyQuoteData } from "@/lib/daily"
 import { getUserLocation, getCityNameByCoordinates } from "@/lib/geo"
+import { DEFAULT_VALUES } from "@/lib/constants"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -66,7 +67,7 @@ export default function App() {
     setDailyDataLoading(true)
     setDailyDataError(null)
 
-    let city = "杭州"
+    let city: string = DEFAULT_VALUES.CITY
     setCurrentCity(city)
 
     try {

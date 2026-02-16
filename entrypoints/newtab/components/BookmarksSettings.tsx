@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, Pencil, FolderPlus, Code, Wrench, Palette, Users, Bookmark, Upload, Download, Settings, Folder, Star } from "lucide-react"
+import { Plus, Trash2, Pencil, FolderPlus, Code, Wrench, Palette, Users, Bookmark, Upload, Download, Settings, Folder } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   BookmarkFolder,
@@ -9,8 +9,6 @@ import {
   exportBookmarks,
   importBookmarks,
 } from "@/lib/bookmarks"
-import { FolderEditModal, FolderFormData } from "./FolderEditModal"
-import { BookmarkEditModal } from "./BookmarkEditModal"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -20,17 +18,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   bookmark: Bookmark,
   settings: Settings,
   folder: Folder,
-  star: Star,
-}
-
-function generateColor(): string {
-  const colors = [
-    "#4285F4", "#EA4335", "#FBBC05", "#34A853",
-    "#24292F", "#FC6D26", "#0052CC", "#4A154B",
-    "#F24E1E", "#FF0000", "#1DA1F2", "#FF4500",
-    "#5E6AD2", "#10B981", "#8B5CF6", "#EC4899",
-  ]
-  return colors[Math.floor(Math.random() * colors.length)]
 }
 
 interface BookmarksSettingsProps {
@@ -50,7 +37,7 @@ interface BookmarksSettingsProps {
   onOpenFolderModal?: (folder?: { id: string; data: { name: string; icon: string; color: string } }) => void
 }
 
-export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isBookmarkModalOpen, onBookmarkModalClose, onBookmarkModalOpen, editingBookmark, onSaveBookmark, onEditBookmark, isFolderModalOpen, onFolderModalClose, onFolderModalOpen, editingFolder, onSaveFolder, onOpenFolderModal }: BookmarksSettingsProps) {
+export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, isBookmarkModalOpen: _isBookmarkModalOpen, onBookmarkModalClose: _onBookmarkModalClose, onBookmarkModalOpen, editingBookmark: _editingBookmark, onSaveBookmark: _onSaveBookmark, onEditBookmark, isFolderModalOpen: _isFolderModalOpen, onFolderModalClose: _onFolderModalClose, onFolderModalOpen: _onFolderModalOpen, editingFolder: _editingFolder, onSaveFolder: _onSaveFolder, onOpenFolderModal }: BookmarksSettingsProps) {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
   const [activeFolderId, setActiveFolderId] = useState<string>("")
   const [isExporting, setIsExporting] = useState(false)
@@ -86,11 +73,6 @@ export function BookmarksSettings({ folders: folderOptions, onBookmarkAdded, isB
     } catch (error) {
       console.error("Failed to delete folder:", error)
     }
-  }
-
-  const handleModalSave = (data: { name: string; icon: string; color: string }) => {
-    onSaveFolder(data)
-    onFolderModalClose()
   }
 
   const handleDelete = async (bookmarkId: string) => {

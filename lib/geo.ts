@@ -1,5 +1,4 @@
-const DEBUG_MODE = true
-
+import { DEBUG_MODE, GEOLOCATION_CONFIG } from "./constants"
 import { API_BIGDATACLOUD, ReverseGeocodeResponse } from "./api"
 
 interface UserLocation {
@@ -27,9 +26,9 @@ function getUserLocation(): Promise<UserLocation> {
         reject(error)
       },
       {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
+        enableHighAccuracy: GEOLOCATION_CONFIG.ENABLE_HIGH_ACCURACY,
+        timeout: GEOLOCATION_CONFIG.TIMEOUT,
+        maximumAge: GEOLOCATION_CONFIG.MAXIMUM_AGE
       }
     )
   })
@@ -69,7 +68,7 @@ async function getCityNameByCoordinates(latitude: number, longitude: number): Pr
     const requestUrl = new URL(`${API_BIGDATACLOUD.base}${API_BIGDATACLOUD.api.reverseGeocode}`)
     requestUrl.searchParams.append('latitude', latitude.toString())
     requestUrl.searchParams.append('longitude', longitude.toString())
-    requestUrl.searchParams.append('localityLanguage', 'zh')
+    requestUrl.searchParams.append('localityLanguage', GEOLOCATION_CONFIG.LOCALITY_LANGUAGE)
 
     if (DEBUG_MODE) {
       console.log('📍 Request URL:', requestUrl.toString())

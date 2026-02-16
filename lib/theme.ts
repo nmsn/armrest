@@ -1,3 +1,5 @@
+import { STORAGE_KEYS, THEME_CONFIG } from "./constants"
+
 export type ThemeMode = "light" | "dark" | "system"
 
 export interface ThemeConfig {
@@ -6,12 +8,12 @@ export interface ThemeConfig {
   backgroundImage: string
 }
 
-const THEME_STORAGE_KEY = "armrest-theme-config"
+const THEME_STORAGE_KEY = STORAGE_KEYS.THEME
 
 export const defaultThemeConfig: ThemeConfig = {
-  mode: "system",
-  backgroundColor: "#FAFAFA",
-  backgroundImage: "",
+  mode: THEME_CONFIG.DEFAULT_MODE,
+  backgroundColor: THEME_CONFIG.DEFAULT_BACKGROUND_COLOR,
+  backgroundImage: THEME_CONFIG.DEFAULT_BACKGROUND_IMAGE,
 }
 
 export async function getThemeConfig(): Promise<ThemeConfig> {

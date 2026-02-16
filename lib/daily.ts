@@ -1,5 +1,4 @@
-const DEBUG_MODE = true
-
+import { DEBUG_MODE, TIME_UNITS, CACHE_CONFIG, STORAGE_KEYS, DEFAULT_VALUES } from "./constants"
 import { API_60S } from "./api"
 
 export interface WeatherData {
@@ -23,24 +22,7 @@ export interface DailyData {
   dailyQuoteLastUpdated?: number
 }
 
-const DAILY_STORAGE_KEY = "armrest-daily-data"
-
-const TIME_UNITS = {
-  MILLISECOND: 1,
-  SECOND: 1000,
-  MINUTE: 60 * 1000,
-  HOUR: 60 * 60 * 1000,
-  DAY: 24 * 60 * 60 * 1000,
-}
-
-const CACHE_CONFIG = {
-  weather: {
-    expiry: 1 * TIME_UNITS.HOUR,
-  },
-  dailyQuote: {
-    expiry: 1 * TIME_UNITS.DAY,
-  },
-}
+const DAILY_STORAGE_KEY = STORAGE_KEYS.DAILY_DATA
 
 async function getStoredData(): Promise<DailyData | null> {
   try {
@@ -71,7 +53,8 @@ function isCacheValid(data: DailyData, dataType: DataType): boolean {
 
   if (!lastUpdated) return false
 
-  const expiry = CACHE_CONFIG[dataType].expiry
+  const configKey = dataType === 'weather' ? 'WEATHER' : 'DAILY_QUOTE'
+  const expiry = CACHE_CONFIG[configKey].EXPIRY
   const isValid = Date.now() - lastUpdated < expiry
 
   if (DEBUG_MODE) {
@@ -86,7 +69,7 @@ function isCacheValid(data: DailyData, dataType: DataType): boolean {
   return isValid
 }
 
-export async function getWeather(city: string = "北京"): Promise<WeatherData | null> {
+export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<WeatherData | null> {
   const requestUrl = `${API_60S.base}${API_60S.api.weather}?city=${encodeURIComponent(city)}`
   const startTime = Date.now()
 
@@ -137,14 +120,14 @@ export async function getWeather(city: string = "北京"): Promise<WeatherData |
           ? `${todayForecast.min_temperature}°C ~ ${todayForecast.max_temperature}°C`
           : currentHourly
             ? `${currentHourly.temperature}°C`
-            : "未知",
-        weather: todayForecast?.day_condition || currentHourly?.condition || "未知",
+            : DEFAULT_VALUES.WEATHER_UNKNOWN,
+        weather: todayForecast?.day_condition || currentHourly?.condition || DEFAULT_VALUES.WEATHER_UNKNOWN,
         wind: todayForecast
           ? `${todayForecast.day_wind_direction} ${todayForecast.day_wind_power}级`
           : currentHourly
             ? `${currentHourly.wind_direction} ${currentHourly.wind_power}级`
-            : "未知",
-        humidity: todayForecast?.air_quality || "未知",
+            : DEFAULT_VALUES.WEATHER_UNKNOWN,
+        humidity: todayForecast?.air_quality || DEFAULT_VALUES.WEATHER_UNKNOWN,
         updateTime: new Date().toLocaleString("zh-CN"),
       }
 
@@ -236,8 +219,8 @@ export async function getDailyQuote(): Promise<DailyQuoteData | null> {
 
     if (result.code === 200 && result.data) {
       const dailyQuote: DailyQuoteData = {
-        content: result.data.hitokoto || "暂无",
-        author: "一言",
+        content: result.data.hitokoto || DEFAULT_VALUES.HITOKOTO_DEFAULT,
+        author: DEFAULT_VALUES.HITOKOTO_AUTHOR,
       }
 
       if (DEBUG_MODE) {
@@ -283,7 +266,7 @@ export async function getDailyQuote(): Promise<DailyQuoteData | null> {
   }
 }
 
-export async function getAllDailyData(city: string = "北京"): Promise<DailyData> {
+export async function getAllDailyData(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<DailyData> {
   if (DEBUG_MODE) {
     console.group("[Daily] 🚀 Fetching all daily data")
     console.log("⏰ Request time:", new Date().toISOString())
@@ -313,7 +296,7 @@ export async function getAllDailyData(city: string = "北京"): Promise<DailyDat
   return result
 }
 
-export async function refreshDailyData(city: string = "北京"): Promise<DailyData> {
+export async function refreshDailyData(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<DailyData> {
   if (DEBUG_MODE) {
     console.log("[Daily] 🔄 Force refreshing all daily data...")
   }
