@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Settings, Search, Bookmark, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star } from "lucide-react"
+import { Settings, Search, Bookmark, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Sparkles } from "lucide-react"
 import Clock from "./components/Clock"
 import { Weather } from "./components/Weather"
 import { DailyQuote } from "./components/DailyQuote"
@@ -30,6 +30,7 @@ const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   settings: Settings,
   folder: Folder,
   star: Star,
+  sparkles: Sparkles,
 }
 
 type SettingsTab = "background" | "bookmarks"

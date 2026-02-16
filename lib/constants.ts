@@ -47,7 +47,7 @@ const BOOKMARK_CONFIG = {
     { name: 'Work', icon: 'code', color: '#3B82F6' },
     { name: 'Tools', icon: 'wrench', color: '#10B981' },
     { name: 'Design', icon: 'palette', color: '#F59E0B' },
-    { name: 'Social', icon: 'users', color: '#8B5CF6' },
+    { name: 'AI', icon: 'sparkles', color: '#8B5CF6' },
   ],
   FOLDER_COLORS: [
     '#3B82F6',
