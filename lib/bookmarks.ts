@@ -41,7 +41,12 @@ function getDefaultState(): BookmarkState {
       name: folder.name,
       icon: folder.icon,
       color: folder.color,
-      bookmarks: [],
+      bookmarks: (folder.bookmarks || []).map((bookmark) => ({
+        ...bookmark,
+        id: generateId(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     })),

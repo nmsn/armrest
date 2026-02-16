@@ -44,10 +44,19 @@ const CACHE_CONFIG = {
 const BOOKMARK_CONFIG = {
   CURRENT_VERSION: 1,
   DEFAULT_FOLDERS: [
-    { name: 'Work', icon: 'code', color: '#3B82F6' },
-    { name: 'Tools', icon: 'wrench', color: '#10B981' },
-    { name: 'Design', icon: 'palette', color: '#F59E0B' },
-    { name: 'AI', icon: 'sparkles', color: '#8B5CF6' },
+    { name: 'Work', icon: 'code', color: '#3B82F6', bookmarks: [] },
+    { name: 'Tools', icon: 'wrench', color: '#10B981', bookmarks: [] },
+    { name: 'Design', icon: 'palette', color: '#F59E0B', bookmarks: [] },
+    {
+      name: 'AI', icon: 'sparkles', color: '#8B5CF6', bookmarks: [
+        { name: 'Grok', url: 'https://x.com/i/grok' },
+        { name: 'Claude', url: 'https://claude.ai' },
+        { name: 'GLM', url: 'https://www.zhipuai.cn/' },
+        { name: 'DeepSeek', url: 'https://www.deepseek.com/' },
+        { name: 'DeepWiki', url: 'https://deepwiki.com/' },
+        { name: 'Skills.sh', url: 'https://skills.sh/' },
+      ]
+    },
   ],
   FOLDER_COLORS: [
     '#3B82F6',
