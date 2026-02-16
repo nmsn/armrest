@@ -123,15 +123,6 @@ export function BookmarkEditModal({
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Website Name</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., GitHub"
-              className="rounded-lg border-border bg-background text-foreground"
-            />
-          </div>
-          <div>
             <label className="text-xs text-muted-foreground mb-1 block">Website URL</label>
             <div className="flex gap-2">
               <Input
@@ -149,6 +140,15 @@ export function BookmarkEditModal({
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "获取"}
               </Button>
             </div>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Website Name</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., GitHub"
+              className="rounded-lg border-border bg-background text-foreground"
+            />
           </div>
         </div>
 
