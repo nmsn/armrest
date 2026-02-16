@@ -44,11 +44,22 @@ const CACHE_CONFIG = {
 const BOOKMARK_CONFIG = {
   CURRENT_VERSION: 1,
   DEFAULT_FOLDERS: [
-    { name: 'Work', icon: 'code' },
-    { name: 'Tools', icon: 'wrench' },
-    { name: 'Design', icon: 'palette' },
-    { name: 'Social', icon: 'users' },
+    { name: 'Work', icon: 'code', color: '#3B82F6' },
+    { name: 'Tools', icon: 'wrench', color: '#10B981' },
+    { name: 'Design', icon: 'palette', color: '#F59E0B' },
+    { name: 'Social', icon: 'users', color: '#8B5CF6' },
   ],
+  FOLDER_COLORS: [
+    '#3B82F6',
+    '#10B981',
+    '#F59E0B',
+    '#EF4444',
+    '#8B5CF6',
+    '#EC4899',
+    '#06B6D4',
+    '#6B7280',
+  ],
+  DEFAULT_FOLDER_COLOR: '#3B82F6',
 } as const
 
 const THEME_CONFIG = {

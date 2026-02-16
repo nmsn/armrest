@@ -40,6 +40,7 @@ function getDefaultState(): BookmarkState {
       id: generateId(),
       name: folder.name,
       icon: folder.icon,
+      color: folder.color,
       bookmarks: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
