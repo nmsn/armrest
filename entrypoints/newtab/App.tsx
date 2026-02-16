@@ -179,12 +179,9 @@ export default function App() {
         backgroundRepeat: backgroundImage ? 'no-repeat' : undefined,
       }}
     >
-      <div className="w-full max-w-5xl relative">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-5xl flex flex-col min-h-screen">
+        <div className="text-center mb-8 mt-8">
           <Clock />
-        </div>
-        <div className="absolute top-0 right-0">
-          <DailyQuote />
         </div>
 
         <div className="flex justify-center mb-4">
@@ -399,6 +396,10 @@ export default function App() {
         initialData={editingFolder?.data}
         title={editingFolder ? "Edit Folder" : "Add Folder"}
       />
+
+      <div className="mt-auto pt-8 pb-4">
+        <DailyQuote className="justify-center" />
+      </div>
     </div>
   )
 }
