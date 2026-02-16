@@ -15,7 +15,8 @@ export default defineConfig({
     },
     permissions: [
       'storage',
-      'tabs'
+      'tabs',
+      "geolocation"
     ]
   },
   alias: {

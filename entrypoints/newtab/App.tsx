@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Moon, Sun } from "lucide-react"
+import { Settings, Search, Bookmark, Sparkles, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Moon, Sun, Cloud, Wind, Droplets, MapPin } from "lucide-react"
 import Clock from "./components/Clock"
 import { motion, AnimatePresence } from "motion/react"
 import {
@@ -18,6 +18,8 @@ import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, deleteFolder, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
+import { getAllDailyData, WeatherData, DailyQuoteData } from "@/lib/daily"
+import { getUserLocation, getCityNameByCoordinates } from "@/lib/geo"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -43,6 +45,11 @@ export default function App() {
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
   const [backgroundColor, setBackgroundColor] = useState(defaultThemeConfig.backgroundColor)
   const [backgroundImage, setBackgroundImage] = useState(defaultThemeConfig.backgroundImage)
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
+  const [dailyQuoteData, setDailyQuoteData] = useState<DailyQuoteData | null>(null)
+  const [dailyDataLoading, setDailyDataLoading] = useState(true)
+  const [dailyDataError, setDailyDataError] = useState<string | null>(null)
+  const [currentCity, setCurrentCity] = useState<string>("杭州")
   const prevFolderIndexRef = useRef(0)
 
   const loadFolders = useCallback(async () => {
@@ -54,9 +61,57 @@ export default function App() {
     }
   }, [])
 
+  const loadDailyData = useCallback(async () => {
+    console.log("[App] 🚀 开始加载每日数据")
+    setDailyDataLoading(true)
+    setDailyDataError(null)
+
+    let city = "杭州"
+    setCurrentCity(city)
+
+    try {
+      console.log("[App] 🌍 尝试获取用户位置...")
+      const location = await getUserLocation()
+      console.log("[App] 📍 用户位置获取成功:", location)
+
+      try {
+        console.log("[App] 🏙️ 尝试通过坐标获取城市名称...")
+        city = await getCityNameByCoordinates(location.latitude, location.longitude)
+        console.log("[App] ✅ 城市名称获取成功:", city)
+        setCurrentCity(city)
+      } catch (geoError) {
+        console.warn("[App] ⚠️ 通过坐标获取城市失败，使用默认城市:", geoError instanceof Error ? geoError.message : geoError)
+      }
+    } catch (locationError) {
+      console.warn("[App] ⚠️ 获取用户位置失败，使用默认城市:", locationError instanceof Error ? locationError.message : locationError)
+    }
+
+    try {
+      console.log("[App] 🌤️ 加载每日数据，城市:", city)
+      const data = await getAllDailyData(city)
+
+      console.log("[App] ✅ 每日数据加载成功")
+      console.log("[App] 📊 天气数据:", data.weather)
+      console.log("[App] 📝 一言数据:", data.dailyQuote)
+
+      setWeatherData(data.weather || null)
+      setDailyQuoteData(data.dailyQuote || null)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "未知错误"
+      console.error("[App] ❌ 每日数据加载失败:", error)
+      setDailyDataError(errorMessage)
+    } finally {
+      setDailyDataLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     loadFolders()
   }, [loadFolders])
+
+  useEffect(() => {
+    loadDailyData()
+  }, [loadDailyData])
 
   useEffect(() => {
     async function initTheme() {
@@ -184,6 +239,57 @@ export default function App() {
             <span>Armrest Dashboard</span>
           </div>
           <Clock />
+
+          {dailyDataError && (
+            <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-xl text-sm">
+              ⚠️ {dailyDataError}
+            </div>
+          )}
+
+          {!dailyDataLoading && (weatherData || dailyQuoteData) && (
+            <div className="mt-6 p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                {weatherData && (
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="p-3 bg-accent/10 rounded-xl">
+                      <Cloud className="w-6 h-6 text-accent" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>{currentCity}</span>
+                      </div>
+                      <div className="text-lg font-semibold text-foreground">{weatherData.temperature}</div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span>{weatherData.weather}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Wind className="w-3 h-3" />
+                          {weatherData.wind}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Droplets className="w-3 h-3" />
+                          {weatherData.humidity}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {weatherData && dailyQuoteData && (
+                  <div className="hidden md:block w-px h-16 bg-border" />
+                )}
+
+                {dailyQuoteData && (
+                  <div className="text-left max-w-md">
+                    <div className="text-base text-foreground italic">"{dailyQuoteData.content}"</div>
+                    <div className="text-sm text-muted-foreground mt-2">— {dailyQuoteData.author}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center mb-10">
