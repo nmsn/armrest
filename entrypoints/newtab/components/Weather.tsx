@@ -30,47 +30,38 @@ export function Weather({ city = "北京" }: WeatherProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="text-sm">加载天气...</span>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        <span>加载天气...</span>
       </div>
     )
   }
 
   if (error || !weather) {
     return (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Cloud className="w-4 h-4" />
-        <span className="text-sm">天气不可用</span>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+        <Cloud className="w-3 h-3" />
+        <span>天气不可用</span>
       </div>
     )
   }
 
   return (
-    <div className="flex items-center gap-4 text-left">
-      <div className="p-3 bg-accent/10 rounded-xl">
-        <Cloud className="w-6 h-6 text-accent" />
-      </div>
-      <div>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin className="w-3.5 h-3.5" />
-          <span>{weather.city}</span>
-        </div>
-        <div className="text-lg font-semibold text-foreground">{weather.temperature}</div>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span>{weather.weather}</span>
-          <span>•</span>
-          <span className="flex items-center gap-1">
-            <Wind className="w-3 h-3" />
-            {weather.wind}
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1">
-            <Droplets className="w-3 h-3" />
-            {weather.humidity}
-          </span>
-        </div>
-      </div>
+    <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
+      <Cloud className="w-3 h-3" />
+      <span>{weather.city}</span>
+      <span>·</span>
+      <span>{weather.temperature}</span>
+      <span>·</span>
+      <span>{weather.weather}</span>
+      <span className="flex items-center gap-0.5">
+        <Wind className="w-2.5 h-2.5" />
+        {weather.wind}
+      </span>
+      <span className="flex items-center gap-0.5">
+        <Droplets className="w-2.5 h-2.5" />
+        {weather.humidity}
+      </span>
     </div>
   )
 }
