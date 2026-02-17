@@ -5,43 +5,13 @@ import { Sun, Moon, Monitor, Image, Palette } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ThemeMode, getThemeConfig, setThemeConfig, applyTheme } from "@/lib/theme"
+import { THEME_COLORS, DARK_THEME_COLORS, BACKGROUND_IMAGES } from "@/lib/constants"
 
 interface BackgroundSettingsProps {
   backgroundColor?: string
   backgroundImage?: string
   onBackgroundChange?: (color: string, image: string) => void
 }
-
-const THEME_COLORS = [
-  "#FAFAFA",
-  "#F5F5F5",
-  "#EFEEEE",
-  "#E8E4DE",
-  "#F3E8FF",
-  "#E0F2FE",
-  "#FEF3C7",
-  "#DCFCE7",
-]
-
-const DARK_THEME_COLORS = [
-  "#0F172A",
-  "#1E1B4B",
-  "#18181B",
-  "#1F2937",
-  "#111827",
-  "#312E81",
-  "#0F1729",
-  "#1A1A2E",
-]
-
-const BACKGROUND_IMAGES = [
-  { name: "None", url: "" },
-  { name: "Gradient 1", url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920&q=80" },
-  { name: "Gradient 2", url: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=1920&q=80" },
-  { name: "Nature", url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=80" },
-  { name: "Ocean", url: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80" },
-  { name: "Mountain", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80" },
-]
 
 export function BackgroundSettings({ backgroundColor: externalBgColor, backgroundImage: externalBgImage, onBackgroundChange }: BackgroundSettingsProps) {
   const [themeMode, setThemeMode] = React.useState<ThemeMode>("system")

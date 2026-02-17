@@ -99,6 +99,37 @@ const BOOKMARK_CONFIG = {
   DEFAULT_FOLDER_COLOR: '#3B82F6',
 } as const
 
+const THEME_COLORS = [
+  "#FAFAFA",
+  "#F5F5F5",
+  "#EFEEEE",
+  "#E8E4DE",
+  "#F3E8FF",
+  "#E0F2FE",
+  "#FEF3C7",
+  "#DCFCE7",
+]
+
+const DARK_THEME_COLORS = [
+  "#0F172A",
+  "#1E1B4B",
+  "#18181B",
+  "#1F2937",
+  "#111827",
+  "#312E81",
+  "#0F1729",
+  "#1A1A2E",
+]
+
+const BACKGROUND_IMAGES = [
+  { name: "None", url: "" },
+  { name: "Gradient 1", url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920&q=80" },
+  { name: "Gradient 2", url: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=1920&q=80" },
+  { name: "Nature", url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=80" },
+  { name: "Ocean", url: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80" },
+  { name: "Mountain", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80" },
+]
+
 const THEME_CONFIG = {
   DEFAULT_MODE: 'system' as const,
   DEFAULT_BACKGROUND_COLOR: '#FAFAFA',
@@ -145,6 +176,9 @@ export {
   STORAGE_KEYS,
   CACHE_CONFIG,
   BOOKMARK_CONFIG,
+  THEME_COLORS,
+  DARK_THEME_COLORS,
+  BACKGROUND_IMAGES,
   THEME_CONFIG,
   GEOLOCATION_CONFIG,
   UI_CONFIG,
