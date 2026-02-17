@@ -19,7 +19,7 @@ import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, BookmarkFolder } from "@/lib/bookmarks"
-import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
+import { getThemeConfig, applyTheme, defaultThemeConfig, getCurrentBackground } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -44,8 +44,8 @@ export default function App() {
   const [editingBookmark, setEditingBookmark] = useState<{ id: string; name: string; url: string; color?: string } | null>(null)
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
-  const [backgroundColor, setBackgroundColor] = useState(defaultThemeConfig.backgroundColor)
-  const [backgroundImage, setBackgroundImage] = useState(defaultThemeConfig.backgroundImage)
+  const [backgroundColor, setBackgroundColor] = useState(defaultThemeConfig.light.backgroundColor)
+  const [backgroundImage, setBackgroundImage] = useState(defaultThemeConfig.light.backgroundImage)
   const prevFolderIndexRef = useRef(0)
 
   const loadFolders = useCallback(async () => {
@@ -65,8 +65,9 @@ export default function App() {
     async function initTheme() {
       const config = await getThemeConfig()
       applyTheme(config.mode)
-      setBackgroundColor(config.backgroundColor)
-      setBackgroundImage(config.backgroundImage)
+      const bg = await getCurrentBackground()
+      setBackgroundColor(bg.backgroundColor)
+      setBackgroundImage(bg.backgroundImage)
     }
     initTheme()
   }, [])

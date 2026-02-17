@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Cloud, Wind, Droplets, MapPin, Loader2 } from "lucide-react"
+import { Cloud, Wind, Droplets, Loader2 } from "lucide-react"
 import { WeatherData, getWeather } from "@/lib/daily"
 
 interface WeatherProps {

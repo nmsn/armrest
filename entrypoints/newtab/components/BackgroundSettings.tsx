@@ -4,7 +4,7 @@ import * as React from "react"
 import { Sun, Moon, Monitor, Image, Palette } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ThemeMode, getThemeConfig, setThemeConfig, applyTheme } from "@/lib/theme"
+import { ThemeMode, getThemeConfig, setThemeConfig, applyTheme, getCurrentBackground, setBackgroundColor, setBackgroundImage } from "@/lib/theme"
 import { THEME_COLORS, DARK_THEME_COLORS, BACKGROUND_IMAGES } from "@/lib/constants"
 
 interface BackgroundSettingsProps {
@@ -15,17 +15,18 @@ interface BackgroundSettingsProps {
 
 export function BackgroundSettings({ backgroundColor: externalBgColor, backgroundImage: externalBgImage, onBackgroundChange }: BackgroundSettingsProps) {
   const [themeMode, setThemeMode] = React.useState<ThemeMode>("system")
-  const [backgroundColor, setBackgroundColor] = React.useState("#FAFAFA")
-  const [backgroundImage, setBackgroundImage] = React.useState("")
+  const [backgroundColor, setBgColor] = React.useState("#FAFAFA")
+  const [backgroundImage, setBgImage] = React.useState("")
   const [customColor, setCustomColor] = React.useState("#FAFAFA")
 
   React.useEffect(() => {
     async function loadConfig() {
       const config = await getThemeConfig()
       setThemeMode(config.mode)
-      setBackgroundColor(config.backgroundColor)
-      setBackgroundImage(config.backgroundImage)
-      setCustomColor(config.backgroundColor)
+      const bg = await getCurrentBackground()
+      setBgColor(bg.backgroundColor)
+      setBgImage(bg.backgroundImage)
+      setCustomColor(bg.backgroundColor)
     }
     loadConfig()
   }, [])
@@ -34,18 +35,22 @@ export function BackgroundSettings({ backgroundColor: externalBgColor, backgroun
     setThemeMode(mode)
     await setThemeConfig({ mode })
     applyTheme(mode)
+    const bg = await getCurrentBackground()
+    setBgColor(bg.backgroundColor)
+    setBgImage(bg.backgroundImage)
+    onBackgroundChange?.(bg.backgroundColor, bg.backgroundImage)
   }
 
   const handleColorChange = async (color: string) => {
-    setBackgroundColor(color)
+    setBgColor(color)
     setCustomColor(color)
-    await setThemeConfig({ backgroundColor: color })
+    await setBackgroundColor(color)
     onBackgroundChange?.(color, backgroundImage)
   }
 
   const handleImageChange = async (image: string) => {
-    setBackgroundImage(image)
-    await setThemeConfig({ backgroundImage: image })
+    setBgImage(image)
+    await setBackgroundImage(image)
     onBackgroundChange?.(backgroundColor, image)
   }
 
