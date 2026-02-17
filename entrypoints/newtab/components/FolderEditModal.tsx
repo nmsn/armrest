@@ -89,7 +89,7 @@ export function FolderEditModal({
 }: FolderEditModalProps) {
   const [name, setName] = useState("")
   const [selectedIcon, setSelectedIcon] = useState("folder")
-  const [selectedColor, setSelectedColor] = useState<string>(BOOKMARK_CONFIG.FOLDER_COLORS[0])
+  const [selectedColor, setSelectedColor] = useState<string>(BOOKMARK_CONFIG.COLOR_OPTIONS[0])
   const [showMoreIcons, setShowMoreIcons] = useState(false)
 
   useEffect(() => {
@@ -202,7 +202,7 @@ export function FolderEditModal({
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Color</label>
             <div className="grid grid-cols-4 gap-2">
-              {BOOKMARK_CONFIG.COLOR_OPTIONS.map((color) => {
+              {BOOKMARK_CONFIG.FOLDER_COLORS.map((color) => {
                 const isSelected = selectedColor === color
                 return (
                   <button
