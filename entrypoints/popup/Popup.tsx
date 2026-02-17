@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Folder, Bookmark as BookmarkIcon, ChevronLeft, ChevronRight, Loader2, Bookmark as BookmarkIcon2 } from "lucide-react"
-import { getBookmarks, BookmarkFolder, Bookmark } from "@/lib/bookmarks"
+import { Folder, ChevronLeft, ChevronRight, Loader2, List } from "lucide-react"
+import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
 
-const ITEMS_PER_PAGE = 8
-const PAGE_SIZE = 4
+const ITEMS_PER_PAGE = 10
+const SIDEBAR_WIDTH = 80
 
 export default function Popup() {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
@@ -38,7 +38,7 @@ export default function Popup() {
 
   const currentFolder = useMemo(() => {
     if (selectedFolderId === "all") {
-      return { id: "all", name: "全部书签", bookmarks: allBookmarks }
+      return { id: "all", name: "全部", bookmarks: allBookmarks }
     }
     return folders.find((f) => f.id === selectedFolderId) || null
   }, [selectedFolderId, folders, allBookmarks])
@@ -64,85 +64,85 @@ export default function Popup() {
 
   if (loading) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      <div className="h-[300px] flex items-center justify-center">
+        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center text-red-500">
+      <div className="h-[300px] flex items-center justify-center text-red-500 text-xs">
         {error}
       </div>
     )
   }
 
   return (
-    <div className="flex h-[400px] w-[360px] bg-background text-foreground">
-      <div className="w-[100px] border-r border-border flex flex-col">
-        <div className="p-2 border-b border-border">
-          <h3 className="text-xs font-medium text-muted-foreground">文件夹</h3>
+    <div className="flex h-[300px] w-[280px] bg-background text-foreground text-[11px]">
+      <div className="w-[80px] border-r border-border flex flex-col shrink-0">
+        <div className="px-1.5 py-1 border-b border-border">
+          <span className="text-[10px] text-muted-foreground">文件夹</span>
         </div>
         <div className="flex-1 overflow-y-auto">
           <button
             onClick={() => setSelectedFolderId("all")}
-            className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs transition-colors ${selectedFolderId === "all"
-                ? "bg-accent/10 text-accent"
-                : "hover:bg-accent/5 text-muted-foreground"
+            className={`w-full flex items-center gap-1 px-1.5 py-1 transition-colors ${selectedFolderId === "all"
+              ? "bg-accent/10 text-accent"
+              : "hover:bg-accent/5 text-muted-foreground"
               }`}
           >
-            <BookmarkIcon2 className="w-4 h-4 shrink-0" />
-            <span className="truncate">全部书签</span>
+            <List className="w-3 h-3 shrink-0" />
+            <span className="truncate">全部</span>
           </button>
           {folders.map((folder) => (
             <button
               key={folder.id}
               onClick={() => setSelectedFolderId(folder.id)}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs transition-colors ${selectedFolderId === folder.id
-                  ? "bg-accent/10 text-accent"
-                  : "hover:bg-accent/5 text-muted-foreground"
+              className={`w-full flex items-center gap-1 px-1.5 py-1 transition-colors ${selectedFolderId === folder.id
+                ? "bg-accent/10 text-accent"
+                : "hover:bg-accent/5 text-muted-foreground"
                 }`}
             >
-              <Folder className="w-4 h-4 shrink-0" style={{ color: folder.color }} />
+              <Folder className="w-3 h-3 shrink-0" style={{ color: folder.color }} />
               <span className="truncate">{folder.name}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="p-2 border-b border-border flex items-center justify-between">
-          <h3 className="text-xs font-medium text-muted-foreground">
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="px-2 py-1 border-b border-border flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground truncate">
             {currentFolder?.name || "选择文件夹"}
-          </h3>
+          </span>
           {totalPages > 1 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground shrink-0">
               {currentPage + 1}/{totalPages}
             </span>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex-1 overflow-y-auto p-1">
           {paginatedBookmarks.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+            <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground">
               暂无书签
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-0.5">
               {paginatedBookmarks.map((bookmark) => (
                 <button
                   key={bookmark.id}
                   onClick={() => handleOpenUrl(bookmark.url)}
-                  className="flex items-center gap-1.5 p-1.5 rounded hover:bg-accent/5 transition-colors text-left group"
+                  className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-accent/5 transition-colors text-left group"
                 >
                   <div
-                    className="w-3 h-3 rounded shrink-0"
+                    className="w-2 h-2 rounded-sm shrink-0"
                     style={{ backgroundColor: bookmark.color || "#6366F1" }}
                   />
-                  <span className="text-xs truncate text-foreground group-hover:text-accent">
-                    {bookmark.name.length > 12
-                      ? bookmark.name.slice(0, 12) + "..."
+                  <span className="truncate text-[10px] text-foreground group-hover:text-accent">
+                    {bookmark.name.length > 10
+                      ? bookmark.name.slice(0, 10) + "..."
                       : bookmark.name}
                   </span>
                 </button>
@@ -152,20 +152,20 @@ export default function Popup() {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-2 border-t border-border flex items-center justify-between">
+          <div className="px-2 py-1 border-t border-border flex items-center justify-between">
             <button
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
-              className="p-1 rounded hover:bg-accent/5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-0.5 rounded hover:bg-accent/5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage === totalPages - 1}
-              className="p-1 rounded hover:bg-accent/5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-0.5 rounded hover:bg-accent/5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3" />
             </button>
           </div>
         )}
