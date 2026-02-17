@@ -94,7 +94,7 @@ export default function Popup() {
 
   if (loading) {
     return (
-      <div className="h-[240px] flex items-center justify-center">
+      <div className="h-[320px] flex items-center justify-center">
         <Loader2 className="w-4 h-4 animate-spin text-muted" />
       </div>
     )
@@ -102,18 +102,18 @@ export default function Popup() {
 
   if (error) {
     return (
-      <div className="h-[240px] flex items-center justify-center text-red-500 text-xs">
+      <div className="h-[320px] flex items-center justify-center text-red-500 text-xs">
         {error}
       </div>
     )
   }
 
   return (
-    <div className="flex h-[240px] w-[220px] bg-background text-primary text-[11px]">
-      <div className="w-10 shrink-0 border-r border-border flex flex-col py-1">
+    <div className="flex h-[320px] w-[280px] bg-background text-primary text-[11px]">
+      <div className="w-10 shrink-0 flex flex-col justify-center py-2">
         <button
           onClick={() => setSelectedFolderId("all")}
-          className={`p-1.5 mx-1 rounded-lg transition-colors ${selectedFolderId === "all"
+          className={`p-1.5 mx-1 my-0.5 rounded-lg transition-colors ${selectedFolderId === "all"
               ? "bg-accent text-white"
               : "text-muted hover:bg-accent/10 hover:text-accent"
             }`}
@@ -127,7 +127,7 @@ export default function Popup() {
             <button
               key={folder.id}
               onClick={() => setSelectedFolderId(folder.id)}
-              className={`p-1.5 mx-1 rounded-lg transition-colors ${selectedFolderId === folder.id
+              className={`p-1.5 mx-1 my-0.5 rounded-lg transition-colors ${selectedFolderId === folder.id
                   ? "bg-accent text-white"
                   : "text-muted hover:bg-accent/10 hover:text-accent"
                 }`}
@@ -140,31 +140,19 @@ export default function Popup() {
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="px-2 py-1.5 border-b border-border flex items-center justify-between bg-surface">
-          <span className="text-[10px] text-muted truncate font-medium">
-            {currentFolder?.name || "Select"}
-          </span>
-          {totalPages > 1 && (
-            <span className="text-[10px] text-muted shrink-0">
-              {currentPage + 1}/{totalPages}
-            </span>
-          )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-1">
+        <div className="flex-1 overflow-y-auto p-2">
           {paginatedBookmarks.length === 0 ? (
             <div className="h-full flex items-center justify-center text-[10px] text-muted">
               No bookmarks
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-0.5">
+            <div className="grid grid-cols-2 gap-1">
               {paginatedBookmarks.map((bookmark) => {
-                const BookmarkIconComponent = BookmarkIcon
                 return (
                   <button
                     key={bookmark.id}
                     onClick={() => handleOpenUrl(bookmark.url)}
-                    className="flex items-center gap-1.5 px-1.5 py-1 rounded-lg hover:bg-accent/5 transition-colors text-left group"
+                    className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-accent/5 transition-colors text-left group h-10"
                   >
                     <div
                       className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
@@ -199,7 +187,7 @@ export default function Popup() {
         </div>
 
         {totalPages > 1 && (
-          <div className="px-2 py-1 border-t border-border flex items-center justify-between">
+          <div className="py-1.5 flex items-center justify-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
@@ -207,6 +195,9 @@ export default function Popup() {
             >
               <ChevronLeft className="w-3 h-3" />
             </button>
+            <span className="text-[10px] text-muted">
+              {currentPage + 1}/{totalPages}
+            </span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage === totalPages - 1}
