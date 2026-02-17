@@ -81,7 +81,7 @@ export default function Popup() {
   }
 
   return (
-    <div className="flex h-[320px] w-[280px] bg-background text-primary text-[11px]">
+    <div className="flex h-[280px] w-[320px] bg-background text-primary text-[11px]">
       <FolderSidebar
         folders={folders}
         selectedId={selectedFolderId}
