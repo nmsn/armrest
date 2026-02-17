@@ -143,7 +143,7 @@ export function BackgroundSettings({ backgroundColor: externalBgColor, backgroun
               <button
                 key={color}
                 onClick={() => handleColorChange(color)}
-                className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer ${effectiveBgColor === color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
+                className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer relative ${effectiveBgColor === color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
                   }`}
                 style={{ backgroundColor: color }}
                 aria-label={`Select background color ${color}`}
