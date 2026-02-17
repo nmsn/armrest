@@ -23,6 +23,14 @@ const THEME_COLORS = [
   "#DCFCE7",
 ]
 
+const DARK_THEME_COLORS = [
+  { color: "#0F172A", name: "Dark Slate", rgb: "rgb(15, 23, 42)", usage: "主背景 - 深蓝灰色，适合暗色主题" },
+  { color: "#1E1B4B", name: "Dark Indigo", rgb: "rgb(30, 27, 75)", usage: "主背景 - 深靛蓝色，优雅深沉" },
+  { color: "#18181B", name: "Dark Zinc", rgb: "rgb(24, 24, 27)", usage: "主背景 - 深灰色，经典暗色" },
+  { color: "#1F2937", name: "Dark Gray", rgb: "rgb(31, 41, 55)", usage: "卡片背景 - 中灰色，分层效果" },
+  { color: "#111827", name: "True Black", rgb: "rgb(17, 24, 39)", usage: "强调背景 - 纯黑色，高对比" },
+]
+
 const BACKGROUND_IMAGES = [
   { name: "None", url: "" },
   { name: "Gradient 1", url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920&q=80" },
@@ -114,18 +122,35 @@ export function BackgroundSettings({ backgroundColor: externalBgColor, backgroun
           <Image className="w-5 h-5" />
           Background Color
         </h3>
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          {THEME_COLORS.map((color) => (
-            <button
-              key={color}
-              onClick={() => handleColorChange(color)}
-              className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer ${effectiveBgColor === color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
-                }`}
-              style={{ backgroundColor: color }}
-              aria-label={`Select background color ${color}`}
-            />
-          ))}
-        </div>
+
+        {themeMode === "dark" ? (
+          <div className="grid grid-cols-5 gap-3 mb-4">
+            {DARK_THEME_COLORS.map((item) => (
+              <button
+                key={item.color}
+                onClick={() => handleColorChange(item.color)}
+                className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer relative ${effectiveBgColor === item.color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
+                  }`}
+                style={{ backgroundColor: item.color }}
+                aria-label={`Select background color ${item.color}`}
+                title={item.usage}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {THEME_COLORS.map((color) => (
+              <button
+                key={color}
+                onClick={() => handleColorChange(color)}
+                className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer ${effectiveBgColor === color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
+                  }`}
+                style={{ backgroundColor: color }}
+                aria-label={`Select background color ${color}`}
+              />
+            ))}
+          </div>
+        )}
         <div className="flex gap-2">
           <Input
             type="color"
