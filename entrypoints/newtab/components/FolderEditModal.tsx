@@ -1,5 +1,33 @@
 import { useState, useEffect } from "react"
-import { Code, Wrench, Palette, Users, Bookmark, Settings, Folder, Star, Check } from "lucide-react"
+import {
+  Code,
+  Wrench,
+  Palette,
+  Users,
+  Bookmark,
+  Settings,
+  Folder,
+  Star,
+  Check,
+  Sparkles,
+  Home,
+  Search,
+  Heart,
+  Mail,
+  Calendar,
+  Clock,
+  Link,
+  Image,
+  Music,
+  Video,
+  File,
+  Trash2,
+  Edit2,
+  Save,
+  Share2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,28 +37,34 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { BOOKMARK_CONFIG } from "@/lib/constants"
 
-const ICON_OPTIONS = [
-  { id: "code", icon: Code, label: "Code" },
-  { id: "wrench", icon: Wrench, label: "Tools" },
-  { id: "palette", icon: Palette, label: "Design" },
-  { id: "users", icon: Users, label: "Social" },
-  { id: "bookmark", icon: Bookmark, label: "Bookmark" },
-  { id: "settings", icon: Settings, label: "Settings" },
-  { id: "folder", icon: Folder, label: "Folder" },
-  { id: "star", icon: Star, label: "Star" },
-]
-
-const COLOR_OPTIONS = [
-  "#6366F1",
-  "#10B981",
-  "#EC4899",
-  "#F59E0B",
-  "#EF4444",
-  "#3B82F6",
-  "#8B5CF6",
-  "#14B8A6",
-]
+const ICON_COMPONENTS: Record<string, any> = {
+  code: Code,
+  wrench: Wrench,
+  palette: Palette,
+  users: Users,
+  bookmark: Bookmark,
+  settings: Settings,
+  folder: Folder,
+  star: Star,
+  sparkles: Sparkles,
+  home: Home,
+  search: Search,
+  heart: Heart,
+  mail: Mail,
+  calendar: Calendar,
+  clock: Clock,
+  link: Link,
+  image: Image,
+  music: Music,
+  video: Video,
+  file: File,
+  trash: Trash2,
+  edit: Edit2,
+  save: Save,
+  share: Share2,
+}
 
 export interface FolderFormData {
   name: string
@@ -55,7 +89,8 @@ export function FolderEditModal({
 }: FolderEditModalProps) {
   const [name, setName] = useState("")
   const [selectedIcon, setSelectedIcon] = useState("folder")
-  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0])
+  const [selectedColor, setSelectedColor] = useState<string>(BOOKMARK_CONFIG.COLOR_OPTIONS[0])
+  const [showMoreIcons, setShowMoreIcons] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -66,8 +101,9 @@ export function FolderEditModal({
       } else {
         setName("")
         setSelectedIcon("folder")
-        setSelectedColor(COLOR_OPTIONS[0])
+        setSelectedColor(BOOKMARK_CONFIG.COLOR_OPTIONS[0])
       }
+      setShowMoreIcons(false)
     }
   }, [initialData, isOpen])
 
@@ -79,6 +115,15 @@ export function FolderEditModal({
       color: selectedColor
     })
     onClose()
+  }
+
+  const allIconOptions = [
+    ...BOOKMARK_CONFIG.ICON_OPTIONS,
+    ...(showMoreIcons ? BOOKMARK_CONFIG.MORE_ICON_OPTIONS : [])
+  ]
+
+  const getIconComponent = (iconId: string) => {
+    return ICON_COMPONENTS[iconId] || Folder
   }
 
   return (
@@ -97,8 +142,7 @@ export function FolderEditModal({
                 style={{ backgroundColor: selectedColor }}
               >
                 {(() => {
-                  const iconOption = ICON_OPTIONS.find(i => i.id === selectedIcon)
-                  const Icon = iconOption?.icon || Folder
+                  const Icon = getIconComponent(selectedIcon)
                   return <Icon className="w-8 h-8 text-white" />
                 })()}
               </div>
@@ -121,8 +165,8 @@ export function FolderEditModal({
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Icon</label>
             <div className="grid grid-cols-4 gap-2">
-              {ICON_OPTIONS.map((option) => {
-                const Icon = option.icon
+              {allIconOptions.map((option) => {
+                const Icon = getIconComponent(option.id)
                 const isSelected = selectedIcon === option.id
                 return (
                   <button
@@ -140,12 +184,25 @@ export function FolderEditModal({
                 )
               })}
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMoreIcons(!showMoreIcons)}
+              className="w-full mt-2 text-sm text-muted-foreground"
+            >
+              {showMoreIcons ? (
+                <ChevronUp className="w-4 h-4 mr-2" />
+              ) : (
+                <ChevronDown className="w-4 h-4 mr-2" />
+              )}
+              {showMoreIcons ? "Show Less" : "Show More"}
+            </Button>
           </div>
 
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Color</label>
             <div className="grid grid-cols-4 gap-2">
-              {COLOR_OPTIONS.map((color) => {
+              {BOOKMARK_CONFIG.COLOR_OPTIONS.map((color) => {
                 const isSelected = selectedColor === color
                 return (
                   <button

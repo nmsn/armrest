@@ -63,7 +63,7 @@ export default function Clock() {
 
   return (
     <div className="flex flex-col items-center justify-center space-y-3">
-      <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary">
+      <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-mono tabular-nums">
         {time.toLocaleTimeString()}
       </div>
       <div className="flex flex-col items-center space-y-1.5">
