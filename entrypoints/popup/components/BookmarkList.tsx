@@ -1,15 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
-
-interface BookmarkItem {
-  id: string
-  name: string
-  url: string
-  logo?: string
-  color?: string
-}
+import { Bookmark } from "@/lib/bookmarks"
 
 interface BookmarkListProps {
-  bookmarks: BookmarkItem[]
+  bookmarks: Bookmark[]
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void

@@ -1,4 +1,5 @@
 import { Folder, Bookmark as BookmarkIcon } from "lucide-react"
+import { BookmarkFolder } from "@/lib/bookmarks"
 
 const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
   folder: Folder,
@@ -10,15 +11,8 @@ const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }
   sparkles: BookmarkIcon,
 }
 
-interface FolderItem {
-  id: string
-  name: string
-  icon: string
-  color: string
-}
-
 interface FolderSidebarProps {
-  folders: FolderItem[]
+  folders: BookmarkFolder[]
   selectedId: string | null
   onSelect: (id: string) => void
   showAll?: boolean
