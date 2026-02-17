@@ -110,16 +110,16 @@ export default function Popup() {
 
   return (
     <div className="flex h-[320px] w-[280px] bg-background text-primary text-[11px]">
-      <div className="w-10 shrink-0 flex flex-col justify-center py-2">
+      <div className="w-11 shrink-0 flex flex-col justify-center py-2 gap-1">
         <button
           onClick={() => setSelectedFolderId("all")}
-          className={`p-1.5 mx-1 my-0.5 rounded-lg transition-colors ${selectedFolderId === "all"
-              ? "bg-accent text-white"
-              : "text-muted hover:bg-accent/10 hover:text-accent"
+          className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center transition-colors ${selectedFolderId === "all"
+            ? "bg-accent text-white"
+            : "text-muted hover:bg-accent/10 hover:text-accent"
             }`}
           title="All"
         >
-          <BookmarkIcon className="w-3.5 h-3.5" />
+          <BookmarkIcon className="w-4 h-4" />
         </button>
         {folders.map((folder) => {
           const FolderIcon = getIconComponent(folder.icon || "folder")
@@ -127,13 +127,13 @@ export default function Popup() {
             <button
               key={folder.id}
               onClick={() => setSelectedFolderId(folder.id)}
-              className={`p-1.5 mx-1 my-0.5 rounded-lg transition-colors ${selectedFolderId === folder.id
-                  ? "bg-accent text-white"
-                  : "text-muted hover:bg-accent/10 hover:text-accent"
+              className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center transition-colors ${selectedFolderId === folder.id
+                ? "bg-accent text-white"
+                : "text-muted hover:bg-accent/10 hover:text-accent"
                 }`}
               title={folder.name}
             >
-              <FolderIcon className="w-3.5 h-3.5" />
+              <FolderIcon className="w-4 h-4" />
             </button>
           )
         })}
