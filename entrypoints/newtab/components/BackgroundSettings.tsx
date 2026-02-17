@@ -4,15 +4,10 @@ import * as React from "react"
 import { Sun, Moon, Monitor, Image, Palette } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ColorPicker } from "@/components/ui/color-picker"
 import { ThemeMode, getThemeConfig, setThemeConfig, applyTheme } from "@/lib/theme"
 
-interface BackgroundSettingsProps {
-  backgroundColor?: string
-  backgroundImage?: string
-  onBackgroundChange?: (color: string, image: string) => void
-}
-
-const THEME_COLORS = [
+const DEFAULT_LIGHT_COLORS = [
   "#FAFAFA",
   "#F5F5F5",
   "#EFEEEE",
@@ -23,13 +18,19 @@ const THEME_COLORS = [
   "#DCFCE7",
 ]
 
-const DARK_THEME_COLORS = [
-  { color: "#0F172A", name: "Dark Slate", rgb: "rgb(15, 23, 42)", usage: "主背景 - 深蓝灰色，适合暗色主题" },
-  { color: "#1E1B4B", name: "Dark Indigo", rgb: "rgb(30, 27, 75)", usage: "主背景 - 深靛蓝色，优雅深沉" },
-  { color: "#18181B", name: "Dark Zinc", rgb: "rgb(24, 24, 27)", usage: "主背景 - 深灰色，经典暗色" },
-  { color: "#1F2937", name: "Dark Gray", rgb: "rgb(31, 41, 55)", usage: "卡片背景 - 中灰色，分层效果" },
-  { color: "#111827", name: "True Black", rgb: "rgb(17, 24, 39)", usage: "强调背景 - 纯黑色，高对比" },
+const DEFAULT_DARK_COLORS = [
+  { color: "#0F172A", usage: "主背景 - 深蓝灰色" },
+  { color: "#1E1B4B", usage: "主背景 - 深靛蓝色" },
+  { color: "#18181B", usage: "主背景 - 深灰色" },
+  { color: "#1F2937", usage: "卡片背景 - 中灰色" },
+  { color: "#111827", usage: "强调背景 - 纯黑色" },
 ]
+
+interface BackgroundSettingsProps {
+  backgroundColor?: string
+  backgroundImage?: string
+  onBackgroundChange?: (color: string, image: string) => void
+}
 
 const BACKGROUND_IMAGES = [
   { name: "None", url: "" },
@@ -61,6 +62,13 @@ export function BackgroundSettings({ backgroundColor: externalBgColor, backgroun
     setThemeMode(mode)
     await setThemeConfig({ mode })
     applyTheme(mode)
+
+    const isDark = mode === "dark"
+    const defaultColor = isDark ? DEFAULT_DARK_COLORS[0].color : DEFAULT_LIGHT_COLORS[0]
+    setBackgroundColor(defaultColor)
+    setCustomColor(defaultColor)
+    await setThemeConfig({ backgroundColor: defaultColor })
+    onBackgroundChange?.(defaultColor, backgroundImage)
   }
 
   const handleColorChange = async (color: string) => {
@@ -124,32 +132,19 @@ export function BackgroundSettings({ backgroundColor: externalBgColor, backgroun
         </h3>
 
         {themeMode === "dark" ? (
-          <div className="grid grid-cols-5 gap-3 mb-4">
-            {DARK_THEME_COLORS.map((item) => (
-              <button
-                key={item.color}
-                onClick={() => handleColorChange(item.color)}
-                className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer relative ${effectiveBgColor === item.color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
-                  }`}
-                style={{ backgroundColor: item.color }}
-                aria-label={`Select background color ${item.color}`}
-                title={item.usage}
-              />
-            ))}
-          </div>
+          <ColorPicker
+            colors={DEFAULT_DARK_COLORS}
+            selectedColor={effectiveBgColor}
+            onChange={handleColorChange}
+            columns={5}
+          />
         ) : (
-          <div className="grid grid-cols-4 gap-3 mb-4">
-            {THEME_COLORS.map((color) => (
-              <button
-                key={color}
-                onClick={() => handleColorChange(color)}
-                className={`w-full aspect-video rounded-lg border-2 transition-all duration-200 cursor-pointer ${effectiveBgColor === color ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/50"
-                  }`}
-                style={{ backgroundColor: color }}
-                aria-label={`Select background color ${color}`}
-              />
-            ))}
-          </div>
+          <ColorPicker
+            colors={DEFAULT_LIGHT_COLORS.map(c => ({ color: c }))}
+            selectedColor={effectiveBgColor}
+            onChange={handleColorChange}
+            columns={4}
+          />
         )}
         <div className="flex gap-2">
           <Input
