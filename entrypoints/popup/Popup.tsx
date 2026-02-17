@@ -1,9 +1,35 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Folder, ChevronLeft, ChevronRight, Loader2, List } from "lucide-react"
+import { Folder, ChevronLeft, ChevronRight, Loader2, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Star, Sparkles, Home, Search, Heart, Mail, Calendar, Clock, Link, Image, Music, Video, File, Settings, Trash2, Edit2, Save, Share2 } from "lucide-react"
 import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
 
 const ITEMS_PER_PAGE = 10
-const SIDEBAR_WIDTH = 80
+
+const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
+  folder: Folder,
+  code: Code,
+  wrench: Wrench,
+  palette: Palette,
+  users: Users,
+  bookmark: BookmarkIcon,
+  settings: Settings,
+  star: Star,
+  sparkles: Sparkles,
+  home: Home,
+  search: Search,
+  heart: Heart,
+  mail: Mail,
+  calendar: Calendar,
+  clock: Clock,
+  link: Link,
+  image: Image,
+  music: Music,
+  video: Video,
+  file: File,
+  trash: Trash2,
+  edit: Edit2,
+  save: Save,
+  share: Share2,
+}
 
 export default function Popup() {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
@@ -38,7 +64,7 @@ export default function Popup() {
 
   const currentFolder = useMemo(() => {
     if (selectedFolderId === "all") {
-      return { id: "all", name: "全部", bookmarks: allBookmarks }
+      return { id: "all", name: "All", bookmarks: allBookmarks }
     }
     return folders.find((f) => f.id === selectedFolderId) || null
   }, [selectedFolderId, folders, allBookmarks])
@@ -62,62 +88,64 @@ export default function Popup() {
     window.open(url, "_blank")
   }
 
+  const getIconComponent = (iconId: string) => {
+    return ICON_COMPONENTS[iconId] || Folder
+  }
+
   if (loading) {
     return (
-      <div className="h-[300px] flex items-center justify-center">
-        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+      <div className="h-[240px] flex items-center justify-center">
+        <Loader2 className="w-4 h-4 animate-spin text-muted" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="h-[300px] flex items-center justify-center text-red-500 text-xs">
+      <div className="h-[240px] flex items-center justify-center text-red-500 text-xs">
         {error}
       </div>
     )
   }
 
   return (
-    <div className="flex h-[300px] w-[280px] bg-background text-foreground text-[11px]">
-      <div className="w-[80px] border-r border-border flex flex-col shrink-0">
-        <div className="px-1.5 py-1 border-b border-border">
-          <span className="text-[10px] text-muted-foreground">文件夹</span>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <button
-            onClick={() => setSelectedFolderId("all")}
-            className={`w-full flex items-center gap-1 px-1.5 py-1 transition-colors ${selectedFolderId === "all"
-              ? "bg-accent/10 text-accent"
-              : "hover:bg-accent/5 text-muted-foreground"
-              }`}
-          >
-            <List className="w-3 h-3 shrink-0" />
-            <span className="truncate">全部</span>
-          </button>
-          {folders.map((folder) => (
+    <div className="flex h-[240px] w-[220px] bg-background text-primary text-[11px]">
+      <div className="w-10 shrink-0 border-r border-border flex flex-col py-1">
+        <button
+          onClick={() => setSelectedFolderId("all")}
+          className={`p-1.5 mx-1 rounded-lg transition-colors ${selectedFolderId === "all"
+              ? "bg-accent text-white"
+              : "text-muted hover:bg-accent/10 hover:text-accent"
+            }`}
+          title="All"
+        >
+          <BookmarkIcon className="w-3.5 h-3.5" />
+        </button>
+        {folders.map((folder) => {
+          const FolderIcon = getIconComponent(folder.icon || "folder")
+          return (
             <button
               key={folder.id}
               onClick={() => setSelectedFolderId(folder.id)}
-              className={`w-full flex items-center gap-1 px-1.5 py-1 transition-colors ${selectedFolderId === folder.id
-                ? "bg-accent/10 text-accent"
-                : "hover:bg-accent/5 text-muted-foreground"
+              className={`p-1.5 mx-1 rounded-lg transition-colors ${selectedFolderId === folder.id
+                  ? "bg-accent text-white"
+                  : "text-muted hover:bg-accent/10 hover:text-accent"
                 }`}
+              title={folder.name}
             >
-              <Folder className="w-3 h-3 shrink-0" style={{ color: folder.color }} />
-              <span className="truncate">{folder.name}</span>
+              <FolderIcon className="w-3.5 h-3.5" />
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="px-2 py-1 border-b border-border flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground truncate">
-            {currentFolder?.name || "选择文件夹"}
+        <div className="px-2 py-1.5 border-b border-border flex items-center justify-between bg-surface">
+          <span className="text-[10px] text-muted truncate font-medium">
+            {currentFolder?.name || "Select"}
           </span>
           {totalPages > 1 && (
-            <span className="text-[10px] text-muted-foreground shrink-0">
+            <span className="text-[10px] text-muted shrink-0">
               {currentPage + 1}/{totalPages}
             </span>
           )}
@@ -125,28 +153,47 @@ export default function Popup() {
 
         <div className="flex-1 overflow-y-auto p-1">
           {paginatedBookmarks.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground">
-              暂无书签
+            <div className="h-full flex items-center justify-center text-[10px] text-muted">
+              No bookmarks
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-0.5">
-              {paginatedBookmarks.map((bookmark) => (
-                <button
-                  key={bookmark.id}
-                  onClick={() => handleOpenUrl(bookmark.url)}
-                  className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-accent/5 transition-colors text-left group"
-                >
-                  <div
-                    className="w-2 h-2 rounded-sm shrink-0"
-                    style={{ backgroundColor: bookmark.color || "#6366F1" }}
-                  />
-                  <span className="truncate text-[10px] text-foreground group-hover:text-accent">
-                    {bookmark.name.length > 10
-                      ? bookmark.name.slice(0, 10) + "..."
-                      : bookmark.name}
-                  </span>
-                </button>
-              ))}
+              {paginatedBookmarks.map((bookmark) => {
+                const BookmarkIconComponent = BookmarkIcon
+                return (
+                  <button
+                    key={bookmark.id}
+                    onClick={() => handleOpenUrl(bookmark.url)}
+                    className="flex items-center gap-1.5 px-1.5 py-1 rounded-lg hover:bg-accent/5 transition-colors text-left group"
+                  >
+                    <div
+                      className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: bookmark.color || "#8B5CF6" }}
+                    >
+                      {bookmark.logo ? (
+                        <img
+                          src={bookmark.logo}
+                          alt=""
+                          className="w-full h-full rounded-md object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.style.display = "none"
+                          }}
+                        />
+                      ) : (
+                        <span className="text-white text-[9px] font-bold">
+                          {bookmark.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="truncate text-[10px] text-secondary group-hover:text-accent transition-colors font-normal">
+                      {bookmark.name.length > 8
+                        ? bookmark.name.slice(0, 8) + "..."
+                        : bookmark.name}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>
@@ -156,14 +203,14 @@ export default function Popup() {
             <button
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
-              className="p-0.5 rounded hover:bg-accent/5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-0.5 rounded hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed text-muted hover:text-accent"
             >
               <ChevronLeft className="w-3 h-3" />
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage === totalPages - 1}
-              className="p-0.5 rounded hover:bg-accent/5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-0.5 rounded hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed text-muted hover:text-accent"
             >
               <ChevronRight className="w-3 h-3" />
             </button>
