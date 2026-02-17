@@ -1,35 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Folder, ChevronLeft, ChevronRight, Loader2, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Star, Sparkles, Home, Search, Heart, Mail, Calendar, Clock, Link, Image, Music, Video, File, Settings, Trash2, Edit2, Save, Share2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
+import { FolderSidebar, BookmarkList } from "./components"
 
 const ITEMS_PER_PAGE = 10
-
-const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
-  folder: Folder,
-  code: Code,
-  wrench: Wrench,
-  palette: Palette,
-  users: Users,
-  bookmark: BookmarkIcon,
-  settings: Settings,
-  star: Star,
-  sparkles: Sparkles,
-  home: Home,
-  search: Search,
-  heart: Heart,
-  mail: Mail,
-  calendar: Calendar,
-  clock: Clock,
-  link: Link,
-  image: Image,
-  music: Music,
-  video: Video,
-  file: File,
-  trash: Trash2,
-  edit: Edit2,
-  save: Save,
-  share: Share2,
-}
 
 export default function Popup() {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
@@ -69,12 +43,6 @@ export default function Popup() {
     return folders.find((f) => f.id === selectedFolderId) || null
   }, [selectedFolderId, folders, allBookmarks])
 
-  const paginatedBookmarks = useMemo(() => {
-    if (!currentFolder) return []
-    const start = currentPage * ITEMS_PER_PAGE
-    return currentFolder.bookmarks.slice(start, start + ITEMS_PER_PAGE)
-  }, [currentFolder, currentPage])
-
   const totalPages = useMemo(() => {
     if (!currentFolder) return 0
     return Math.ceil(currentFolder.bookmarks.length / ITEMS_PER_PAGE)
@@ -88,8 +56,12 @@ export default function Popup() {
     window.open(url, "_blank")
   }
 
-  const getIconComponent = (iconId: string) => {
-    return ICON_COMPONENTS[iconId] || Folder
+  const handleFolderSelect = (id: string) => {
+    setSelectedFolderId(id)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
   }
 
   if (loading) {
@@ -110,104 +82,22 @@ export default function Popup() {
 
   return (
     <div className="flex h-[320px] w-[280px] bg-background text-primary text-[11px]">
-      <div className="w-11 shrink-0 flex flex-col justify-center py-2 gap-1">
-        <button
-          onClick={() => setSelectedFolderId("all")}
-          className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center transition-colors ${selectedFolderId === "all"
-            ? "bg-accent text-white"
-            : "text-muted hover:bg-accent/10 hover:text-accent"
-            }`}
-          title="All"
-        >
-          <BookmarkIcon className="w-4 h-4" />
-        </button>
-        {folders.map((folder) => {
-          const FolderIcon = getIconComponent(folder.icon || "folder")
-          return (
-            <button
-              key={folder.id}
-              onClick={() => setSelectedFolderId(folder.id)}
-              className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center transition-colors ${selectedFolderId === folder.id
-                ? "bg-accent text-white"
-                : "text-muted hover:bg-accent/10 hover:text-accent"
-                }`}
-              title={folder.name}
-            >
-              <FolderIcon className="w-4 h-4" />
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 overflow-y-auto p-2">
-          {paginatedBookmarks.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-[10px] text-muted">
-              No bookmarks
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-1">
-              {paginatedBookmarks.map((bookmark) => {
-                return (
-                  <button
-                    key={bookmark.id}
-                    onClick={() => handleOpenUrl(bookmark.url)}
-                    className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-accent/5 transition-colors text-left group h-10"
-                  >
-                    <div
-                      className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: bookmark.color || "#8B5CF6" }}
-                    >
-                      {bookmark.logo ? (
-                        <img
-                          src={bookmark.logo}
-                          alt=""
-                          className="w-full h-full rounded-md object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.display = "none"
-                          }}
-                        />
-                      ) : (
-                        <span className="text-white text-[9px] font-bold">
-                          {bookmark.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <span className="truncate text-[10px] text-secondary group-hover:text-accent transition-colors font-normal">
-                      {bookmark.name.length > 8
-                        ? bookmark.name.slice(0, 8) + "..."
-                        : bookmark.name}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="py-1.5 flex items-center justify-center gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-              disabled={currentPage === 0}
-              className="p-0.5 rounded hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed text-muted hover:text-accent"
-            >
-              <ChevronLeft className="w-3 h-3" />
-            </button>
-            <span className="text-[10px] text-muted">
-              {currentPage + 1}/{totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={currentPage === totalPages - 1}
-              className="p-0.5 rounded hover:bg-accent/10 disabled:opacity-50 disabled:cursor-not-allowed text-muted hover:text-accent"
-            >
-              <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-      </div>
+      <FolderSidebar
+        folders={folders}
+        selectedId={selectedFolderId}
+        onSelect={handleFolderSelect}
+        showAll={allBookmarks.length > 0}
+        allLabel="All Bookmarks"
+      />
+      <BookmarkList
+        bookmarks={currentFolder?.bookmarks || []}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        onBookmarkClick={handleOpenUrl}
+        itemsPerPage={ITEMS_PER_PAGE}
+        emptyText="No bookmarks"
+      />
     </div>
   )
 }
