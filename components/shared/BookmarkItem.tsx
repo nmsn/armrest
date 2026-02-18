@@ -12,8 +12,8 @@ interface BookmarkItemProps {
 
 const SIZE_CONFIG = {
   sm: {
-    icon: "w-5 h-5 rounded-md text-[9px]",
-    container: "gap-1.5 px-2 py-1.5 h-10",
+    icon: "w-6 h-6 rounded-md text-[10px]",
+    container: "gap-1.5 px-2 py-1.5 h-11",
     text: "text-[10px]",
   },
   md: {
@@ -28,11 +28,11 @@ const SIZE_CONFIG = {
   },
 }
 
-export function BookmarkItem({ 
-  bookmark, 
-  onClick, 
+export function BookmarkItem({
+  bookmark,
+  onClick,
   size = "sm",
-  maxNameLength = 8 
+  maxNameLength = 8
 }: BookmarkItemProps) {
   const [imgError, setImgError] = useState(false)
 
