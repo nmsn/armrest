@@ -54,16 +54,10 @@ export default function Popup() {
     }
   }, [])
 
-  const allBookmarks = useMemo(() => {
-    return folders.flatMap((folder) => folder.bookmarks)
-  }, [folders])
 
   const currentFolder = useMemo(() => {
-    if (selectedFolderId === "all") {
-      return { id: "all", name: "All", bookmarks: allBookmarks }
-    }
     return folders.find((f) => f.id === selectedFolderId) || null
-  }, [selectedFolderId, folders, allBookmarks])
+  }, [selectedFolderId, folders])
 
   const totalPages = useMemo(() => {
     if (!currentFolder) return 0
@@ -108,8 +102,6 @@ export default function Popup() {
         folders={folders}
         selectedId={selectedFolderId}
         onSelect={handleFolderSelect}
-        showAll={allBookmarks.length > 0}
-        allLabel="All Bookmarks"
       />
       <BookmarkList
         bookmarks={currentFolder?.bookmarks || []}
