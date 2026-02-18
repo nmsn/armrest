@@ -9,8 +9,9 @@ import {
   exportBookmarks,
   importBookmarks,
 } from "@/lib/bookmarks"
+import { BOOKMARK_CONFIG } from "@/lib/constants"
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
   wrench: Wrench,
   palette: Palette,
@@ -159,7 +160,8 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
 
       <div className="flex flex-col gap-2">
         {folders.map((folder) => {
-          const IconComponent = ICON_MAP[folder.icon || "folder"]
+          const iconKey = BOOKMARK_CONFIG.ICON_MAP[folder.icon || "folder"]
+          const IconComponent = ICON_COMPONENTS[iconKey]
           return (
             <div
               key={folder.id}
