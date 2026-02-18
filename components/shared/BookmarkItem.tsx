@@ -64,7 +64,7 @@ export function BookmarkItem({
           />
         )}
       </div>
-      <span className={`truncate ${sizeClasses.text} text-secondary group-hover:text-accent transition-colors font-normal w-full text-center`}>
+      <span className={`truncate ${sizeClasses.text} text-foreground/70 group-hover:text-accent transition-colors font-normal w-full text-center`}>
         {displayName}
       </span>
     </button>
