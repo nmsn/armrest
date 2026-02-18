@@ -18,6 +18,7 @@ import { BackgroundSettings } from "./components/BackgroundSettings"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
+import { BookmarkItem } from "@/components/shared/BookmarkItem"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig, getCurrentBackground } from "@/lib/theme"
 
@@ -254,37 +255,13 @@ export default function App() {
                 >
                   <div className="grid grid-cols-5 gap-3">
                     {currentFolder?.bookmarks.map((bookmark) => (
-                      <button
+                      <BookmarkItem
                         key={bookmark.id}
-                        onClick={() => handleBookmarkClick(bookmark.url)}
-                        className="group p-4 rounded-2xl border border-border bg-card hover:border-accent/30 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3"
-                      >
-                        {bookmark.logo ? (
-                          <img
-                            src={bookmark.logo}
-                            alt=""
-                            className="w-11 h-11 rounded-xl object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = "none"
-                              const parent = target.parentElement
-                              if (parent) {
-                                parent.innerHTML = `<span>${bookmark.name.charAt(0).toUpperCase()}</span>`
-                                parent.className += ` w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold`
-                                parent.style.backgroundColor = bookmark.color || "#6366F1"
-                              }
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold transition-transform duration-200 group-hover:scale-105"
-                            style={{ backgroundColor: bookmark.color || "#6366F1" }}
-                          >
-                            {bookmark.name.charAt(0)}
-                          </div>
-                        )}
-                        <span className="text-xs text-muted-foreground text-center line-clamp-1 font-medium group-hover:text-foreground transition-colors">{bookmark.name}</span>
-                      </button>
+                        bookmark={bookmark}
+                        onClick={handleBookmarkClick}
+                        size="lg"
+                        maxNameLength={20}
+                      />
                     ))}
                   </div>
                 </motion.div>

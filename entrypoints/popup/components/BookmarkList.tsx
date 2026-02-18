@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Bookmark } from "@/lib/bookmarks"
-import { BookmarkItem } from "./BookmarkItem"
+import { BookmarkItem } from "@/components/shared/BookmarkItem"
 
 interface BookmarkListProps {
   bookmarks: Bookmark[]
@@ -10,7 +10,6 @@ interface BookmarkListProps {
   onBookmarkClick: (url: string) => void
   itemsPerPage?: number
   emptyText?: string
-  maxNameLength?: number
 }
 
 export function BookmarkList({
@@ -20,8 +19,7 @@ export function BookmarkList({
   onPageChange,
   onBookmarkClick,
   itemsPerPage = 10,
-  emptyText = "No bookmarks",
-  maxNameLength = 8
+  emptyText = "No bookmarks"
 }: BookmarkListProps) {
   const paginatedBookmarks = bookmarks.slice(
     currentPage * itemsPerPage,
@@ -42,7 +40,8 @@ export function BookmarkList({
                 key={bookmark.id}
                 bookmark={bookmark}
                 onClick={onBookmarkClick}
-                maxNameLength={maxNameLength}
+                size="sm"
+                maxNameLength={8}
               />
             ))}
           </div>
