@@ -34,16 +34,18 @@ export function BookmarkList({
             {emptyText}
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-1">
-            {paginatedBookmarks.map((bookmark) => (
-              <BookmarkItem
-                key={bookmark.id}
-                bookmark={bookmark}
-                onClick={onBookmarkClick}
-                size="sm"
-                maxNameLength={8}
-              />
-            ))}
+          <div className="flex items-center justify-center h-full">
+            <div className="grid grid-cols-4 gap-1">
+              {paginatedBookmarks.map((bookmark) => (
+                <BookmarkItem
+                  key={bookmark.id}
+                  bookmark={bookmark}
+                  onClick={onBookmarkClick}
+                  size="sm"
+                  maxNameLength={8}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
