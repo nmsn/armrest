@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, Pencil, FolderPlus, Code, Wrench, Palette, Users, Bookmark, Upload, Download, Settings, Folder } from "lucide-react"
+import { Plus, Trash2, Pencil, FolderPlus, Upload, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   BookmarkFolder,
@@ -9,16 +9,7 @@ import {
   exportBookmarks,
   importBookmarks,
 } from "@/lib/bookmarks"
-
-const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
-  code: Code,
-  wrench: Wrench,
-  palette: Palette,
-  users: Users,
-  bookmark: Bookmark,
-  settings: Settings,
-  folder: Folder,
-}
+import { getIconComponent } from "@/lib/icons"
 
 interface BookmarksSettingsProps {
   folders?: BookmarkFolder[]
@@ -159,8 +150,7 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
 
       <div className="flex flex-col gap-2">
         {folders.map((folder) => {
-          const iconKey = (folder.icon || "folder") as keyof typeof ICON_COMPONENTS
-          const IconComponent = ICON_COMPONENTS[iconKey] || Folder
+          const IconComponent = getIconComponent(folder.icon || "folder")
           return (
             <div
               key={folder.id}

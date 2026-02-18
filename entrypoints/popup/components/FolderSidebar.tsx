@@ -1,32 +1,5 @@
-import { Folder, Bookmark as BookmarkIcon, Code, Wrench, Palette, Users, Settings, Star, Sparkles, Home, Search, Heart, Mail, Calendar, Clock, Link, Image, Music, Video, File, Trash2, Edit2, Save, Share2 } from "lucide-react"
 import { BookmarkFolder } from "@/lib/bookmarks"
-
-const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
-  folder: Folder,
-  code: Code,
-  wrench: Wrench,
-  palette: Palette,
-  users: Users,
-  bookmark: BookmarkIcon,
-  settings: Settings,
-  star: Star,
-  sparkles: Sparkles,
-  home: Home,
-  search: Search,
-  heart: Heart,
-  mail: Mail,
-  calendar: Calendar,
-  clock: Clock,
-  link: Link,
-  image: Image,
-  music: Music,
-  video: Video,
-  file: File,
-  trash: Trash2,
-  edit: Edit2,
-  save: Save,
-  share: Share2,
-}
+import { getIconComponent } from "@/lib/icons"
 
 interface FolderSidebarProps {
   folders: BookmarkFolder[]
@@ -43,11 +16,6 @@ export function FolderSidebar({
   showAll = true,
   allLabel = "All"
 }: FolderSidebarProps) {
-  const getIconComponent = (iconId: string) => {
-    const iconKey = (iconId || "folder") as keyof typeof ICON_COMPONENTS
-    return ICON_COMPONENTS[iconKey] || Folder
-  }
-
   return (
     <div className="w-11 shrink-0 flex flex-col justify-center py-2 gap-1">
       {showAll && (
@@ -59,7 +27,9 @@ export function FolderSidebar({
             }`}
           title={allLabel}
         >
-          <BookmarkIcon className="w-4 h-4" />
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
         </button>
       )}
       {folders.map((folder) => {
