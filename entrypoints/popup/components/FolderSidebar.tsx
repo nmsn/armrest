@@ -1,6 +1,5 @@
 import { Folder, Bookmark as BookmarkIcon, Code, Wrench, Palette, Users, Settings, Star, Sparkles, Home, Search, Heart, Mail, Calendar, Clock, Link, Image, Music, Video, File, Trash2, Edit2, Save, Share2 } from "lucide-react"
 import { BookmarkFolder } from "@/lib/bookmarks"
-import { BOOKMARK_CONFIG } from "@/lib/constants"
 
 const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
   folder: Folder,
@@ -45,7 +44,7 @@ export function FolderSidebar({
   allLabel = "All"
 }: FolderSidebarProps) {
   const getIconComponent = (iconId: string) => {
-    const iconKey = BOOKMARK_CONFIG.ICON_MAP[iconId] || iconId
+    const iconKey = (iconId || "folder") as keyof typeof ICON_COMPONENTS
     return ICON_COMPONENTS[iconKey] || Folder
   }
 
