@@ -18,7 +18,7 @@ export function BookmarkList({
   totalPages,
   onPageChange,
   onBookmarkClick,
-  itemsPerPage = 10,
+  itemsPerPage = 8,
   emptyText = "No bookmarks"
 }: BookmarkListProps) {
   const paginatedBookmarks = bookmarks.slice(
@@ -34,7 +34,7 @@ export function BookmarkList({
             {emptyText}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-4 gap-1">
             {paginatedBookmarks.map((bookmark) => (
               <BookmarkItem
                 key={bookmark.id}
