@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Bookmark } from "@/lib/bookmarks"
+import { BookmarkItem } from "./BookmarkItem"
 
 interface BookmarkListProps {
   bookmarks: Bookmark[]
@@ -9,6 +10,7 @@ interface BookmarkListProps {
   onBookmarkClick: (url: string) => void
   itemsPerPage?: number
   emptyText?: string
+  maxNameLength?: number
 }
 
 export function BookmarkList({
@@ -18,7 +20,8 @@ export function BookmarkList({
   onPageChange,
   onBookmarkClick,
   itemsPerPage = 10,
-  emptyText = "No bookmarks"
+  emptyText = "No bookmarks",
+  maxNameLength = 8
 }: BookmarkListProps) {
   const paginatedBookmarks = bookmarks.slice(
     currentPage * itemsPerPage,
@@ -35,37 +38,12 @@ export function BookmarkList({
         ) : (
           <div className="grid grid-cols-2 gap-1">
             {paginatedBookmarks.map((bookmark) => (
-              <button
+              <BookmarkItem
                 key={bookmark.id}
-                onClick={() => onBookmarkClick(bookmark.url)}
-                className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-accent/5 transition-colors text-left group h-10"
-              >
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: bookmark.color || "#8B5CF6" }}
-                >
-                  {bookmark.logo ? (
-                    <img
-                      src={bookmark.logo}
-                      alt=""
-                      className="w-full h-full rounded-md object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.style.display = "none"
-                      }}
-                    />
-                  ) : (
-                    <span className="text-white text-[9px] font-bold">
-                      {bookmark.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <span className="truncate text-[10px] text-secondary group-hover:text-accent transition-colors font-normal">
-                  {bookmark.name.length > 8
-                    ? bookmark.name.slice(0, 8) + "..."
-                    : bookmark.name}
-                </span>
-              </button>
+                bookmark={bookmark}
+                onClick={onBookmarkClick}
+                maxNameLength={maxNameLength}
+              />
             ))}
           </div>
         )}
