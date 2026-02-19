@@ -95,6 +95,16 @@ const BOOKMARK_CONFIG = {
     '#6B7280',
   ],
   DEFAULT_FOLDER_COLOR: '#3B82F6',
+  BOOKMARK_COLORS: [
+    '#6366F1',
+    '#10B981',
+    '#EC4899',
+    '#F59E0B',
+    '#EF4444',
+    '#3B82F6',
+    '#8B5CF6',
+    '#14B8A6',
+  ],
 } as const
 
 const THEME_COLORS = [

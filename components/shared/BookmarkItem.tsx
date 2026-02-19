@@ -1,5 +1,12 @@
 import { useState } from "react"
 import { Bookmark } from "@/lib/bookmarks"
+import { BOOKMARK_CONFIG } from "@/lib/constants"
+
+const BOOKMARK_COLORS = BOOKMARK_CONFIG.BOOKMARK_COLORS
+
+function getRandomColor(colors: readonly string[]): string {
+  return colors[Math.floor(Math.random() * colors.length)]
+}
 
 export type BookmarkItemSize = "sm" | "md" | "lg"
 
@@ -49,7 +56,7 @@ export function BookmarkItem({
     >
       <div
         className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}
-        style={{ backgroundColor: bookmark.color || "#8B5CF6" }}
+        style={{ backgroundColor: bookmark.color || getRandomColor(BOOKMARK_COLORS) }}
       >
         {showFallback ? (
           <span className="text-white font-bold">
