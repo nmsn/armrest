@@ -49,12 +49,12 @@ const BOOKMARK_CONFIG = {
     { name: 'Design', icon: 'palette', color: '#F59E0B', bookmarks: [] },
     {
       name: 'AI', icon: 'sparkles', color: '#8B5CF6', bookmarks: [
-        { name: 'Grok', url: 'https://x.com/i/grok' },
-        { name: 'Claude', url: 'https://claude.ai' },
-        { name: 'GLM', url: 'https://www.zhipuai.cn/' },
-        { name: 'DeepSeek', url: 'https://www.deepseek.com/' },
-        { name: 'DeepWiki', url: 'https://deepwiki.com/' },
-        { name: 'Skills.sh', url: 'https://skills.sh/' },
+        { name: 'Grok', url: 'https://x.com/i/grok', color: '#10B981' },
+        { name: 'Claude', url: 'https://claude.ai', color: '#EC4899' },
+        { name: 'GLM', url: 'https://www.zhipuai.cn/', color: '#6366F1' },
+        { name: 'DeepSeek', url: 'https://www.deepseek.com/', color: '#3B82F6' },
+        { name: 'DeepWiki', url: 'https://deepwiki.com/', color: '#8B5CF6' },
+        { name: 'Skills.sh', url: 'https://skills.sh/', color: '#F59E0B' },
       ]
     },
   ],
