@@ -170,35 +170,3 @@ export async function getAllDailyData(city: string = DEFAULT_VALUES.FALLBACK_CIT
     dailyQuoteLastUpdated: storedData?.dailyQuoteLastUpdated,
   }
 }
-
-export async function refreshDailyData(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<DailyData> {
-  await setStoredData({})
-  return getAllDailyData(city)
-}
-
-export async function clearDailyCache(): Promise<void> {
-  try {
-    await chrome.storage.local.remove(DAILY_STORAGE_KEY)
-  } catch (error) {
-    console.error("[Daily] Failed to clear cache:", error)
-  }
-}
-
-export interface DailyDataStatus {
-  isCached: boolean
-  weatherCached: boolean
-  dailyQuoteCached: boolean
-  weatherLastUpdated: number | null
-  dailyQuoteLastUpdated: number | null
-}
-
-export async function getDailyDataStatus(): Promise<DailyDataStatus> {
-  const data = await getStoredData()
-  return {
-    isCached: !!data && (!!data.weather || !!data.dailyQuote),
-    weatherCached: !!data?.weather,
-    dailyQuoteCached: !!data?.dailyQuote,
-    weatherLastUpdated: data?.weatherLastUpdated || null,
-    dailyQuoteLastUpdated: data?.dailyQuoteLastUpdated || null,
-  }
-}
