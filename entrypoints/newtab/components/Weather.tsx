@@ -1,32 +1,49 @@
 import { useState, useEffect, useCallback } from "react"
 import { Cloud, Wind, Droplets, Loader2 } from "lucide-react"
 import { WeatherData, getWeather } from "@/lib/daily"
+import { getUserLocation, getCityNameByCoordinates } from "@/lib/geo"
+import { DEFAULT_VALUES } from "@/lib/constants"
 
 interface WeatherProps {
   city?: string
 }
 
-export function Weather({ city = "北京" }: WeatherProps) {
+export function Weather({ city }: WeatherProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchWeather = useCallback(async () => {
+  const fetchWeather = useCallback(async (cityName: string) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await getWeather(city)
+      const data = await getWeather(cityName)
       setWeather(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : "获取天气失败")
     } finally {
       setLoading(false)
     }
-  }, [city])
+  }, [])
 
   useEffect(() => {
-    fetchWeather()
-  }, [fetchWeather])
+    const initWeather = async () => {
+      if (city) {
+        await fetchWeather(city)
+        return
+      }
+
+      try {
+        const location = await getUserLocation()
+        const cityName = await getCityNameByCoordinates(location.latitude, location.longitude)
+        await fetchWeather(cityName)
+      } catch {
+        await fetchWeather(DEFAULT_VALUES.FALLBACK_CITY)
+      }
+    }
+
+    initWeather()
+  }, [city, fetchWeather])
 
   if (loading) {
     return (
