@@ -155,18 +155,3 @@ export async function getDailyQuote(): Promise<DailyQuoteData | null> {
     return storedData?.dailyQuote || null
   }
 }
-
-export async function getAllDailyData(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<DailyData> {
-  const [weather, dailyQuote] = await Promise.all([
-    getWeather(city).catch(() => null),
-    getDailyQuote().catch(() => null),
-  ])
-
-  const storedData = await getStoredData()
-  return {
-    weather: weather || undefined,
-    dailyQuote: dailyQuote || undefined,
-    weatherLastUpdated: storedData?.weatherLastUpdated,
-    dailyQuoteLastUpdated: storedData?.dailyQuoteLastUpdated,
-  }
-}
