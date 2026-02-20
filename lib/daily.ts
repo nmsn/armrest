@@ -20,6 +20,7 @@ export interface DailyData {
   dailyQuote?: DailyQuoteData
   weatherLastUpdated?: number
   dailyQuoteLastUpdated?: number
+  weatherCity?: string
 }
 
 const DAILY_STORAGE_KEY = STORAGE_KEYS.DAILY_DATA
@@ -47,11 +48,16 @@ async function setStoredData(data: DailyData): Promise<void> {
 
 type DataType = 'weather' | 'dailyQuote'
 
-function isCacheValid(data: DailyData, dataType: DataType): boolean {
+function isCacheValid(data: DailyData, dataType: DataType, city?: string): boolean {
   const lastUpdatedKey = `${dataType}LastUpdated` as keyof DailyData
   const lastUpdated = data[lastUpdatedKey] as number | undefined
 
   if (!lastUpdated) return false
+
+  if (dataType === 'weather' && city) {
+    const cachedCity = data.weatherCity
+    if (cachedCity !== city) return false
+  }
 
   const configKey = dataType === 'weather' ? 'WEATHER' : 'DAILY_QUOTE'
   const expiry = CACHE_CONFIG[configKey].EXPIRY
@@ -64,7 +70,7 @@ export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): P
   try {
     const storedData = await getStoredData()
 
-    if (storedData?.weather && storedData && isCacheValid(storedData, 'weather')) {
+    if (storedData?.weather && storedData && isCacheValid(storedData, 'weather', city)) {
       return storedData.weather
     }
 
@@ -103,6 +109,7 @@ export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): P
         ...currentData,
         weather,
         weatherLastUpdated: Date.now(),
+        weatherCity: city,
       })
 
       return weather
