@@ -65,7 +65,7 @@ function isCacheValid(data: DailyData, dataType: DataType, city?: string): boole
 }
 
 export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<WeatherData | null> {
-  const requestUrl = `${API_60S.base}${API_60S.api.weather}?city=${encodeURIComponent(city)}`
+  const requestUrl = `${API_60S.base}${API_60S.api.weather}?query=${encodeURIComponent(city)}`
 
   try {
     const storedData = await getStoredData()
@@ -84,24 +84,20 @@ export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): P
 
     if (result.code === 200 && result.data) {
       const location = result.data.location
-      const todayForecast = result.data.daily_forecast?.[0]
-      const currentHourly = result.data.hourly_forecast?.[0]
+      const weatherData = result.data.weather
+      const airQuality = result.data.air_quality
 
       const weather: WeatherData = {
         city: location?.city || location?.name || city,
-        temperature: todayForecast
-          ? `${todayForecast.min_temperature}°C ~ ${todayForecast.max_temperature}°C`
-          : currentHourly
-            ? `${currentHourly.temperature}°C`
-            : DEFAULT_VALUES.WEATHER_UNKNOWN,
-        weather: todayForecast?.day_condition || currentHourly?.condition || DEFAULT_VALUES.WEATHER_UNKNOWN,
-        wind: todayForecast
-          ? `${todayForecast.day_wind_direction} ${todayForecast.day_wind_power}级`
-          : currentHourly
-            ? `${currentHourly.wind_direction} ${currentHourly.wind_power}级`
-            : DEFAULT_VALUES.WEATHER_UNKNOWN,
-        humidity: todayForecast?.air_quality || DEFAULT_VALUES.WEATHER_UNKNOWN,
-        updateTime: new Date().toLocaleString("zh-CN"),
+        temperature: weatherData?.temperature != null
+          ? `${weatherData.temperature}°C`
+          : DEFAULT_VALUES.WEATHER_UNKNOWN,
+        weather: weatherData?.condition || DEFAULT_VALUES.WEATHER_UNKNOWN,
+        wind: weatherData?.wind_direction && weatherData?.wind_power
+          ? `${weatherData.wind_direction} ${weatherData.wind_power}级`
+          : DEFAULT_VALUES.WEATHER_UNKNOWN,
+        humidity: airQuality?.quality || airQuality?.aqi?.toString() || DEFAULT_VALUES.WEATHER_UNKNOWN,
+        updateTime: weatherData?.updated || new Date().toLocaleString("zh-CN"),
       }
 
       const currentData = await getStoredData()

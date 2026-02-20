@@ -10,7 +10,7 @@ const API_CONFIG = {
   API_60S: {
     BASE: 'https://60s.viki.moe',
     ENDPOINTS: {
-      WEATHER: '/v2/weather/forecast',
+      WEATHER: '/v2/weather',
       HISTORY: '/v2/today-in-history',
       DAILY_BACKGROUND: '/v2/bing',
       HITOKOTO: '/v2/hitokoto',
