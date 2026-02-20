@@ -73,8 +73,6 @@ export default function App() {
     initTheme()
   }, [])
 
-
-  console.log(chrome, chrome.storage);
   useEffect(() => {
     const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
       if (area === "sync" && changes.armrest_bookmarks) {

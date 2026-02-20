@@ -1,4 +1,4 @@
-import { DEBUG_MODE, GEOLOCATION_CONFIG } from "./constants"
+import { GEOLOCATION_CONFIG } from "./constants"
 import { API_BIGDATACLOUD, ReverseGeocodeResponse } from "./api"
 
 interface UserLocation {
@@ -34,20 +34,7 @@ function getUserLocation(): Promise<UserLocation> {
   })
 }
 
-/**
- * 通过地理坐标获取城市名称
- * @param latitude - 纬度
- * @param longitude - 经度
- * @returns Promise<string> - 城市名称
- * @throws {Error} - 网络错误、API错误或参数无效时抛出异常
- */
 async function getCityNameByCoordinates(latitude: number, longitude: number): Promise<string> {
-  if (DEBUG_MODE) {
-    console.group('[Geo] 🌍 Reverse Geocoding Request')
-    console.log('📍 Latitude:', latitude)
-    console.log('📍 Longitude:', longitude)
-  }
-
   try {
     if (typeof latitude !== 'number' || typeof longitude !== 'number') {
       throw new Error('Invalid coordinates: latitude and longitude must be numbers')
@@ -70,28 +57,13 @@ async function getCityNameByCoordinates(latitude: number, longitude: number): Pr
     requestUrl.searchParams.append('longitude', longitude.toString())
     requestUrl.searchParams.append('localityLanguage', GEOLOCATION_CONFIG.LOCALITY_LANGUAGE)
 
-    if (DEBUG_MODE) {
-      console.log('📍 Request URL:', requestUrl.toString())
-    }
-
-    const startTime = Date.now()
     const response = await fetch(requestUrl.toString())
-    const responseTime = Date.now() - startTime
-
-    if (DEBUG_MODE) {
-      console.log('✅ Status:', response.status, response.statusText)
-      console.log('⏱️ Response time:', responseTime, 'ms')
-    }
 
     if (!response.ok) {
       throw new Error(`Reverse geocoding API error: ${response.status} ${response.statusText}`)
     }
 
     const result: ReverseGeocodeResponse = await response.json()
-
-    if (DEBUG_MODE) {
-      console.log('📄 Raw response:', result)
-    }
 
     let cityName = result.city || result.locality || ''
 
@@ -107,21 +79,8 @@ async function getCityNameByCoordinates(latitude: number, longitude: number): Pr
       throw new Error('City name not found in response')
     }
 
-    if (DEBUG_MODE) {
-      console.log('🏙️ Extracted city name:', cityName)
-      console.groupEnd()
-    }
-
     return cityName
   } catch (error) {
-    if (DEBUG_MODE) {
-      console.group('[Geo] 🌍 Reverse Geocoding Error')
-      console.error('❌ Error type:', error instanceof Error ? error.constructor.name : 'Unknown')
-      console.error('❌ Error message:', error instanceof Error ? error.message : error)
-      console.error('📍 Coordinates:', { latitude, longitude })
-      console.groupEnd()
-    }
-
     throw error
   }
 }

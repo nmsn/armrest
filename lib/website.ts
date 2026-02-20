@@ -126,15 +126,6 @@ export async function fetchWebsiteInfo(url: string): Promise<WebsiteMetadata> {
       baseInfo.favicon = mergedMetadata.favicon
     }
 
-    console.log("📦 Website Metadata:", {
-      url: normalizedUrl,
-      title: baseInfo.title,
-      description: baseInfo.description,
-      logo: baseInfo.logo,
-      image: baseInfo.image,
-      favicon: baseInfo.favicon,
-    })
-
     return baseInfo
   } catch (error) {
     console.error("Failed to fetch website metadata:", error)

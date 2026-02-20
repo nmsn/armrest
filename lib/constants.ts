@@ -1,5 +1,3 @@
-const DEBUG_MODE = true
-
 const TIME_UNITS = {
   MILLISECOND: 1,
   SECOND: 1000,
@@ -178,7 +176,6 @@ const DEFAULT_VALUES = {
 } as const
 
 export {
-  DEBUG_MODE,
   TIME_UNITS,
   API_CONFIG,
   STORAGE_KEYS,
