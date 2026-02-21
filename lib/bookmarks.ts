@@ -15,6 +15,7 @@ export interface BookmarkFolder {
   name: string
   icon?: string
   color?: string
+  order: number
   bookmarks: Bookmark[]
   createdAt: number
   updatedAt: number
@@ -56,9 +57,36 @@ function normalizeBookmarksOrder(bookmarks: Bookmark[]): { bookmarks: Bookmark[]
   return { bookmarks: normalized, changed }
 }
 
+function normalizeFoldersOrder(folders: BookmarkFolder[]): { folders: BookmarkFolder[]; changed: boolean } {
+  const sorted = [...folders].sort((a, b) => {
+    const aOrder = typeof a.order === "number" ? a.order : Number.MAX_SAFE_INTEGER
+    const bOrder = typeof b.order === "number" ? b.order : Number.MAX_SAFE_INTEGER
+    return aOrder - bOrder
+  })
+
+  let changed = false
+  const normalized = sorted.map((folder, index) => {
+    if (folder.order !== index || folders[index]?.id !== folder.id) {
+      changed = true
+    }
+
+    return {
+      ...folder,
+      order: index,
+    }
+  })
+
+  return { folders: normalized, changed }
+}
+
 function normalizeState(state: BookmarkState): { state: BookmarkState; changed: boolean } {
   let changed = false
-  const normalizedFolders = state.folders.map((folder) => {
+  const { folders: orderedFolders, changed: folderOrderChanged } = normalizeFoldersOrder(state.folders)
+  if (folderOrderChanged) {
+    changed = true
+  }
+
+  const normalizedFolders = orderedFolders.map((folder) => {
     const { bookmarks, changed: folderChanged } = normalizeBookmarksOrder(folder.bookmarks)
     if (folderChanged) {
       changed = true
@@ -82,11 +110,12 @@ function normalizeState(state: BookmarkState): { state: BookmarkState; changed: 
 function getDefaultState(): BookmarkState {
   return {
     version: CURRENT_VERSION,
-    folders: BOOKMARK_CONFIG.DEFAULT_FOLDERS.map((folder) => ({
+    folders: BOOKMARK_CONFIG.DEFAULT_FOLDERS.map((folder, index) => ({
       id: generateId(),
       name: folder.name,
       icon: folder.icon,
       color: folder.color,
+      order: index,
       bookmarks: (folder.bookmarks || []).map((bookmark, index) => ({
         ...bookmark,
         id: generateId(),
@@ -138,6 +167,7 @@ export async function addFolder(name: string, icon?: string, color?: string): Pr
     name,
     icon,
     color,
+    order: state.folders.length,
     bookmarks: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -168,6 +198,10 @@ export async function updateFolder(
 export async function deleteFolder(folderId: string): Promise<BookmarkState> {
   const state = await getBookmarks()
   state.folders = state.folders.filter((f) => f.id !== folderId)
+  state.folders = state.folders.map((folder, index) => ({
+    ...folder,
+    order: index,
+  }))
   await saveBookmarks(state)
   return state
 }
@@ -304,6 +338,33 @@ export async function reorderBookmarks(
   return state
 }
 
+export async function reorderFolders(
+  orderedFolderIds: string[]
+): Promise<BookmarkState> {
+  const state = await getBookmarks()
+  if (orderedFolderIds.length !== state.folders.length) {
+    throw new Error("Invalid folder order")
+  }
+
+  const folderMap = new Map(state.folders.map((folder) => [folder.id, folder]))
+  const now = Date.now()
+  state.folders = orderedFolderIds.map((folderId, index) => {
+    const folder = folderMap.get(folderId)
+    if (!folder) {
+      throw new Error("Invalid folder id in order")
+    }
+
+    return {
+      ...folder,
+      order: index,
+      updatedAt: now,
+    }
+  })
+
+  await saveBookmarks(state)
+  return state
+}
+
 export async function exportBookmarks(): Promise<string> {
   const state = await getBookmarks()
   return JSON.stringify(state, null, 2)
@@ -347,6 +408,7 @@ export async function importBookmarks(
         currentState.folders.push({
           ...folder,
           id: generateId(),
+          order: typeof folder.order === "number" ? folder.order : currentState.folders.length,
           createdAt: Date.now(),
           updatedAt: Date.now(),
           bookmarks: folder.bookmarks.map((b) => ({

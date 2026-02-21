@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Settings, Search, Bookmark, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Sparkles } from "lucide-react"
-import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, useDroppable, type DragEndEvent } from "@dnd-kit/core"
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core"
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import Clock from "./components/Clock"
 import { Weather } from "./components/Weather"
 import { DailyQuote } from "./components/DailyQuote"
@@ -21,7 +22,7 @@ import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { BookmarkList, getBookmarkDragId } from "./components/BookmarkList"
-import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, moveBookmark, BookmarkFolder } from "@/lib/bookmarks"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, reorderFolders, moveBookmark, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig, getCurrentBackground } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -38,18 +39,18 @@ const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }
 
 type SettingsTab = "background" | "bookmarks"
 
-const FOLDER_DROP_ID_PREFIX = "folder:"
+const FOLDER_ITEM_ID_PREFIX = "folder-item:"
 
-function getFolderDropId(folderId: string): string {
-  return `${FOLDER_DROP_ID_PREFIX}${folderId}`
+function getFolderItemDragId(folderId: string): string {
+  return `${FOLDER_ITEM_ID_PREFIX}${folderId}`
 }
 
 function parseBookmarkDragId(dragId: string): string | null {
   return dragId.startsWith("bookmark:") ? dragId.slice("bookmark:".length) : null
 }
 
-function parseFolderDropId(dropId: string): string | null {
-  return dropId.startsWith(FOLDER_DROP_ID_PREFIX) ? dropId.slice(FOLDER_DROP_ID_PREFIX.length) : null
+function parseFolderItemDragId(dragId: string): string | null {
+  return dragId.startsWith(FOLDER_ITEM_ID_PREFIX) ? dragId.slice(FOLDER_ITEM_ID_PREFIX.length) : null
 }
 
 interface FolderSidebarItemProps {
@@ -60,15 +61,31 @@ interface FolderSidebarItemProps {
 }
 
 function FolderSidebarItem({ folder, index, isActive, onSelect }: FolderSidebarItemProps) {
-  const { isOver, setNodeRef } = useDroppable({
-    id: getFolderDropId(folder.id),
+  const {
+    isOver,
+    isDragging,
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({
+    id: getFolderItemDragId(folder.id),
   })
   const FolderIcon = FOLDER_ICON_MAP[folder.icon || "folder"] || Folder
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  }
 
   return (
     <button
       ref={setNodeRef}
+      style={style}
       onClick={() => onSelect(index)}
+      {...attributes}
+      {...listeners}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${isOver
         ? "ring-2 ring-accent/40"
         : ""
@@ -234,6 +251,23 @@ export default function App() {
     }
   }
 
+  const handleFoldersReorder = async (orderedFolderIds: string[]) => {
+    const activeFolderId = foldersData[activeFolderIndex]?.id
+    try {
+      const state = await reorderFolders(orderedFolderIds)
+      setFoldersData(state.folders)
+
+      if (!activeFolderId) return
+      const nextActiveIndex = state.folders.findIndex((folder) => folder.id === activeFolderId)
+      if (nextActiveIndex >= 0) {
+        setActiveFolderIndex(nextActiveIndex)
+      }
+    } catch (error) {
+      console.error("Failed to reorder folders:", error)
+      await loadFolders()
+    }
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -247,14 +281,37 @@ export default function App() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
-    if (!over || !currentFolder) return
+    if (!over) return
 
     const activeId = String(active.id)
     const overId = String(over.id)
     const bookmarkId = parseBookmarkDragId(activeId)
-    if (!bookmarkId) return
+    const folderDragId = parseFolderItemDragId(activeId)
 
-    const targetFolderId = parseFolderDropId(overId)
+    if (folderDragId) {
+      const overFolderId = parseFolderItemDragId(overId)
+      if (!overFolderId || overFolderId === folderDragId) return
+
+      const folderDragIds = foldersData.map((folder) => getFolderItemDragId(folder.id))
+      const oldIndex = folderDragIds.findIndex((id) => id === activeId)
+      const newIndex = folderDragIds.findIndex((id) => id === overId)
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return
+
+      const nextFolderIds = arrayMove(folderDragIds, oldIndex, newIndex).map((id) => {
+        const parsedId = parseFolderItemDragId(id)
+        if (!parsedId) {
+          throw new Error("Invalid folder id")
+        }
+        return parsedId
+      })
+
+      await handleFoldersReorder(nextFolderIds)
+      return
+    }
+
+    if (!bookmarkId || !currentFolder) return
+
+    const targetFolderId = parseFolderItemDragId(overId)
     if (targetFolderId) {
       if (targetFolderId === currentFolder.id) return
       try {
@@ -328,15 +385,20 @@ export default function App() {
             <div className="flex gap-6">
               <div className="w-44 shrink-0">
                 <div className="border border-border rounded-2xl p-3 space-y-1 bg-card">
-                  {foldersData.map((folder, index) => (
-                    <FolderSidebarItem
-                      key={folder.id}
-                      folder={folder}
-                      index={index}
-                      isActive={activeFolderIndex === index}
-                      onSelect={handleFolderChange}
-                    />
-                  ))}
+                  <SortableContext
+                    items={foldersData.map((folder) => getFolderItemDragId(folder.id))}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {foldersData.map((folder, index) => (
+                      <FolderSidebarItem
+                        key={folder.id}
+                        folder={folder}
+                        index={index}
+                        isActive={activeFolderIndex === index}
+                        onSelect={handleFolderChange}
+                      />
+                    ))}
+                  </SortableContext>
                 </div>
               </div>
 
