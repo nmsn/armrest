@@ -1,18 +1,7 @@
-import { useEffect, useMemo, useState } from "react"
-import {
-  DndContext,
-  PointerSensor,
-  KeyboardSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core"
+import { useMemo } from "react"
 import {
   SortableContext,
-  arrayMove,
   rectSortingStrategy,
-  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -22,12 +11,17 @@ import { BookmarkItem } from "@/components/shared/BookmarkItem"
 interface BookmarkListProps {
   bookmarks: Bookmark[]
   onBookmarkClick: (url: string) => void
-  onReorder: (orderedBookmarkIds: string[]) => Promise<void>
 }
 
 interface SortableBookmarkItemProps {
   bookmark: Bookmark
   onBookmarkClick: (url: string) => void
+}
+
+const BOOKMARK_DRAG_ID_PREFIX = "bookmark:"
+
+export function getBookmarkDragId(bookmarkId: string): string {
+  return `${BOOKMARK_DRAG_ID_PREFIX}${bookmarkId}`
 }
 
 function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkItemProps) {
@@ -38,7 +32,7 @@ function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkIte
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: bookmark.id })
+  } = useSortable({ id: getBookmarkDragId(bookmark.id) })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -64,56 +58,23 @@ function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkIte
   )
 }
 
-export function BookmarkList({ bookmarks, onBookmarkClick, onReorder }: BookmarkListProps) {
-  const [items, setItems] = useState<Bookmark[]>(bookmarks)
-
-  useEffect(() => {
-    setItems(bookmarks)
-  }, [bookmarks])
-
-  const itemIds = useMemo(() => items.map((bookmark) => bookmark.id), [items])
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+export function BookmarkList({ bookmarks, onBookmarkClick }: BookmarkListProps) {
+  const itemIds = useMemo(
+    () => bookmarks.map((bookmark) => getBookmarkDragId(bookmark.id)),
+    [bookmarks]
   )
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) {
-      return
-    }
-
-    const oldIndex = items.findIndex((bookmark) => bookmark.id === active.id)
-    const newIndex = items.findIndex((bookmark) => bookmark.id === over.id)
-    if (oldIndex === -1 || newIndex === -1) {
-      return
-    }
-
-    const nextItems = arrayMove(items, oldIndex, newIndex)
-    setItems(nextItems)
-    await onReorder(nextItems.map((bookmark) => bookmark.id))
-  }
-
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={itemIds} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-5 gap-3">
-          {items.map((bookmark) => (
-            <SortableBookmarkItem
-              key={bookmark.id}
-              bookmark={bookmark}
-              onBookmarkClick={onBookmarkClick}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <SortableContext items={itemIds} strategy={rectSortingStrategy}>
+      <div className="grid grid-cols-5 gap-3">
+        {bookmarks.map((bookmark) => (
+          <SortableBookmarkItem
+            key={bookmark.id}
+            bookmark={bookmark}
+            onBookmarkClick={onBookmarkClick}
+          />
+        ))}
+      </div>
+    </SortableContext>
   )
 }

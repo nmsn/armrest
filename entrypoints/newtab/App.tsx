@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Settings, Search, Bookmark, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Sparkles } from "lucide-react"
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, useDroppable, type DragEndEvent } from "@dnd-kit/core"
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import Clock from "./components/Clock"
 import { Weather } from "./components/Weather"
 import { DailyQuote } from "./components/DailyQuote"
@@ -18,8 +20,8 @@ import { BackgroundSettings } from "./components/BackgroundSettings"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
-import { BookmarkList } from "./components/BookmarkList"
-import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, BookmarkFolder } from "@/lib/bookmarks"
+import { BookmarkList, getBookmarkDragId } from "./components/BookmarkList"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, moveBookmark, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig, getCurrentBackground } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -35,6 +37,56 @@ const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }
 }
 
 type SettingsTab = "background" | "bookmarks"
+
+const FOLDER_DROP_ID_PREFIX = "folder:"
+
+function getFolderDropId(folderId: string): string {
+  return `${FOLDER_DROP_ID_PREFIX}${folderId}`
+}
+
+function parseBookmarkDragId(dragId: string): string | null {
+  return dragId.startsWith("bookmark:") ? dragId.slice("bookmark:".length) : null
+}
+
+function parseFolderDropId(dropId: string): string | null {
+  return dropId.startsWith(FOLDER_DROP_ID_PREFIX) ? dropId.slice(FOLDER_DROP_ID_PREFIX.length) : null
+}
+
+interface FolderSidebarItemProps {
+  folder: BookmarkFolder
+  index: number
+  isActive: boolean
+  onSelect: (index: number) => void
+}
+
+function FolderSidebarItem({ folder, index, isActive, onSelect }: FolderSidebarItemProps) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: getFolderDropId(folder.id),
+  })
+  const FolderIcon = FOLDER_ICON_MAP[folder.icon || "folder"] || Folder
+
+  return (
+    <button
+      ref={setNodeRef}
+      onClick={() => onSelect(index)}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${isOver
+        ? "ring-2 ring-accent/40"
+        : ""
+        } ${isActive
+          ? "bg-accent text-accent-foreground"
+          : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+        }`}
+    >
+      <div
+        className="w-6 h-6 rounded-md flex items-center justify-center"
+        style={{ backgroundColor: folder.color || "#6366F1" }}
+      >
+        <FolderIcon className="w-3.5 h-3.5 text-white" />
+      </div>
+      <span>{folder.name}</span>
+    </button>
+  )
+}
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -182,6 +234,55 @@ export default function App() {
     }
   }
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || !currentFolder) return
+
+    const activeId = String(active.id)
+    const overId = String(over.id)
+    const bookmarkId = parseBookmarkDragId(activeId)
+    if (!bookmarkId) return
+
+    const targetFolderId = parseFolderDropId(overId)
+    if (targetFolderId) {
+      if (targetFolderId === currentFolder.id) return
+      try {
+        await moveBookmark(currentFolder.id, targetFolderId, bookmarkId)
+        await loadFolders()
+      } catch (error) {
+        console.error("Failed to move bookmark:", error)
+        await loadFolders()
+      }
+      return
+    }
+
+    const reorderedIds = currentFolder.bookmarks.map((bookmark) => getBookmarkDragId(bookmark.id))
+    const oldIndex = reorderedIds.findIndex((id) => id === activeId)
+    const newIndex = reorderedIds.findIndex((id) => id === overId)
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return
+
+    const nextIds = arrayMove(reorderedIds, oldIndex, newIndex).map((id) => {
+      const parsedId = parseBookmarkDragId(id)
+      if (!parsedId) {
+        throw new Error("Invalid bookmark id")
+      }
+      return parsedId
+    })
+
+    await handleBookmarksReorder(nextIds)
+  }
+
   return (
     <div
       className="h-screen flex flex-col items-center p-4 overflow-hidden bg-surface"
@@ -223,56 +324,44 @@ export default function App() {
         </div>
 
         {foldersData.length > 0 ? (
-          <div className="flex gap-6">
-            <div className="w-44 shrink-0">
-              <div className="border border-border rounded-2xl p-3 space-y-1 bg-card">
-                {foldersData.map((folder, index) => {
-                  const FolderIcon = FOLDER_ICON_MAP[folder.icon || "folder"] || Folder
-                  const isActive = activeFolderIndex === index
-                  return (
-                    <button
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <div className="flex gap-6">
+              <div className="w-44 shrink-0">
+                <div className="border border-border rounded-2xl p-3 space-y-1 bg-card">
+                  {foldersData.map((folder, index) => (
+                    <FolderSidebarItem
                       key={folder.id}
-                      onClick={() => handleFolderChange(index)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
-                        }`}
-                    >
-                      <div
-                        className="w-6 h-6 rounded-md flex items-center justify-center"
-                        style={{ backgroundColor: folder.color || "#6366F1" }}
-                      >
-                        <FolderIcon className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <span>{folder.name}</span>
-                    </button>
-                  )
-                })}
+                      folder={folder}
+                      index={index}
+                      isActive={activeFolderIndex === index}
+                      onSelect={handleFolderChange}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-hidden">
+                <AnimatePresence mode="popLayout" custom={direction}>
+                  <motion.div
+                    key={activeFolderIndex}
+                    custom={direction}
+                    initial={{ y: direction > 0 ? 20 : -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: direction > 0 ? -20 : 20, opacity: 0 }}
+                    transition={{
+                      duration: 0.25,
+                      ease: [0.25, 0.1, 0.25, 1]
+                    }}
+                  >
+                    <BookmarkList
+                      bookmarks={currentFolder?.bookmarks || []}
+                      onBookmarkClick={handleBookmarkClick}
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
-
-            <div className="flex-1 overflow-hidden">
-              <AnimatePresence mode="popLayout" custom={direction}>
-                <motion.div
-                  key={activeFolderIndex}
-                  custom={direction}
-                  initial={{ y: direction > 0 ? 20 : -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: direction > 0 ? -20 : 20, opacity: 0 }}
-                  transition={{
-                    duration: 0.25,
-                    ease: [0.25, 0.1, 0.25, 1]
-                  }}
-                >
-                  <BookmarkList
-                    bookmarks={currentFolder?.bookmarks || []}
-                    onBookmarkClick={handleBookmarkClick}
-                    onReorder={handleBookmarksReorder}
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
+          </DndContext>
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No bookmarks yet. Open settings to add some!</p>
