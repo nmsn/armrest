@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { Loader2 } from "lucide-react"
 import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
 import { FolderSidebar, BookmarkList } from "./components"
-import { getThemeConfig, applyTheme, ThemeMode } from "@/lib/theme"
+import { getThemeConfig, applyTheme } from "@/lib/theme"
 
 const ITEMS_PER_PAGE = 8
 
@@ -12,7 +12,6 @@ export default function Popup() {
   const [currentPage, setCurrentPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [themeMode, setThemeMode] = useState<ThemeMode>("system")
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -23,7 +22,6 @@ export default function Popup() {
         getThemeConfig()
       ])
       setFolders(bookmarksData.folders)
-      setThemeMode(themeConfig.mode)
       applyTheme(themeConfig.mode)
       if (bookmarksData.folders.length > 0) {
         setSelectedFolderId(bookmarksData.folders[0].id)
@@ -43,7 +41,6 @@ export default function Popup() {
     const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
       if (area === "sync" && changes["armrest-theme-config"]) {
         getThemeConfig().then(config => {
-          setThemeMode(config.mode)
           applyTheme(config.mode)
         })
       }

@@ -25,8 +25,6 @@ import {
   Edit2,
   Save,
   Share2,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -90,7 +88,6 @@ export function FolderEditModal({
   const [name, setName] = useState("")
   const [selectedIcon, setSelectedIcon] = useState("folder")
   const [selectedColor, setSelectedColor] = useState<string>(BOOKMARK_CONFIG.FOLDER_COLORS[0])
-  const [showMoreIcons, setShowMoreIcons] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -103,7 +100,6 @@ export function FolderEditModal({
         setSelectedIcon("folder")
         setSelectedColor(BOOKMARK_CONFIG.FOLDER_COLORS[0])
       }
-      setShowMoreIcons(false)
     }
   }, [initialData, isOpen])
 
@@ -117,10 +113,7 @@ export function FolderEditModal({
     onClose()
   }
 
-  const allIconOptions = [
-    ...BOOKMARK_CONFIG.ICON_OPTIONS,
-    ...(showMoreIcons ? BOOKMARK_CONFIG.MORE_ICON_OPTIONS : [])
-  ]
+  const allIconOptions = BOOKMARK_CONFIG.ICON_OPTIONS
 
   const getIconComponent = (iconId: string) => {
     return ICON_COMPONENTS[iconId] || Folder
@@ -184,19 +177,6 @@ export function FolderEditModal({
                 )
               })}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMoreIcons(!showMoreIcons)}
-              className="w-full mt-2 text-sm text-muted-foreground"
-            >
-              {showMoreIcons ? (
-                <ChevronUp className="w-4 h-4 mr-2" />
-              ) : (
-                <ChevronDown className="w-4 h-4 mr-2" />
-              )}
-              {showMoreIcons ? "Show Less" : "Show More"}
-            </Button>
           </div>
 
           <div>

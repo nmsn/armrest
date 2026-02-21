@@ -18,8 +18,8 @@ import { BackgroundSettings } from "./components/BackgroundSettings"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
-import { BookmarkItem } from "@/components/shared/BookmarkItem"
-import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, BookmarkFolder } from "@/lib/bookmarks"
+import { BookmarkList } from "./components/BookmarkList"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig, getCurrentBackground } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -169,6 +169,19 @@ export default function App() {
     setEditingFolder(null)
   }
 
+  const handleBookmarksReorder = async (orderedBookmarkIds: string[]) => {
+    const folder = foldersData[activeFolderIndex]
+    if (!folder) return
+
+    try {
+      await reorderBookmarks(folder.id, orderedBookmarkIds)
+      await loadFolders()
+    } catch (error) {
+      console.error("Failed to reorder bookmarks:", error)
+      await loadFolders()
+    }
+  }
+
   return (
     <div
       className="h-screen flex flex-col items-center p-4 overflow-hidden bg-surface"
@@ -251,17 +264,11 @@ export default function App() {
                     ease: [0.25, 0.1, 0.25, 1]
                   }}
                 >
-                  <div className="grid grid-cols-5 gap-3">
-                    {currentFolder?.bookmarks.map((bookmark) => (
-                      <BookmarkItem
-                        key={bookmark.id}
-                        bookmark={bookmark}
-                        onClick={handleBookmarkClick}
-                        size="lg"
-                        maxNameLength={20}
-                      />
-                    ))}
-                  </div>
+                  <BookmarkList
+                    bookmarks={currentFolder?.bookmarks || []}
+                    onBookmarkClick={handleBookmarkClick}
+                    onReorder={handleBookmarksReorder}
+                  />
                 </motion.div>
               </AnimatePresence>
             </div>

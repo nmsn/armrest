@@ -5,6 +5,7 @@ export interface Bookmark {
   description?: string
   logo?: string
   color?: string
+  order: number
   createdAt: number
   updatedAt: number
 }
@@ -33,6 +34,51 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
+function normalizeBookmarksOrder(bookmarks: Bookmark[]): { bookmarks: Bookmark[]; changed: boolean } {
+  const sorted = [...bookmarks].sort((a, b) => {
+    const aOrder = typeof a.order === "number" ? a.order : Number.MAX_SAFE_INTEGER
+    const bOrder = typeof b.order === "number" ? b.order : Number.MAX_SAFE_INTEGER
+    return aOrder - bOrder
+  })
+
+  let changed = false
+  const normalized = sorted.map((bookmark, index) => {
+    if (bookmark.order !== index || bookmarks[index]?.id !== bookmark.id) {
+      changed = true
+    }
+
+    return {
+      ...bookmark,
+      order: index,
+    }
+  })
+
+  return { bookmarks: normalized, changed }
+}
+
+function normalizeState(state: BookmarkState): { state: BookmarkState; changed: boolean } {
+  let changed = false
+  const normalizedFolders = state.folders.map((folder) => {
+    const { bookmarks, changed: folderChanged } = normalizeBookmarksOrder(folder.bookmarks)
+    if (folderChanged) {
+      changed = true
+    }
+
+    return {
+      ...folder,
+      bookmarks,
+    }
+  })
+
+  return {
+    state: {
+      ...state,
+      folders: normalizedFolders,
+    },
+    changed,
+  }
+}
+
 function getDefaultState(): BookmarkState {
   return {
     version: CURRENT_VERSION,
@@ -41,9 +87,10 @@ function getDefaultState(): BookmarkState {
       name: folder.name,
       icon: folder.icon,
       color: folder.color,
-      bookmarks: (folder.bookmarks || []).map((bookmark) => ({
+      bookmarks: (folder.bookmarks || []).map((bookmark, index) => ({
         ...bookmark,
         id: generateId(),
+        order: index,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       })),
@@ -62,7 +109,11 @@ export async function getBookmarks(): Promise<BookmarkState> {
         chrome.storage.sync.set({ [STORAGE_KEY]: defaultState })
         resolve(defaultState)
       } else {
-        resolve(data)
+        const { state: normalizedState, changed } = normalizeState(data)
+        if (changed) {
+          chrome.storage.sync.set({ [STORAGE_KEY]: normalizedState })
+        }
+        resolve(normalizedState)
       }
     })
   })
@@ -123,7 +174,7 @@ export async function deleteFolder(folderId: string): Promise<BookmarkState> {
 
 export async function addBookmark(
   folderId: string,
-  bookmark: Omit<Bookmark, "id" | "createdAt" | "updatedAt">
+  bookmark: Omit<Bookmark, "id" | "order" | "createdAt" | "updatedAt">
 ): Promise<BookmarkState> {
   const state = await getBookmarks()
   const folder = state.folders.find((f) => f.id === folderId)
@@ -133,6 +184,7 @@ export async function addBookmark(
   const newBookmark: Bookmark = {
     ...bookmark,
     id: generateId(),
+    order: folder.bookmarks.length,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }
@@ -145,7 +197,7 @@ export async function addBookmark(
 export async function updateBookmark(
   folderId: string,
   bookmarkId: string,
-  updates: Partial<Omit<Bookmark, "id" | "createdAt" | "updatedAt">>
+  updates: Partial<Omit<Bookmark, "id" | "order" | "createdAt" | "updatedAt">>
 ): Promise<BookmarkState> {
   const state = await getBookmarks()
   const folder = state.folders.find((f) => f.id === folderId)
@@ -176,6 +228,10 @@ export async function deleteBookmark(
     throw new Error("Folder not found")
   }
   folder.bookmarks = folder.bookmarks.filter((b) => b.id !== bookmarkId)
+  folder.bookmarks = folder.bookmarks.map((bookmark, index) => ({
+    ...bookmark,
+    order: index,
+  }))
   folder.updatedAt = Date.now()
   await saveBookmarks(state)
   return state
@@ -198,9 +254,52 @@ export async function moveBookmark(
   }
   const [bookmark] = fromFolder.bookmarks.splice(bookmarkIndex, 1)
   bookmark.updatedAt = Date.now()
+  bookmark.order = toFolder.bookmarks.length
   toFolder.bookmarks.push(bookmark)
+  fromFolder.bookmarks = fromFolder.bookmarks.map((item, index) => ({
+    ...item,
+    order: index,
+  }))
+  toFolder.bookmarks = toFolder.bookmarks.map((item, index) => ({
+    ...item,
+    order: index,
+  }))
   fromFolder.updatedAt = Date.now()
   toFolder.updatedAt = Date.now()
+  await saveBookmarks(state)
+  return state
+}
+
+export async function reorderBookmarks(
+  folderId: string,
+  orderedBookmarkIds: string[]
+): Promise<BookmarkState> {
+  const state = await getBookmarks()
+  const folder = state.folders.find((f) => f.id === folderId)
+  if (!folder) {
+    throw new Error("Folder not found")
+  }
+
+  if (orderedBookmarkIds.length !== folder.bookmarks.length) {
+    throw new Error("Invalid bookmark order")
+  }
+
+  const bookmarkMap = new Map(folder.bookmarks.map((bookmark) => [bookmark.id, bookmark]))
+  const now = Date.now()
+  folder.bookmarks = orderedBookmarkIds.map((bookmarkId, index) => {
+    const bookmark = bookmarkMap.get(bookmarkId)
+    if (!bookmark) {
+      throw new Error("Invalid bookmark id in order")
+    }
+
+    return {
+      ...bookmark,
+      order: index,
+      updatedAt: now,
+    }
+  })
+
+  folder.updatedAt = now
   await saveBookmarks(state)
   return state
 }
@@ -220,8 +319,9 @@ export async function importBookmarks(
       throw new Error("Invalid bookmark format")
     }
     if (!merge) {
-      await saveBookmarks(imported)
-      return imported
+      const { state: normalizedState } = normalizeState(imported)
+      await saveBookmarks(normalizedState)
+      return normalizedState
     }
     const currentState = await getBookmarks()
     const existingFolderNames = new Set(currentState.folders.map((f) => f.name))
@@ -235,6 +335,7 @@ export async function importBookmarks(
               existingFolder.bookmarks.push({
                 ...bookmark,
                 id: generateId(),
+                order: existingFolder.bookmarks.length,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
               })
@@ -251,14 +352,16 @@ export async function importBookmarks(
           bookmarks: folder.bookmarks.map((b) => ({
             ...b,
             id: generateId(),
+            order: typeof b.order === "number" ? b.order : 0,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           })),
         })
       }
     }
-    await saveBookmarks(currentState)
-    return currentState
+    const { state: normalizedState } = normalizeState(currentState)
+    await saveBookmarks(normalizedState)
+    return normalizedState
   } catch (error) {
     throw new Error(`Failed to import bookmarks: ${error}`)
   }
