@@ -231,8 +231,9 @@ Run:
 ```bash
 mkdir -p apps/ext
 mv entrypoints components lib apps/ext/
-mv package.json wxt.config.ts tsconfig.json components.json wxt.config.ts apps/ext/
+mv package.json wxt.config.ts tsconfig.json components.json apps/ext/
 mv ai-writing-assistant-landing.html design-specifications.md apps/ext/
+mv CLAUDE.md AGENTS.md apps/ext/ 2>/dev/null || true
 git add -A && git commit -m "feat(ext): move extension to apps/ext"
 ```
 
@@ -932,14 +933,30 @@ Run: `cd apps/server && pnpm install`
 
 Run: `cd apps/server && pnpm exec tsc --noEmit`
 
-- [ ] **Step 3: 创建本地 D1 数据库**
+- [ ] **Step 3: 创建本地 D1 数据库并更新配置**
 
 Run:
 ```bash
 cd apps/server
 wrangler d1 create armrest-db --local
-# 输出 database_id，填入 drizzle.config.ts 和 wrangler.toml
 ```
+
+从输出中复制 `database_id`，然后更新 `wrangler.toml`:
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "armrest-db"
+database_id = "实际复制的database_id"  # 替换这里
+```
+
+同时更新 `drizzle.config.ts` 中的本地数据库路径:
+```ts
+dbCredentials: {
+  url: './dev.db',  // 本地开发使用 dev.db
+},
+```
+
+生产环境部署时再创建正式 D1 并更新 `wrangler.toml`。
 
 - [ ] **Step 4: 生成数据库迁移**
 
@@ -1084,7 +1101,123 @@ Run: `git add apps/ext/lib/api.ts apps/ext/lib/auth.ts apps/ext/src/env.d.ts && 
 
 ---
 
-### Task 10: 验证整体构建
+### Task 10: 扩展端集成登录和同步
+
+**Files:**
+- Modify: `apps/ext/entrypoints/newtab/App.tsx`
+- Modify: `apps/ext/entrypoints/newtab/components/BookmarksSettings.tsx`
+
+- [ ] **Step 1: 在 App.tsx 中添加登录状态检查**
+
+在 App.tsx 的 useEffect 中添加:
+
+```tsx
+import { checkAuth, getCurrentUser } from '@/lib/auth';
+
+// 在现有 useEffect 中添加:
+useEffect(() => {
+  async function initAuth() {
+    const user = await checkAuth();
+    if (!user) {
+      // 未登录，可以显示登录提示
+      console.log('Not logged in');
+    } else {
+      console.log('Logged in as:', user.name);
+    }
+  }
+  initAuth();
+}, []);
+```
+
+- [ ] **Step 2: 在 BookmarksSettings 中添加登录按钮**
+
+在 `BookmarksSettings.tsx` 的设置面板中添加同步登录区域:
+
+```tsx
+// 在设置面板中添加一个 "同步设置" 区域
+<div className="mb-6">
+  <h3 className="text-lg font-semibold mb-3">云同步</h3>
+  {isLoggedIn ? (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <img src={user?.image} className="w-8 h-8 rounded-full" />
+        <span className="text-sm">{user?.name}</span>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSync}
+          disabled={isSyncing}
+        >
+          {isSyncing ? '同步中...' : '同步书签'}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSignOut}
+        >
+          登出
+        </Button>
+      </div>
+    </div>
+  ) : (
+    <Button
+      variant="default"
+      onClick={handleLogin}
+      className="w-full"
+    >
+      登录以同步书签
+    </Button>
+  )}
+</div>
+```
+
+- [ ] **Step 3: 添加同步和登录处理函数**
+
+```tsx
+const handleLogin = () => {
+  // 打开 OAuth 登录页面
+  window.open(`${import.meta.env.VITE_API_URL}/auth/github`, '_blank');
+};
+
+const handleSync = async () => {
+  setIsSyncing(true);
+  try {
+    // 获取本地书签并同步
+    const bookmarks = await getBookmarks();
+    await api.bookmarks.sync({
+      bookmarks: bookmarks.folders.flatMap(f => f.bookmarks.map(b => ({
+        folderId: f.id,
+        name: b.name,
+        url: b.url,
+        logo: b.logo,
+        description: b.description,
+        color: b.color,
+        position: b.position,
+      })))
+    });
+    alert('同步成功');
+  } catch (error) {
+    alert('同步失败');
+  } finally {
+    setIsSyncing(false);
+  }
+};
+
+const handleSignOut = async () => {
+  await signOut();
+  setIsLoggedIn(false);
+};
+```
+
+- [ ] **Step 4: 提交**
+
+Run: `git add apps/ext/entrypoints/newtab/App.tsx apps/ext/entrypoints/newtab/components/BookmarksSettings.tsx && git commit -m "feat(ext): add login and sync UI integration"`
+
+---
+
+### Task 11: 验证整体构建
 
 - [ ] **Step 1: 在根目录安装依赖**
 
@@ -1098,7 +1231,21 @@ Run: `pnpm lint`
 
 Run: `pnpm build`
 
-- [ ] **Step 4: 提交**
+- [ ] **Step 4: 本地开发测试**
+
+终端 1:
+```bash
+cd apps/server && pnpm dev
+```
+
+终端 2:
+```bash
+cd apps/ext && pnpm dev
+```
+
+验证扩展页面可以正常打开，且设置面板中有登录按钮。
+
+- [ ] **Step 5: 提交**
 
 Run: `git add package.json pnpm-workspace.yaml pnpm-lock.yaml && git commit -m "chore: setup pnpm workspace and root scripts"`
 
@@ -1109,13 +1256,15 @@ Run: `git add package.json pnpm-workspace.yaml pnpm-lock.yaml && git commit -m "
 完成所有任务后验证：
 
 - [ ] `pnpm install` 可以安装所有 workspace 依赖
-- [ ] `pnpm dev` 可以在两个 workspace 同时启动
 - [ ] `pnpm lint` 可以检查所有代码
 - [ ] `pnpm build` 可以构建所有项目
+- [ ] `pnpm dev` 可以在两个 workspace 同时启动
 - [ ] 本地 D1 数据库创建成功并能执行迁移
 - [ ] GitHub OAuth 可以完成登录流程
 - [ ] 书签 CRUD API 可以正常读写数据
 - [ ] 书签同步 API 可以批量同步数据
+- [ ] 扩展设置面板显示登录按钮
+- [ ] 点击登录按钮可以打开 GitHub OAuth 页面
 
 ## 前置准备
 
