@@ -112,6 +112,8 @@ EOF`
 
 - [ ] **Step 2: 创建 .eslintrc.js**
 
+**CORRECTED VERSION** (the plan had a syntax error, use this exact content):
+
 ```js
 const { FlatCompat } = require('@eslint/eslintrc');
 const js = require('@eslint/js');
@@ -121,7 +123,6 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
 });
 
-/** @type {import('eslint').Linter.Config[]} */
 module.exports = [
   ...compat.extends(
     'eslint:recommended',
@@ -141,7 +142,8 @@ module.exports = [
           ],
           'newlines-between': 'always',
         },
-        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      ],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
 ];
