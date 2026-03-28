@@ -17,7 +17,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const folders = sqliteTable('folders', {
   id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   icon: text('icon').default('folder'),
   color: text('color').default('#6366F1'),
