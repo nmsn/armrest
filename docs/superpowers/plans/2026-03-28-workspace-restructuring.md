@@ -609,7 +609,7 @@ app.all('/auth/*', async (c) => {
 
 app.route('/auth', authRouter(auth));
 app.route('/api/bookmarks', bookmarksRouter);
-app.route('/api/bookmarks', syncRouter);
+app.route('/api/bookmarks/sync', syncRouter);
 app.route('/api', weatherRouter);
 
 export default app;
@@ -868,7 +868,8 @@ const syncSchema = z.object({
 
 const router = new Hono();
 
-router.post('/bookmarks', zValidator('json', syncSchema), async (c) => {
+// 挂载在 /api/bookmarks/sync，所以这里用 /
+router.post('/', zValidator('json', syncSchema), async (c) => {
   const userId = c.get('userId');
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
@@ -1023,6 +1024,7 @@ export const api = {
     create: (data: CreateBookmarkData) => apiRequest('/api/bookmarks', { method: 'POST', body: data }),
     update: (id: string, data: UpdateBookmarkData) => apiRequest(`/api/bookmarks/${id}`, { method: 'PUT', body: data }),
     delete: (id: string) => apiRequest(`/api/bookmarks/${id}`, { method: 'DELETE' }),
+    sync: (data: { bookmarks: CreateBookmarkData[] }) => apiRequest('/api/bookmarks/sync', { method: 'POST', body: data }),
   },
   auth: {
     getSession: () => apiRequest('/auth/session'),
