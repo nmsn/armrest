@@ -21,7 +21,6 @@
 armrest/                          # pnpm workspace root
 ├── pnpm-workspace.yaml            # workspace 定义
 ├── package.json                   # 根 scripts (lint, build, dev)
-├── turbo.json                     # Turborepo 任务编排 (可选)
 │
 ├── .eslintrc.js                   # 统一 ESLint 基础配置
 ├── .prettierrc                   # 统一 Prettier 配置
@@ -77,10 +76,10 @@ packages:
 ```json
 {
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix"
+    "dev": "pnpm -r --parallel -c run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix"
   }
 }
 ```
