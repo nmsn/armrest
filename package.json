@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wxt",
-    "build": "wxt build",
-    "preview": "wxt preview"
+    "dev": "pnpm -r --parallel -c run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
