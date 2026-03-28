@@ -92,7 +92,7 @@ packages:
 - 使用 `overrides` 为不同 workspace 指定不同解析器
 
 **`.prettierrc`**
-- 单引号、无分号、行宽 100、Tab 2 空格
+- 单引号、**有分号**、行宽 100、Tab 2 空格
 
 **lint-staged 配置**
 - `*.{ts,tsx}` → `eslint --fix` + `prettier --write`
