@@ -1,5 +1,6 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 export default defineConfig({
   manifest: {
@@ -20,7 +21,7 @@ export default defineConfig({
     ]
   },
   alias: {
-    '@': '.',
+    '@': path.resolve(__dirname),
   },
   vite: () => ({
     plugins: [tailwindcss()],
