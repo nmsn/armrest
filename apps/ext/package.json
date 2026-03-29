@@ -1,5 +1,5 @@
 {
-  "name": "armrest",
+  "name": "@armrest/ext",
   "version": "1.0.0",
   "private": true,
   "type": "module",
