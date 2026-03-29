@@ -63,7 +63,7 @@ export class BookmarkService {
       .where(and(eq(schema.bookmarks.id, id), eq(schema.bookmarks.userId, userId)));
   }
 
-  async sync(userId: string, bookmarks: Array<CreateBookmarkInput & { id?: string }>) {
+  async sync(userId: string, bookmarks: Array<Omit<CreateBookmarkInput, 'userId'> & { id?: string }>) {
     await this.db.delete(schema.bookmarks).where(eq(schema.bookmarks.userId, userId));
 
     for (const bookmark of bookmarks) {

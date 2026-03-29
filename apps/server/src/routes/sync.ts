@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { getDb } from '../db';
 import { BookmarkService } from '../services/bookmark';
+import type { Env } from '../index';
 
 const syncSchema = z.object({
   bookmarks: z.array(z.object({
@@ -17,7 +18,11 @@ const syncSchema = z.object({
   })),
 });
 
-const router = new Hono();
+type AppVariables = {
+  userId: string;
+};
+
+const router = new Hono<{ Bindings: Env; Variables: AppVariables }>();
 
 // 挂载在 /api/bookmarks/sync，所以这里用 /
 router.post('/', zValidator('json', syncSchema), async (c) => {

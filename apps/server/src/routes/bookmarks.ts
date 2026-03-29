@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { getDb } from '../db';
 import { BookmarkService } from '../services/bookmark';
+import type { Env } from '../index';
 
 const bookmarkSchema = z.object({
   folderId: z.string(),
@@ -14,7 +15,7 @@ const bookmarkSchema = z.object({
   position: z.number().optional(),
 });
 
-const router = new Hono();
+const router = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
 
 router.get('/', async (c) => {
   const userId = c.get('userId');

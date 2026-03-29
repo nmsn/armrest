@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { github } from 'better-auth/providers/github';
+import { github } from 'better-auth/social-providers';
 import { getDb } from '../db';
 
 interface AuthEnv {
