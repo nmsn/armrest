@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Settings, Search, Bookmark, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Sparkles } from "lucide-react"
-import { checkAuth, getCurrentUser, signOut } from "@/lib/auth"
+import { Settings, Search, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Sparkles } from "lucide-react"
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core"
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -23,8 +22,10 @@ import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { BookmarkList, getBookmarkDragId } from "./components/BookmarkList"
+import { NewsCard } from "./components/NewsCard"
+import { WordCard } from "./components/WordCard"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, reorderFolders, moveBookmark, deleteBookmark, BookmarkFolder } from "@/lib/bookmarks"
-import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
+import { getThemeConfig, applyTheme } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -87,21 +88,21 @@ function FolderSidebarItem({ folder, index, isActive, onSelect }: FolderSidebarI
       onClick={() => onSelect(index)}
       {...attributes}
       {...listeners}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${isOver
-        ? "ring-2 ring-accent/40"
-        : ""
-        } ${isActive
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 ${
+        isOver ? "ring-2 ring-accent/40" : ""
+      } ${
+        isActive
           ? "bg-accent text-accent-foreground"
           : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
-        }`}
+      }`}
     >
       <div
-        className="w-6 h-6 rounded-md flex items-center justify-center"
+        className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
         style={{ backgroundColor: folder.color || "#6366F1" }}
       >
-        <FolderIcon className="w-3.5 h-3.5 text-white" />
+        <FolderIcon className="w-3 h-3 text-white" />
       </div>
-      <span>{folder.name}</span>
+      <span className="truncate">{folder.name}</span>
     </button>
   )
 }
@@ -115,8 +116,6 @@ export default function App() {
   const [editingBookmark, setEditingBookmark] = useState<{ id: string; name: string; url: string; color?: string } | null>(null)
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState<{ name?: string; image?: string } | null>(null)
   const prevFolderIndexRef = useRef(0)
 
   const loadFolders = useCallback(async () => {
@@ -138,15 +137,6 @@ export default function App() {
       applyTheme(config.mode)
     }
     initTheme()
-  }, [])
-
-  useEffect(() => {
-    async function initAuth() {
-      const u = await checkAuth()
-      setIsLoggedIn(!!u)
-      setUser(u)
-    }
-    initAuth()
   }, [])
 
   useEffect(() => {
@@ -360,43 +350,128 @@ export default function App() {
 
   return (
     <TooltipProvider>
-    <div
-      className="h-screen flex flex-col items-center p-4 overflow-hidden bg-surface"
-    >
-      <div className="w-full max-w-5xl flex flex-col h-full">
-        <div className="text-center mb-4 mt-8">
-          <Clock />
-          <div className="mt-2">
-            <Weather />
+    <div className="h-screen overflow-hidden bg-surface flex items-start justify-center p-4">
+      <div className="w-full max-w-5xl h-full flex flex-col">
+
+        {/* ============================================================
+             HEADER ROW — logo+settings (left) | search (right)
+             ============================================================ */}
+        <div className="app-header mb-4 shrink-0">
+          <div className="app-header-left">
+            <div className="app-logo">arm<span>rest</span></div>
+            <div className="flex items-center">
+              <Drawer direction="right">
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 rounded-lg border-border bg-card hover:border-accent/30 hover:bg-accent/10 transition-all"
+                  >
+                    <Settings className="h-4 w-4 text-muted-foreground hover:text-accent" />
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none border-l border-border bg-card">
+                  <DrawerHeader className="border-b border-border">
+                    <DrawerTitle className="text-foreground font-semibold">Settings</DrawerTitle>
+                    <DrawerDescription className="text-muted-foreground">
+                      Configure your dashboard preferences.
+                    </DrawerDescription>
+                  </DrawerHeader>
+                  <div className="flex h-[calc(100vh-100px)]">
+                    <div className="w-16 border-r border-border flex flex-col items-center py-4 gap-2">
+                      <Button
+                        variant={activeSettingsTab === "bookmarks" ? "default" : "ghost"}
+                        size="icon"
+                        onClick={() => setActiveSettingsTab("bookmarks")}
+                        title="Bookmarks"
+                        className={`rounded-xl transition-colors ${activeSettingsTab === "bookmarks" ? "bg-accent hover:bg-accent-dark text-accent-foreground" : "text-muted-foreground hover:text-accent hover:bg-accent/10"}`}
+                      >
+                        <BookmarkIcon className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    <div className="flex-1 p-6 overflow-y-auto">
+                      <BookmarksSettings
+                        folders={foldersData}
+                        onBookmarkAdded={handleBookmarkAdded}
+                        isBookmarkModalOpen={isBookmarkModalOpen}
+                        onBookmarkModalClose={() => {
+                          setIsBookmarkModalOpen(false)
+                          setEditingBookmark(null)
+                        }}
+                        onBookmarkModalOpen={handleOpenBookmarkModal}
+                        editingBookmark={editingBookmark}
+                        onSaveBookmark={handleSaveBookmark}
+                        onEditBookmark={handleEditBookmark}
+                        isFolderModalOpen={isFolderModalOpen}
+                        onFolderModalClose={() => {
+                          setIsFolderModalOpen(false)
+                          setEditingFolder(null)
+                        }}
+                        editingFolder={editingFolder}
+                        onSaveFolder={handleSaveFolder}
+                        onOpenFolderModal={handleOpenFolderModal}
+                      />
+                    </div>
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            </div>
+          </div>
+
+          <div className="app-header-search">
+            <div className="relative flex-1 max-w-md">
+              <Input
+                type="text"
+                placeholder="Search or enter URL..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="h-10 rounded-xl border-border bg-card pr-12 text-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/20"
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute right-1 top-1 h-8 w-8 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
+                onClick={handleSearch}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-center mb-8">
-          <div className="relative w-full max-w-md">
-            <Input
-              type="text"
-              placeholder="Search or enter URL..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full pr-12 h-12 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/20 transition-colors"
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute right-1 top-1 h-10 w-10 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
-              onClick={handleSearch}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
+        {/* ============================================================
+             BODY — sidebar + main content
+             ============================================================ */}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="flex-1 grid grid-cols-\[176px_1fr\] gap-[var(--ds-section-gap)] overflow-hidden min-h-0">
 
-        {foldersData.length > 0 ? (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <div className="flex gap-6">
-              <div className="w-44 shrink-0">
-                <div className="border border-border rounded-2xl p-3 space-y-1 bg-card">
+            {/* ------------------------------------------------
+                 SIDEBAR — Clock | Weather | Folders
+                 ------------------------------------------------ */}
+            <div className="app-sidebar overflow-y-auto">
+              {/* Clock — u2 × u1 */}
+              <div className="app-card" style={{ height: "172px" }}>
+                <Clock compact />
+              </div>
+
+              {/* Weather — u2 × u1 */}
+              <div className="app-card" style={{ height: "80px" }}>
+                <Weather />
+              </div>
+
+              {/* Folders — u2 × u3, vertical list */}
+              <div className="app-card flex flex-col" style={{ minHeight: "264px" }}>
+                <div className="app-card-header">
+                  <span className="app-card-title">Folders</span>
+                  <button
+                    onClick={() => handleOpenFolderModal()}
+                    className="app-card-action"
+                  >
+                    + New
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto space-y-1">
                   <SortableContext
                     items={foldersData.map((folder) => getFolderItemDragId(folder.id))}
                     strategy={verticalListSortingStrategy}
@@ -413,19 +488,32 @@ export default function App() {
                   </SortableContext>
                 </div>
               </div>
+            </div>
 
-              <div className="flex-1 overflow-hidden">
+            {/* ------------------------------------------------
+                 MAIN — Bookmarks | News+Word | Quote
+                 ------------------------------------------------ */}
+            <div className="app-main overflow-y-auto">
+
+              {/* Bookmarks — full width, u3 height */}
+              <div className="app-card" style={{ height: "256px" }}>
+                <div className="app-card-header">
+                  <span className="app-card-title">Bookmarks</span>
+                  <button
+                    onClick={() => handleOpenBookmarkModal()}
+                    className="app-card-action"
+                  >
+                    Edit
+                  </button>
+                </div>
                 <AnimatePresence mode="popLayout" custom={direction}>
                   <motion.div
                     key={activeFolderIndex}
                     custom={direction}
-                    initial={{ y: direction > 0 ? 20 : -20, opacity: 0 }}
+                    initial={{ y: direction > 0 ? 10 : -10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: direction > 0 ? -20 : 20, opacity: 0 }}
-                    transition={{
-                      duration: 0.25,
-                      ease: [0.25, 0.1, 0.25, 1]
-                    }}
+                    exit={{ y: direction > 0 ? -10 : 10, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                   >
                     <BookmarkList
                       bookmarks={currentFolder?.bookmarks || []}
@@ -437,79 +525,22 @@ export default function App() {
                   </motion.div>
                 </AnimatePresence>
               </div>
-            </div>
-          </DndContext>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">点击右上角 ⚙️ 添加第一个书签</p>
-          </div>
-        )}
-      </div>
 
-      <div className="fixed bottom-6 right-6">
-        <Drawer direction="right">
-          <DrawerTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-xl border-border bg-card hover:border-accent/30 hover:bg-accent/10 shadow-sm transition-all duration-200"
-            >
-              <Settings className="h-5 w-5 text-muted-foreground hover:text-accent transition-colors" />
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none border-l border-border bg-card">
-            <DrawerHeader className="border-b border-border">
-              <DrawerTitle className="text-foreground font-semibold">Settings</DrawerTitle>
-              <DrawerDescription className="text-muted-foreground">
-                Configure your dashboard preferences.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="flex h-[calc(100vh-100px)]">
-              <div className="w-16 border-r border-border flex flex-col items-center py-4 gap-2">
-                <Button
-                  variant={activeSettingsTab === "bookmarks" ? "default" : "ghost"}
-                  size="icon"
-                  onClick={() => setActiveSettingsTab("bookmarks")}
-                  title="Bookmarks"
-                  className={`rounded-xl transition-colors ${activeSettingsTab === "bookmarks" ? "bg-accent hover:bg-accent-dark text-accent-foreground" : "text-muted-foreground hover:text-accent hover:bg-accent/10"}`}
-                >
-                  <Bookmark className="h-5 w-5" />
-                </Button>
+              {/* News + Word — side by side */}
+              <div className="news-word-row">
+                <NewsCard />
+                <WordCard />
               </div>
-              <div className="flex-1 p-6 overflow-y-auto">
-                  <BookmarksSettings
-                    folders={foldersData}
-                    onBookmarkAdded={handleBookmarkAdded}
-                    isBookmarkModalOpen={isBookmarkModalOpen}
-                    onBookmarkModalClose={() => {
-                      setIsBookmarkModalOpen(false)
-                      setEditingBookmark(null)
-                    }}
-                    onBookmarkModalOpen={handleOpenBookmarkModal}
-                    editingBookmark={editingBookmark}
-                    onSaveBookmark={handleSaveBookmark}
-                    onEditBookmark={handleEditBookmark}
-                    isFolderModalOpen={isFolderModalOpen}
-                    onFolderModalClose={() => {
-                      setIsFolderModalOpen(false)
-                      setEditingFolder(null)
-                    }}
-                    editingFolder={editingFolder}
-                    onSaveFolder={handleSaveFolder}
-                    onOpenFolderModal={handleOpenFolderModal}
-                    isLoggedIn={isLoggedIn}
-                    user={user}
-                    onLogin={() => window.open(`${import.meta.env.VITE_API_URL}/auth/github`, "_blank")}
-                    onLogout={async () => {
-                      await signOut()
-                      setIsLoggedIn(false)
-                      setUser(null)
-                    }}
-                  />
+
+              {/* Quote — full width, u1 height */}
+              <div className="app-card flex items-center justify-center px-6" style={{ height: "80px" }}>
+                <DailyQuote compact />
               </div>
+
             </div>
-          </DrawerContent>
-        </Drawer>
+          </div>
+        </DndContext>
+
       </div>
 
       <BookmarkEditModal
@@ -534,9 +565,6 @@ export default function App() {
         title={editingFolder ? "Edit Folder" : "Add Folder"}
       />
 
-      <div className="mt-auto pt-4 pb-2">
-        <DailyQuote className="justify-center" />
-      </div>
     </div>
     </TooltipProvider>
   )

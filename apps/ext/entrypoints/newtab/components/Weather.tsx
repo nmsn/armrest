@@ -47,38 +47,34 @@ export function Weather({ city }: WeatherProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/70">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
         <Loader2 className="w-3 h-3 animate-spin" />
-        <span>加载天气...</span>
+        <span>...</span>
       </div>
     )
   }
 
   if (error || !weather) {
     return (
-      <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground/70">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
         <Cloud className="w-3 h-3" />
-        <span>天气不可用</span>
+        <span>--</span>
       </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80">
-      <Cloud className="w-3 h-3" />
-      <span>{weather.city}</span>
-      <span>·</span>
-      <span>{weather.temperature}</span>
-      <span>·</span>
-      <span>{weather.weather}</span>
-      <span className="flex items-center gap-0.5">
-        <Wind className="w-2.5 h-2.5" />
-        {weather.wind}
-      </span>
-      <span className="flex items-center gap-0.5">
-        <Droplets className="w-2.5 h-2.5" />
-        {weather.humidity}
-      </span>
+    <div className="flex items-stretch gap-4">
+      <div className="flex">
+        <Cloud className="w-12 h-12 text-muted-foreground/60" />
+      </div>
+      <div className="flex flex-col justify-center gap-1">
+        <div className="flex items-baseline gap-2">
+          <span className="text-sm font-semibold text-foreground">{weather.temperature}</span>
+          <span className="text-sm text-muted-foreground">{weather.weather}</span>
+        </div>
+        <div className="text-xs text-muted-foreground/50">{weather.city}</div>
+      </div>
     </div>
   )
 }
