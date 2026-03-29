@@ -59,7 +59,7 @@ export function BookmarkList({
           >
             <ChevronLeft className="w-3 h-3" />
           </button>
-          <span className="text-[10px] text-muted">
+          <span className="text-xs text-muted">
             {currentPage + 1}/{totalPages}
           </span>
           <button

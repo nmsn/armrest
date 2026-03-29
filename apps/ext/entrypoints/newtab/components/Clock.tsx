@@ -63,14 +63,14 @@ export default function Clock() {
 
   return (
     <div className="flex flex-col items-center justify-center space-y-3">
-      <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-mono tabular-nums">
+      <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-mono tabular-nums [transition:opacity_0.1s_ease]">
         {time.toLocaleTimeString()}
       </div>
       <div className="flex flex-col items-center space-y-1.5">
         <div className="text-lg md:text-xl font-medium text-primary/80">
           {year}年{month}月{date}日 {weekday}
         </div>
-        <div className="text-base md:text-lg text-primary/60">
+        <div className="text-base md:text-lg text-primary/70">
           {lunarDate}
         </div>
       </div>

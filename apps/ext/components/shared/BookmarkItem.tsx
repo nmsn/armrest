@@ -1,6 +1,11 @@
 import { useState } from "react"
 import { Bookmark } from "@/lib/bookmarks"
 import { BOOKMARK_CONFIG } from "@/lib/constants"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const BOOKMARK_COLORS = BOOKMARK_CONFIG.BOOKMARK_COLORS
 
@@ -50,10 +55,12 @@ export function BookmarkItem({
     : bookmark.name
 
   return (
-    <button
-      onClick={() => onClick(bookmark.url)}
-      className={`flex flex-col items-center justify-center ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full`}
-    >
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => onClick(bookmark.url)}
+          className={`flex flex-col items-center justify-center ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2`}
+        >
       <div
         className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}
         style={{ backgroundColor: bookmark.color || getRandomColor(BOOKMARK_COLORS) }}
@@ -71,9 +78,17 @@ export function BookmarkItem({
           />
         )}
       </div>
-      <span className={`truncate ${sizeClasses.text} text-foreground/70 group-hover:text-accent transition-colors font-normal w-full text-center`}>
+      <span className={`truncate ${sizeClasses.text} text-foreground/80 group-hover:text-accent transition-colors font-normal w-full text-center`}>
         {displayName}
       </span>
-    </button>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">
+        <div className="font-medium">{bookmark.name}</div>
+        {bookmark.description && (
+          <div className="text-muted-foreground text-xs mt-0.5">{bookmark.description}</div>
+        )}
+      </TooltipContent>
+    </Tooltip>
   )
 }

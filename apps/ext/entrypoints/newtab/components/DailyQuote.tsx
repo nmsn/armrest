@@ -51,7 +51,7 @@ export function DailyQuote({ className = "" }: DailyQuoteProps) {
       <div className="flex items-start gap-2">
         <Quote className="w-4 h-4 text-accent/60 mt-0.5 shrink-0" />
         <div className="max-w-xs">
-          <p className="text-sm text-foreground/90 italic leading-relaxed line-clamp-3">
+          <p className="text-sm text-foreground/80 italic leading-relaxed line-clamp-3">
             "{quote.content}"
           </p>
           <p className="text-xs text-muted-foreground mt-1.5">
@@ -61,7 +61,7 @@ export function DailyQuote({ className = "" }: DailyQuoteProps) {
       </div>
       <button
         onClick={fetchQuote}
-        className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-accent/10"
+        className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-accent/10"
         title="刷新一言"
       >
         <RefreshCw className="w-3 h-3 text-muted-foreground" />

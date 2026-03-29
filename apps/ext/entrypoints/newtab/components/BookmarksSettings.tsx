@@ -56,8 +56,17 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
 
   const activeFolder = folders.find(f => f.id === activeFolderId)
 
-  const handleDeleteFolder = async (folderId: string) => {
-    if (!confirm("Are you sure you want to delete this folder and all its bookmarks?")) return
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "folder"; id: string } | { type: "bookmark"; folderId: string; id: string } | null>(null)
+  const [importData, setImportData] = useState<{ text: string } | null>(null)
+  const [importMerge, setImportMerge] = useState(true)
+
+  const handleDeleteFolder = (folderId: string) => {
+    setDeleteConfirm({ type: "folder", id: folderId })
+  }
+
+  const confirmDeleteFolder = async () => {
+    if (!deleteConfirm || deleteConfirm.type !== "folder") return
+    const folderId = deleteConfirm.id
     try {
       await deleteFolder(folderId)
       if (activeFolderId === folderId) {
@@ -67,19 +76,31 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
       onBookmarkAdded?.()
     } catch (error) {
       console.error("Failed to delete folder:", error)
+    } finally {
+      setDeleteConfirm(null)
     }
   }
 
-  const handleDelete = async (bookmarkId: string) => {
+  const handleDeleteBookmark = (bookmarkId: string) => {
     if (!activeFolderId) return
+    setDeleteConfirm({ type: "bookmark", folderId: activeFolderId, id: bookmarkId })
+  }
+
+  const confirmDeleteBookmark = async () => {
+    if (!deleteConfirm || deleteConfirm.type !== "bookmark") return
+    const { folderId, id } = deleteConfirm
     try {
-      await deleteBookmark(activeFolderId, bookmarkId)
+      await deleteBookmark(folderId, id)
       await loadBookmarks()
       onBookmarkAdded?.()
     } catch (error) {
       console.error("Failed to delete bookmark:", error)
+    } finally {
+      setDeleteConfirm(null)
     }
   }
+
+  const cancelDelete = () => setDeleteConfirm(null)
 
   const handleExport = async () => {
     setIsExporting(true)
@@ -99,34 +120,37 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
     }
   }
 
-  const handleImport = async () => {
+  const handleImport = () => {
     const input = document.createElement("input")
     input.type = "file"
     input.accept = ".json"
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
-
-      setIsImporting(true)
-      try {
-        const text = await file.text()
-        const merge = confirm("Merge with existing bookmarks? Click OK to merge, Cancel to replace.")
-        await importBookmarks(text, merge)
-        await loadBookmarks()
-        onBookmarkAdded?.()
-      } catch (error) {
-        console.error("Failed to import bookmarks:", error)
-        alert("Failed to import bookmarks. Please check the file format.")
-      } finally {
-        setIsImporting(false)
-      }
+      const text = await file.text()
+      setImportData({ text })
     }
     input.click()
   }
 
+  const confirmImport = async () => {
+    if (!importData) return
+    setIsImporting(true)
+    try {
+      await importBookmarks(importData.text, importMerge)
+      await loadBookmarks()
+      onBookmarkAdded?.()
+      setImportData(null)
+    } catch (error) {
+      console.error("Failed to import bookmarks:", error)
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <div className="mb-6 p-4 border border-border rounded-xl">
+      <div className="mb-6 p-4 border-2 border-accent/30 rounded-xl bg-accent/5">
         <h3 className="text-lg font-semibold mb-3">云同步</h3>
         {isLoggedIn ? (
           <div className="flex items-center justify-between">
@@ -230,26 +254,9 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
 
       {activeFolder && (
         <>
-          <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-medium text-foreground mb-3">
-              Bookmarks in "{activeFolder.name}"
-            </h3>
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                onBookmarkModalOpen?.()
-              }}
-              className="w-full border-border hover:border-accent text-foreground rounded-xl font-medium transition-colors"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Bookmark
-            </Button>
-          </div>
-
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {activeFolder.bookmarks.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No bookmarks yet</p>
+              <p className="text-sm text-muted-foreground text-center py-4">暂无书签</p>
             ) : (
               activeFolder.bookmarks.map((bookmark) => (
                 <div
@@ -279,7 +286,7 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(bookmark.id)}
+                    onClick={() => handleDeleteBookmark(bookmark.id)}
                     className="text-muted-foreground hover:bg-accent/10"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -289,6 +296,58 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
             )}
           </div>
         </>
+      )}
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-card border border-border rounded-xl p-4 w-72 shadow-lg">
+            <p className="text-sm font-medium text-foreground mb-3">
+              {deleteConfirm.type === "folder"
+                ? `确定删除文件夹"${folders.find(f => f.id === deleteConfirm.id)?.name}"？该操作不可恢复。`
+                : "确定删除此书签？该操作不可恢复。"}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="ghost" size="sm" onClick={cancelDelete}>取消</Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={deleteConfirm.type === "folder" ? confirmDeleteFolder : confirmDeleteBookmark}
+              >
+                删除
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {importData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-card border border-border rounded-xl p-4 w-72 shadow-lg space-y-3">
+            <p className="text-sm font-medium text-foreground">如何处理导入的书签？</p>
+            <div className="flex gap-2">
+              <Button
+                variant={importMerge ? "default" : "outline"}
+                size="sm"
+                onClick={() => setImportMerge(true)}
+                className="flex-1"
+              >
+                合并
+              </Button>
+              <Button
+                variant={!importMerge ? "default" : "outline"}
+                size="sm"
+                onClick={() => setImportMerge(false)}
+                className="flex-1"
+              >
+                替换
+              </Button>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="ghost" size="sm" onClick={() => setImportData(null)}>取消</Button>
+              <Button variant="default" size="sm" onClick={confirmImport}>导入</Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

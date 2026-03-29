@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react"
 import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
 import { FolderSidebar, BookmarkList } from "./components"
 import { getThemeConfig, applyTheme } from "@/lib/theme"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 const ITEMS_PER_PAGE = 8
 
@@ -94,6 +95,7 @@ export default function Popup() {
   }
 
   return (
+    <TooltipProvider>
     <div className="flex h-[240px] w-[320px] bg-background text-foreground">
       <FolderSidebar
         folders={folders}
@@ -107,8 +109,9 @@ export default function Popup() {
         onPageChange={handlePageChange}
         onBookmarkClick={handleOpenUrl}
         itemsPerPage={ITEMS_PER_PAGE}
-        emptyText="No bookmarks"
+        emptyText="暂无书签"
       />
     </div>
+    </TooltipProvider>
   )
 }

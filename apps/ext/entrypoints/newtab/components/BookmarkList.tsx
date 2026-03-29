@@ -5,12 +5,15 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { Plus } from "lucide-react"
 import { Bookmark } from "@/lib/bookmarks"
 import { BookmarkItem } from "@/components/shared/BookmarkItem"
+import { cn } from "@/lib/utils"
 
 interface BookmarkListProps {
   bookmarks: Bookmark[]
   onBookmarkClick: (url: string) => void
+  onAddBookmark: () => void
 }
 
 interface SortableBookmarkItemProps {
@@ -58,7 +61,7 @@ function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkIte
   )
 }
 
-export function BookmarkList({ bookmarks, onBookmarkClick }: BookmarkListProps) {
+export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark }: BookmarkListProps) {
   const itemIds = useMemo(
     () => bookmarks.map((bookmark) => getBookmarkDragId(bookmark.id)),
     [bookmarks]
@@ -66,7 +69,7 @@ export function BookmarkList({ bookmarks, onBookmarkClick }: BookmarkListProps) 
 
   return (
     <SortableContext items={itemIds} strategy={rectSortingStrategy}>
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
         {bookmarks.map((bookmark) => (
           <SortableBookmarkItem
             key={bookmark.id}
@@ -74,6 +77,18 @@ export function BookmarkList({ bookmarks, onBookmarkClick }: BookmarkListProps) 
             onBookmarkClick={onBookmarkClick}
           />
         ))}
+        <button
+          onClick={onAddBookmark}
+          className={cn(
+            "flex flex-col items-center justify-center gap-2 p-3 rounded-lg",
+            "border-2 border-dashed border-border hover:border-accent/50",
+            "bg-surface hover:bg-accent/5 transition-colors cursor-pointer",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          )}
+        >
+          <Plus className="w-11 h-11 rounded-xl text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">新增</span>
+        </button>
       </div>
     </SortableContext>
   )

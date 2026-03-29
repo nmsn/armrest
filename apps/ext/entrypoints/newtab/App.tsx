@@ -18,13 +18,13 @@ import {
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BackgroundSettings } from "./components/BackgroundSettings"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { BookmarkList, getBookmarkDragId } from "./components/BookmarkList"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, reorderFolders, moveBookmark, BookmarkFolder } from "@/lib/bookmarks"
-import { getThemeConfig, applyTheme, defaultThemeConfig, getCurrentBackground } from "@/lib/theme"
+import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   code: Code,
@@ -38,7 +38,7 @@ const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   sparkles: Sparkles,
 }
 
-type SettingsTab = "background" | "bookmarks"
+type SettingsTab = "bookmarks"
 
 const FOLDER_ITEM_ID_PREFIX = "folder-item:"
 
@@ -87,7 +87,7 @@ function FolderSidebarItem({ folder, index, isActive, onSelect }: FolderSidebarI
       onClick={() => onSelect(index)}
       {...attributes}
       {...listeners}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${isOver
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${isOver
         ? "ring-2 ring-accent/40"
         : ""
         } ${isActive
@@ -108,15 +108,13 @@ function FolderSidebarItem({ folder, index, isActive, onSelect }: FolderSidebarI
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>("background")
+  const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>("bookmarks")
   const [activeFolderIndex, setActiveFolderIndex] = useState(0)
   const [foldersData, setFoldersData] = useState<BookmarkFolder[]>([])
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<{ id: string; name: string; url: string; color?: string } | null>(null)
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
-  const [backgroundColor, setBackgroundColor] = useState(defaultThemeConfig.light.backgroundColor)
-  const [backgroundImage, setBackgroundImage] = useState(defaultThemeConfig.light.backgroundImage)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState<{ name?: string; image?: string } | null>(null)
   const prevFolderIndexRef = useRef(0)
@@ -138,9 +136,6 @@ export default function App() {
     async function initTheme() {
       const config = await getThemeConfig()
       applyTheme(config.mode)
-      const bg = await getCurrentBackground()
-      setBackgroundColor(bg.backgroundColor)
-      setBackgroundImage(bg.backgroundImage)
     }
     initTheme()
   }, [])
@@ -353,15 +348,9 @@ export default function App() {
   }
 
   return (
+    <TooltipProvider>
     <div
       className="h-screen flex flex-col items-center p-4 overflow-hidden bg-surface"
-      style={{
-        backgroundColor: backgroundColor,
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-        backgroundSize: backgroundImage ? 'cover' : undefined,
-        backgroundPosition: backgroundImage ? 'center' : undefined,
-        backgroundRepeat: backgroundImage ? 'no-repeat' : undefined,
-      }}
     >
       <div className="w-full max-w-5xl flex flex-col h-full">
         <div className="text-center mb-4 mt-8">
@@ -430,6 +419,7 @@ export default function App() {
                     <BookmarkList
                       bookmarks={currentFolder?.bookmarks || []}
                       onBookmarkClick={handleBookmarkClick}
+                      onAddBookmark={handleOpenBookmarkModal}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -438,7 +428,7 @@ export default function App() {
           </DndContext>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No bookmarks yet. Open settings to add some!</p>
+            <p className="text-muted-foreground">点击右上角 ⚙️ 添加第一个书签</p>
           </div>
         )}
       </div>
@@ -449,7 +439,7 @@ export default function App() {
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 rounded-xl border-border bg-card hover:border-accent/30 hover:bg-card shadow-sm transition-all duration-200"
+              className="h-12 w-12 rounded-xl border-border bg-card hover:border-accent/30 hover:bg-accent/10 shadow-sm transition-all duration-200"
             >
               <Settings className="h-5 w-5 text-muted-foreground hover:text-accent transition-colors" />
             </Button>
@@ -464,15 +454,6 @@ export default function App() {
             <div className="flex h-[calc(100vh-100px)]">
               <div className="w-16 border-r border-border flex flex-col items-center py-4 gap-2">
                 <Button
-                  variant={activeSettingsTab === "background" ? "default" : "ghost"}
-                  size="icon"
-                  onClick={() => setActiveSettingsTab("background")}
-                  title="Background"
-                  className={`rounded-xl transition-colors ${activeSettingsTab === "background" ? "bg-accent hover:bg-accent-dark text-accent-foreground" : "text-muted-foreground hover:text-accent hover:bg-accent/10"}`}
-                >
-                  <Settings className="h-5 w-5" />
-                </Button>
-                <Button
                   variant={activeSettingsTab === "bookmarks" ? "default" : "ghost"}
                   size="icon"
                   onClick={() => setActiveSettingsTab("bookmarks")}
@@ -483,16 +464,6 @@ export default function App() {
                 </Button>
               </div>
               <div className="flex-1 p-6 overflow-y-auto">
-                {activeSettingsTab === "background" ? (
-                  <BackgroundSettings
-                    backgroundColor={backgroundColor}
-                    backgroundImage={backgroundImage}
-                    onBackgroundChange={(color, image) => {
-                      setBackgroundColor(color)
-                      setBackgroundImage(image)
-                    }}
-                  />
-                ) : (
                   <BookmarksSettings
                     folders={foldersData}
                     onBookmarkAdded={handleBookmarkAdded}
@@ -522,7 +493,6 @@ export default function App() {
                       setUser(null)
                     }}
                   />
-                )}
               </div>
             </div>
           </DrawerContent>
@@ -555,5 +525,6 @@ export default function App() {
         <DailyQuote className="justify-center" />
       </div>
     </div>
+    </TooltipProvider>
   )
 }

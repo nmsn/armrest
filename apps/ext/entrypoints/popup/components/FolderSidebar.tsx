@@ -23,7 +23,7 @@ export function FolderSidebar({
           <button
             key={folder.id}
             onClick={() => onSelect(folder.id)}
-            className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center transition-colors ${isSelected
+            className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 ${isSelected
               ? "text-white"
               : "text-muted-foreground hover:bg-accent/10 hover:text-accent"
               }`}
