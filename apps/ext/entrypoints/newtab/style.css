@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./design-system.css";
 
 :root {
   --background: hsl(0 0% 100%);

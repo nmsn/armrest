@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>armrest — new tab</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS — Card Size System
+   card_size(n) = n * len + (n - 1) * pad
+   ============================================================ */
+:root {
+  --len: 80px;
+  --pad: 12px;
+  --u1: calc(var(--len));
+  --u2: calc(var(--len) * 2 + var(--pad));
+  --u3: calc(var(--len) * 3 + var(--pad) * 2);
+  --u4: calc(var(--len) * 4 + var(--pad) * 3);
+  --sidebar: var(--u2);
+  --col: var(--u3);
+  --section-gap: 20px;
+  --page-pad: 32px;
+  --r1: 10px;
+  --r2: 14px;
+  --r3: 20px;
+  --bg: #08080a;
+  --surface: #0f0f12;
+  --card: #16161c;
+  --card-hover: #1e1e26;
+  --border: rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.15);
+  --text: #f4f4f5;
+  --text-2: #a1a1aa;
+  --text-3: #71717a;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-dim: rgba(99,102,241,0.15);
+  --accent2: #8b5cf6;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --red: #ef4444;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   PAGE GRID
+   ============================================================ */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: var(--sidebar) 1fr;
+  grid-template-rows: var(--u1) auto;
+  column-gap: var(--section-gap);
+  row-gap: var(--section-gap);
+  align-items: start;
+  padding: var(--page-pad);
+}
+
+/* ============================================================
+   HEADER ROW
+   ============================================================ */
+.header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: var(--sidebar) 1fr;
+  align-items: center;
+  column-gap: var(--section-gap);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.logo span { color: var(--accent); }
+
+.settings-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+
+.header-search {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--u1);
+  padding: 0 4px;
+}
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+.search-engine-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 32px;
+}
+
+.engine-tab {
+  height: 26px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.engine-tab:hover { background: var(--card); color: var(--text-2); }
+.engine-tab.active { background: var(--accent-dim); color: var(--accent-light); }
+
+.search-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 0 14px;
+  height: 42px;
+  transition: border-color 0.2s;
+}
+.search-input-wrap:focus-within { border-color: var(--accent); }
+
+.search-icon { color: var(--text-3); font-size: 14px; }
+
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+.search-input::placeholder { color: var(--text-3); }
+
+.search-go {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.search-go:hover { background: var(--accent-light); }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+/* ============================================================
+   CARDS (shared)
+   ============================================================ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 18px;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.card:hover { border-color: var(--border-hover); background: var(--card-hover); }
+
+/* ============================================================
+   CLOCK CARD
+   ============================================================ */
+.card-clock {
+  height: var(--u1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.clock-time {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.clock-date {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   WEATHER CARD
+   ============================================================ */
+.card-weather {
+  height: var(--u1);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.weather-icon { font-size: 32px; flex-shrink: 0; }
+
+.weather-body { flex: 1; min-width: 0; }
+
+.weather-temp {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+.weather-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.weather-meta {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* ============================================================
+   FOLDERS CARD
+   ============================================================ */
+.card-folders {
+  height: var(--u3);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-folders .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-action {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.card-action:hover { color: var(--accent-light); }
+
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border-radius: var(--r1);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.folder-item:hover { background: rgba(255,255,255,0.05); }
+.folder-item.active { background: var(--accent-dim); }
+
+.folder-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.folder-name {
+  font-size: 12px;
+  color: var(--text-2);
+  truncate: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.folder-item.active .folder-name { color: var(--accent-light); }
+
+.folder-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.news-word-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--section-gap);
+  height: var(--u3);
+}
+
+/* ============================================================
+   BOOKMARKS CARD
+   ============================================================ */
+.card-bookmarks {
+  height: var(--u3);
+  display: flex;
+  flex-direction: column;
+}
+
+.bookmarks-grid {
+  display: grid;
+  grid-template-columns: repeat(4, var(--u1));
+  gap: var(--pad);
+  flex: 1;
+  align-content: center;
+}
+
+.bookmark-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: var(--r1);
+  padding: 8px 4px;
+  transition: background 0.15s;
+  position: relative;
+}
+.bookmark-item:hover { background: rgba(255,255,255,0.05); }
+.bookmark-item:hover .bm-icon { transform: scale(1.05); }
+
+.bm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+  overflow: hidden;
+}
+.bm-icon img { width: 100%; height: 100%; object-fit: contain; }
+.bm-icon .bm-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.bm-name {
+  font-size: 10px;
+  color: var(--text-3);
+  text-align: center;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.bookmark-item:hover .bm-name { color: var(--text-2); }
+
+/* ============================================================
+   NEWS CARD
+   ============================================================ */
+.card-news {
+  height: var(--u3);
+  display: flex;
+  flex-direction: column;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  flex: 1;
+  align-content: start;
+  overflow: hidden;
+}
+
+.news-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--r1);
+  transition: background 0.15s;
+}
+.news-item:hover { background: rgba(255,255,255,0.04); }
+
+.news-title {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-item:hover .news-title { color: var(--text); }
+
+.news-time {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   WORD CARD
+   ============================================================ */
+.card-word {
+  height: var(--u3);
+  display: flex;
+  flex-direction: column;
+}
+
+.word-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.word-input {
+  flex: 1;
+  height: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r1);
+  padding: 0 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.word-input:focus { border-color: var(--accent); }
+.word-input::placeholder { color: var(--text-3); }
+
+.word-go {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r1);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.word-go:hover { background: var(--accent-light); }
+
+.word-result {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.word-word {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.word-phonetic {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.word-meaning {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   QUOTE CARD
+   ============================================================ */
+.card-quote {
+  height: var(--u1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.quote-text {
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: center;
+  line-height: 1.5;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.quote-author {
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 4px;
+  font-style: normal;
+}
+
+/* ============================================================
+   ICON BUTTONS
+   ============================================================ */
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r1);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-2);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.icon-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--card-hover); }
+
+/* ============================================================
+   CONTEXT MENU
+   ============================================================ */
+.ctx-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r1);
+  padding: 4px;
+  min-width: 140px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: none;
+}
+.ctx-menu.visible { display: block; }
+
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ctx-item:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+.ctx-item.danger { color: var(--red); }
+.ctx-item.danger:hover { background: rgba(239,68,68,0.1); }
+
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
+.tooltip {
+  position: fixed;
+  z-index: 999;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r1);
+  padding: 8px 12px;
+  max-width: 200px;
+  pointer-events: none;
+  display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.tooltip.visible { display: block; }
+.tooltip-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.tooltip-desc { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.visible { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r3);
+  padding: 24px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 16px 64px rgba(0,0,0,0.6);
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.form-input {
+  width: 100%;
+  height: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r1);
+  padding: 0 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text-3); }
+
+.icon-preview-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.icon-preview-box {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r2);
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+
+.input-row { display: flex; gap: 8px; align-items: center; }
+.input-row .form-input { flex: 1; margin-bottom: 0; }
+
+.icon-selector { display: flex; gap: 8px; margin-top: 8px; }
+
+.icon-sel-item {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r1);
+  background: #000;
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-sel-item img { width: 100%; height: 100%; object-fit: contain; }
+.icon-sel-item.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.18); }
+.icon-sel-item:hover { border-color: rgba(255,255,255,0.2); }
+
+.ext-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r1);
+  background: #000;
+  border: 2px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+.ext-btn:hover { border-color: var(--accent); }
+.ext-btn img { width: 100%; height: 100%; object-fit: contain; }
+
+.btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--r1);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.btn-outline { background: transparent; color: var(--text-2); }
+.btn-outline:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.btn-accent { background: var(--text); color: #08080a; border-color: var(--text); font-weight: 600; }
+.btn-accent:hover { background: #d4d4d4; }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+/* ============================================================
+   ADD ITEM CARD
+   ============================================================ */
+.add-item-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: var(--r1);
+  padding: 8px 4px;
+  transition: background 0.15s;
+  border: 1px dashed var(--border);
+}
+.add-item-card:hover { background: rgba(255,255,255,0.03); border-color: var(--border-hover); }
+.add-item-card .add-icon { font-size: 20px; color: var(--text-3); }
+.add-item-card:hover .add-icon { color: var(--text-2); }
+.add-item-card .add-text { font-size: 10px; color: var(--text-3); }
+.add-item-card:hover .add-text { color: var(--text-2); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  :root { --len: 72px; }
+}
+
+@media (max-width: 900px) {
+  :root { --len: 64px; --pad: 10px; --page-pad: 20px; }
+
+  .page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .header {
+    grid-template-columns: 1fr;
+    grid-row: 1;
+    height: auto;
+    gap: 12px;
+  }
+
+  .header-left { width: 100%; }
+  .header-search {
+    grid-column: 1;
+    width: 100%;
+    padding: 0;
+  }
+
+  .sidebar {
+    grid-template-columns: var(--u2) var(--u2);
+  }
+
+  .card-folders {
+    grid-column: 1 / -1;
+    height: auto;
+  }
+
+  .folder-list { flex-direction: row; flex-wrap: wrap; }
+  .folder-item { flex: 1 1 calc(50% - 4px); min-width: 100px; }
+
+  .main { grid-template-columns: 1fr; }
+  .card-bookmarks,
+  .card-quote { grid-column: 1; width: 100%; }
+  .card-bookmarks { height: auto; }
+  .news-word-row { grid-template-columns: 1fr; height: auto; }
+  .card-news, .card-word { width: 100%; height: auto; }
+  .card-news { min-height: var(--u3); }
+  .bookmarks-grid { grid-template-columns: repeat(4, var(--u1)); }
+}
+
+@media (max-width: 600px) {
+  .sidebar { grid-template-columns: 1fr; }
+  .bookmarks-grid { grid-template-columns: repeat(3, var(--u1)); }
+  .folder-item { flex: 1 1 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ============================================================
+       HEADER ROW
+       ============================================================ -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">arm<span>rest</span></div>
+      <div class="settings-wrap">
+        <button class="icon-btn">⚙️</button>
+      </div>
+    </div>
+    <div class="header-search">
+      <div class="search-engine-tabs">
+        <button class="engine-tab active" data-engine="google">G</button>
+        <button class="engine-tab" data-engine="baidu">百</button>
+        <button class="engine-tab" data-engine="bing">B</button>
+        <button class="engine-tab" data-engine="duckduckgo">🦆</button>
+      </div>
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="searchInput" placeholder="Search or enter URL..." onkeydown="if(event.key==='Enter')doSearch()" />
+      </div>
+      <button class="search-go" onclick="doSearch()">→</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
+  <div class="sidebar">
+
+    <!-- Clock: u2×u1 -->
+    <div class="card card-clock">
+      <div class="clock-time" id="t">10:24</div>
+      <div class="clock-date" id="d">Sunday, March 29</div>
+    </div>
+
+    <!-- Weather: u2×u1 -->
+    <div class="card card-weather">
+      <div class="weather-icon">☀️</div>
+      <div class="weather-body">
+        <div class="weather-temp">24°</div>
+        <div class="weather-desc">Sunny</div>
+        <div class="weather-meta">Shanghai · Good air quality</div>
+      </div>
+    </div>
+
+    <!-- Folders: u2×u3 -->
+    <div class="card card-folders">
+      <div class="card-header">
+        <span class="card-title">Folders</span>
+        <button class="card-action">+ New</button>
+      </div>
+      <div class="folder-list">
+        <div class="folder-item active">
+          <span class="folder-dot" style="background:#6366f1"></span>
+          <span class="folder-name">Work</span>
+          <span class="folder-count">12</span>
+        </div>
+        <div class="folder-item">
+          <span class="folder-dot" style="background:#22c55e"></span>
+          <span class="folder-name">Personal</span>
+          <span class="folder-count">8</span>
+        </div>
+        <div class="folder-item">
+          <span class="folder-dot" style="background:#f59e0b"></span>
+          <span class="folder-name">Tools</span>
+          <span class="folder-count">5</span>
+        </div>
+        <div class="folder-item">
+          <span class="folder-dot" style="background:#ef4444"></span>
+          <span class="folder-name">Reading</span>
+          <span class="folder-count">3</span>
+        </div>
+        <div class="folder-item">
+          <span class="folder-dot" style="background:#8b5cf6"></span>
+          <span class="folder-name">Design</span>
+          <span class="folder-count">6</span>
+        </div>
+        <div class="folder-item">
+          <span class="folder-dot" style="background:#06b6d4"></span>
+          <span class="folder-name">Dev</span>
+          <span class="folder-count">9</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <div class="main">
+
+    <!-- Bookmarks: 3 cols × u3 -->
+    <div class="card card-bookmarks">
+      <div class="card-header" style="margin-bottom:14px">
+        <span class="card-title">Bookmarks</span>
+        <button class="card-action">Edit</button>
+      </div>
+      <div class="bookmarks-grid">
+        <div class="bookmark-item" data-name="GitHub" data-url="https://github.com" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://github.githubassets.com/favicons/favicon.svg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#24292e;display:none">G</span>
+          </div>
+          <span class="bm-name">GitHub</span>
+        </div>
+        <div class="bookmark-item" data-name="Twitter" data-url="https://twitter.com" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://abs.twimg.com/favicons/twitter.ico" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#1d9bf0;display:none">X</span>
+          </div>
+          <span class="bm-name">Twitter</span>
+        </div>
+        <div class="bookmark-item" data-name="Notion" data-url="https://notion.so" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://www.notion.so/images/favicon.ico" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#000;display:none">N</span>
+          </div>
+          <span class="bm-name">Notion</span>
+        </div>
+        <div class="bookmark-item" data-name="Figma" data-url="https://figma.com" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://static.figma.com/app/icon/1/favicon.ico" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#f24e1e;display:none">F</span>
+          </div>
+          <span class="bm-name">Figma</span>
+        </div>
+        <div class="bookmark-item" data-name="ChatGPT" data-url="https://chatgpt.com" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://chatgpt.com/favicon.ico" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#10a37f;display:none">C</span>
+          </div>
+          <span class="bm-name">ChatGPT</span>
+        </div>
+        <div class="bookmark-item" data-name="Claude" data-url="https://claude.ai" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://claude.ai/favicon.ico" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#d4a574;display:none">C</span>
+          </div>
+          <span class="bm-name">Claude</span>
+        </div>
+        <div class="bookmark-item" data-name="Hacker News" data-url="https://news.ycombinator.com" oncontextmenu="showCtx(event, this, 'bm')" onmouseenter="showTip(event, this)" onmouseleave="hideTip()">
+          <div class="bm-icon">
+            <img src="https://news.ycombinator.com/favicon.ico" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="bm-fallback" style="background:#ff6600;display:none">Y</span>
+          </div>
+          <span class="bm-name">HN</span>
+        </div>
+        <div class="bookmark-item" oncontextmenu="showCtx(event, this, 'add')" onclick="openModal()">
+          <div class="add-icon">+</div>
+          <span class="add-text">Add</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- News + Word: side by side -->
+    <div class="news-word-row">
+
+    <!-- News: u2 × u3 -->
+    <div class="card card-news">
+      <div class="card-header">
+        <span class="card-title">Today's News</span>
+        <button class="card-action">More</button>
+      </div>
+      <div class="news-grid">
+        <div class="news-item">
+          <span class="news-title">OpenAI releases GPT-5 with new multimodal interactions</span>
+          <span class="news-time">10 min ago</span>
+        </div>
+        <div class="news-item">
+          <span class="news-title">Apple WWDC 2026 announced: iOS 20 coming next month</span>
+          <span class="news-time">32 min ago</span>
+        </div>
+        <div class="news-item">
+          <span class="news-title">GitHub Copilot X adds code review for all languages</span>
+          <span class="news-time">1 hour ago</span>
+        </div>
+        <div class="news-item">
+          <span class="news-title">Cloudflare Workers now supports Python runtime</span>
+          <span class="news-time">2 hours ago</span>
+        </div>
+        <div class="news-item">
+          <span class="news-title">TypeScript 6.0 released: 40% performance improvement</span>
+          <span class="news-time">3 hours ago</span>
+        </div>
+        <div class="news-item">
+          <span class="news-title">AI coding tool Cursor raises $100M</span>
+          <span class="news-time">5 hours ago</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Word: 1 col × u3 -->
+    <div class="card card-word">
+      <div class="card-header">
+        <span class="card-title">Word Lookup</span>
+      </div>
+      <div class="word-input-row">
+        <input class="word-input" id="wordInput" placeholder="Search a word..." onkeydown="if(event.key==='Enter')doWord()" />
+        <button class="word-go" onclick="doWord()">→</button>
+      </div>
+      <div class="word-result" id="wordResult">
+        <div class="word-word">serendipity</div>
+        <div class="word-phonetic">/ˌser.ənˈdɪp.ə.ti/</div>
+        <div class="word-meaning">n. the occurrence of finding something good by chance; the faculty of making fortunate discoveries by accident</div>
+      </div>
+    </div>
+
+    </div><!-- /.news-word-row -->
+
+    <!-- Quote: 3 cols × u1 -->
+    <div class="card card-quote">
+      <div>
+        <div class="quote-text">"Design is not about pixels, it's about how people understand things."</div>
+        <div class="quote-author">— Dieter Rams</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     CONTEXT MENU
+     ============================================================ -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" onclick="ctxEdit()">✏️ Edit</div>
+  <div class="ctx-item danger" onclick="ctxDelete()">🗑️ Delete</div>
+</div>
+
+<!-- ============================================================
+     TOOLTIP
+     ============================================================ -->
+<div class="tooltip" id="tip">
+  <div class="tooltip-title" id="tipTitle"></div>
+  <div class="tooltip-desc" id="tipDesc"></div>
+</div>
+
+<!-- ============================================================
+     MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add Bookmark</div>
+
+    <div class="icon-preview-row">
+      <div class="icon-preview-box">
+        <img id="modalIcon" src="" alt="" />
+      </div>
+    </div>
+
+    <label class="form-label">Name</label>
+    <input class="form-input" id="modalName" placeholder="Website name" />
+
+    <label class="form-label">URL</label>
+    <input class="form-input" id="modalUrl" placeholder="https://example.com" />
+
+    <label class="form-label">Icon URL</label>
+    <div class="input-row">
+      <input class="form-input" id="modalLogo" placeholder="https://..." />
+      <button class="ext-btn" onclick="window.open('https://www.thesvg.org/','_blank')">
+        <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/thesvg/default.svg" alt="SVG" />
+      </button>
+    </div>
+    <div class="icon-selector" id="iconSelector"></div>
+
+    <label class="form-label">Description (optional)</label>
+    <input class="form-input" id="modalDesc" placeholder="Short description..." />
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CLOCK
+   ============================================================ */
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('t').textContent = `${h}:${m}`;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mo = now.toLocaleString('en-US',{month:'long'});
+  document.getElementById('d').textContent = `${days[now.getDay()]}, ${mo} ${now.getDate()}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+let activeEngine = 'google';
+document.querySelectorAll('.engine-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.engine-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeEngine = tab.dataset.engine;
+  });
+});
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  const engines = {
+    google: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+    baidu: `https://www.baidu.com/s?wd=${encodeURIComponent(q)}`,
+    bing: `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+    duckduckgo: `https://duckduckgo.com/?q=${encodeURIComponent(q)}`
+  };
+  window.open(engines[activeEngine], '_blank');
+}
+
+/* ============================================================
+   BOOKMARKS
+   ============================================================ */
+const bookmarks = [
+  { name: 'GitHub', url: 'https://github.com', logo: 'https://github.githubassets.com/favicons/favicon.svg' },
+  { name: 'Twitter', url: 'https://twitter.com', logo: 'https://abs.twimg.com/favicons/twitter.ico' },
+  { name: 'Notion', url: 'https://notion.so', logo: 'https://www.notion.so/images/favicon.ico' },
+  { name: 'Figma', url: 'https://figma.com', logo: 'https://static.figma.com/app/icon/1/favicon.ico' },
+  { name: 'ChatGPT', url: 'https://chatgpt.com', logo: 'https://chatgpt.com/favicon.ico' },
+  { name: 'Claude', url: 'https://claude.ai', logo: 'https://claude.ai/favicon.ico' },
+  { name: 'Hacker News', url: 'https://news.ycombinator.com', logo: 'https://news.ycombinator.com/favicon.ico' },
+];
+
+document.querySelectorAll('.bookmark-item[data-name]').forEach(item => {
+  item.addEventListener('click', () => {
+    window.open(item.dataset.url, '_blank');
+  });
+});
+
+/* ============================================================
+   WORD DICTIONARY
+   ============================================================ */
+function doWord() {
+  const w = document.getElementById('wordInput').value.trim();
+  if (!w) return;
+  const result = document.getElementById('wordResult');
+  result.innerHTML = `<div class="word-word">${w}</div><div class="word-phonetic">/wɜːrd/</div><div class="word-meaning">Looking up "${w}"...</div>`;
+  // Simulated response
+  setTimeout(() => {
+    result.innerHTML = `<div class="word-word">${w}</div><div class="word-phonetic">/wɜːrd/</div><div class="word-meaning">noun. 1. a word 2. speech 3. promise<br><br><em>Example: ${w.charAt(0).toUpperCase() + w.slice(1)} is a fundamental unit of language.</em>`;
+  }, 600);
+}
+
+/* ============================================================
+   CONTEXT MENU
+   ============================================================ */
+let ctxTarget = null;
+let ctxType = null;
+
+function showCtx(e, el, type) {
+  e.preventDefault();
+  ctxTarget = el;
+  ctxType = type;
+  const menu = document.getElementById('ctxMenu');
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 160) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 100) + 'px';
+  menu.classList.add('visible');
+}
+
+function hideCtx() {
+  document.getElementById('ctxMenu').classList.remove('visible');
+}
+
+function ctxEdit() {
+  hideCtx();
+  if (ctxType === 'bm' && ctxTarget) {
+    openModal(ctxTarget.dataset.name, ctxTarget.dataset.url, ctxTarget.querySelector('img')?.src);
+  }
+}
+
+function ctxDelete() {
+  hideCtx();
+  if (ctxType === 'bm' && ctxTarget) {
+    ctxTarget.remove();
+  }
+}
+
+document.addEventListener('click', hideCtx);
+
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
+function showTip(e, el) {
+  const name = el.dataset.name;
+  if (!name) return;
+  const tip = document.getElementById('tip');
+  document.getElementById('tipTitle').textContent = name;
+  document.getElementById('tipDesc').textContent = el.dataset.url || '';
+  tip.style.left = Math.min(e.clientX + 10, window.innerWidth - 210) + 'px';
+  tip.style.top = (e.clientY + 10) + 'px';
+  tip.classList.add('visible');
+}
+
+function hideTip() {
+  document.getElementById('tip').classList.remove('visible');
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function openModal(name, url, logo) {
+  document.getElementById('modalTitle').textContent = name ? 'Edit Bookmark' : 'Add Bookmark';
+  document.getElementById('modalName').value = name || '';
+  document.getElementById('modalUrl').value = url || '';
+  document.getElementById('modalLogo').value = logo || '';
+  document.getElementById('modalIcon').src = logo || '';
+  document.getElementById('modalOverlay').classList.add('visible');
+  if (name) document.getElementById('modalName').focus();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+}
+
+function saveModal() {
+  const name = document.getElementById('modalName').value.trim();
+  const url = document.getElementById('modalUrl').value.trim();
+  if (!name || !url) return;
+  closeModal();
+  // In real app, would save bookmark here
+  console.log('Save:', { name, url, logo: document.getElementById('modalLogo').value });
+}
+
+document.getElementById('modalLogo').addEventListener('change', function() {
+  const src = this.value.trim();
+  document.getElementById('modalIcon').src = src;
+});
+
+document.getElementById('modalUrl').addEventListener('blur', async function() {
+  const url = this.value.trim();
+  if (!url || !url.startsWith('http')) return;
+  try {
+    const apiUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const resp = await fetch(apiUrl);
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const title = doc.querySelector('title')?.textContent || '';
+    const icon = doc.querySelector('link[rel="icon"]')?.href ||
+                 doc.querySelector('link[rel="shortcut icon"]')?.href || '';
+    if (title && !document.getElementById('modalName').value.trim()) {
+      document.getElementById('modalName').value = title;
+    }
+    if (icon) {
+      document.getElementById('modalLogo').value = icon;
+      document.getElementById('modalIcon').src = icon;
+    }
+  } catch (e) { /* ignore */ }
+});
+</script>
+</body>
+</html>

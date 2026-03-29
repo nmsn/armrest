@@ -1,0 +1,74 @@
+/**
+ * Armrest Design System — Card Size Module
+ *
+ * Size formula:
+ *   card_size(n) = n * len + (n - 1) * pad
+ *
+ * where:
+ *   len = smallest card side length (base unit)
+ *   pad = gap between cards
+ *   n   = number of units (1, 2, 3, ...)
+ *
+ * Examples with len=80px, pad=12px:
+ *   n=1: 1*80 + 0*12 = 80px
+ *   n=2: 2*80 + 1*12 = 172px
+ *   n=3: 3*80 + 2*12 = 264px
+ *   n=4: 4*80 + 3*12 = 356px
+ *
+ * All cards are square (width === height).
+ * Layout grid columns are also derived from this formula.
+ */
+
+/* ============================================================
+   TUNABLE DESIGN TOKENS — change these to reskin the entire UI
+   ============================================================ */
+
+:root {
+  /* ---- Base units ---- */
+  --ds-len:  80px;   /* smallest card side length */
+  --ds-pad:  12px;   /* gap between adjacent cards */
+
+  /* ---- Card sizes (square) ---- */
+  --ds-u1:  calc(var(--ds-len));                    /* 80px  — 1×1 card */
+  --ds-u2:  calc(var(--ds-len) * 2 + var(--ds-pad));            /* 172px — 2×2 card */
+  --ds-u3:  calc(var(--ds-len) * 3 + var(--ds-pad) * 2);       /* 264px — 3×3 card */
+  --ds-u4:  calc(var(--ds-len) * 4 + var(--ds-pad) * 3);       /* 356px — 4×4 card */
+
+  /* ---- Named aliases ---- */
+  --ds-card-sm: var(--ds-u1);   /* 80px  */
+  --ds-card-md: var(--ds-u2);   /* 172px */
+  --ds-card-lg: var(--ds-u3);   /* 264px */
+  --ds-card-xl: var(--ds-u4);   /* 356px */
+
+  /* ---- Grid columns (for layout) ---- */
+  /* Sidebar: 2 units wide */
+  --ds-sidebar: var(--ds-u2);   /* 172px */
+
+  /* Main content column: fits 3 cards + 2 gaps = 3*80 + 2*12 = 264px */
+  --ds-col:   var(--ds-u3);    /* 264px */
+
+  /* ---- Section / layout spacing ---- */
+  --ds-section-gap:  20px;   /* gap between major sections */
+  --ds-page-pad:     32px;   /* page padding */
+
+  /* ---- Corner radius (3 sizes) ---- */
+  --ds-r1: 10px;   /* small elements */
+  --ds-r2: 14px;   /* medium elements / cards */
+  --ds-r3: 20px;   /* large containers */
+}
+
+/* ============================================================
+   PREVIEW — grid showing card size relationships
+   Not included in production builds.
+   ============================================================ */
+
+.ds-size-grid {
+  display: grid;
+  grid-template-columns: repeat(4, var(--ds-u1));
+  gap: var(--ds-pad);
+}
+
+.ds-size-grid .ds-card-1 { width: var(--ds-u1); height: var(--ds-u1); }
+.ds-size-grid .ds-card-2 { width: var(--ds-u2); height: var(--ds-u2); }
+.ds-size-grid .ds-card-3 { width: var(--ds-u3); height: var(--ds-u3); }
+.ds-size-grid .ds-card-4 { width: var(--ds-u4); height: var(--ds-u4); }
