@@ -3,8 +3,14 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -r --parallel -c run dev",
+    "dev:ext": "pnpm --filter @armrest/ext dev",
+    "dev:server": "pnpm --filter @armrest/server dev:sqlite",
     "build": "pnpm -r run build",
+    "build:ext": "pnpm --filter @armrest/ext build",
+    "build:server": "pnpm --filter @armrest/server build",
     "lint": "pnpm -r run lint",
-    "lint:fix": "pnpm -r run lint:fix"
+    "lint:fix": "pnpm -r run lint:fix",
+    "db:push": "pnpm --filter @armrest/server db:push",
+    "db:studio": "pnpm --filter @armrest/server db:studio"
   }
 }
