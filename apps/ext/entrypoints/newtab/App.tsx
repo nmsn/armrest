@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Settings, Search, Bookmark, Code, Wrench, Palette, Users, Bookmark as BookmarkIcon, Folder, Star, Sparkles } from "lucide-react"
+import { checkAuth, getCurrentUser, signOut } from "@/lib/auth"
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core"
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -116,6 +117,8 @@ export default function App() {
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
   const [backgroundColor, setBackgroundColor] = useState(defaultThemeConfig.light.backgroundColor)
   const [backgroundImage, setBackgroundImage] = useState(defaultThemeConfig.light.backgroundImage)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<{ name?: string; image?: string } | null>(null)
   const prevFolderIndexRef = useRef(0)
 
   const loadFolders = useCallback(async () => {
@@ -140,6 +143,15 @@ export default function App() {
       setBackgroundImage(bg.backgroundImage)
     }
     initTheme()
+  }, [])
+
+  useEffect(() => {
+    async function initAuth() {
+      const u = await checkAuth()
+      setIsLoggedIn(!!u)
+      setUser(u)
+    }
+    initAuth()
   }, [])
 
   useEffect(() => {
@@ -501,6 +513,14 @@ export default function App() {
                     editingFolder={editingFolder}
                     onSaveFolder={handleSaveFolder}
                     onOpenFolderModal={handleOpenFolderModal}
+                    isLoggedIn={isLoggedIn}
+                    user={user}
+                    onLogin={() => window.open(`${import.meta.env.VITE_API_URL}/auth/github`, "_blank")}
+                    onLogout={async () => {
+                      await signOut()
+                      setIsLoggedIn(false)
+                      setUser(null)
+                    }}
                   />
                 )}
               </div>

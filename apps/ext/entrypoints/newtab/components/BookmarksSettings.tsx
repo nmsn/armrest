@@ -26,9 +26,13 @@ interface BookmarksSettingsProps {
   editingFolder: { id: string; data: { name: string; icon: string; color: string } } | null
   onSaveFolder: (data: { name: string; icon: string; color: string }) => Promise<void>
   onOpenFolderModal?: (folder?: { id: string; data: { name: string; icon: string; color: string } }) => void
+  isLoggedIn?: boolean
+  user?: { name?: string; image?: string } | null
+  onLogin?: () => void
+  onLogout?: () => void
 }
 
-export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, isBookmarkModalOpen: _isBookmarkModalOpen, onBookmarkModalClose: _onBookmarkModalClose, onBookmarkModalOpen, editingBookmark: _editingBookmark, onSaveBookmark: _onSaveBookmark, onEditBookmark, isFolderModalOpen: _isFolderModalOpen, onFolderModalClose: _onFolderModalClose, onFolderModalOpen: _onFolderModalOpen, editingFolder: _editingFolder, onSaveFolder: _onSaveFolder, onOpenFolderModal }: BookmarksSettingsProps) {
+export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, isBookmarkModalOpen: _isBookmarkModalOpen, onBookmarkModalClose: _onBookmarkModalClose, onBookmarkModalOpen, editingBookmark: _editingBookmark, onSaveBookmark: _onSaveBookmark, onEditBookmark, isFolderModalOpen: _isFolderModalOpen, onFolderModalClose: _onFolderModalClose, onFolderModalOpen: _onFolderModalOpen, editingFolder: _editingFolder, onSaveFolder: _onSaveFolder, onOpenFolderModal, isLoggedIn = false, user = null, onLogin, onLogout }: BookmarksSettingsProps) {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
   const [activeFolderId, setActiveFolderId] = useState<string>("")
   const [isExporting, setIsExporting] = useState(false)
@@ -122,6 +126,21 @@ export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, is
 
   return (
     <div className="space-y-4">
+      <div className="mb-6 p-4 border border-border rounded-xl">
+        <h3 className="text-lg font-semibold mb-3">云同步</h3>
+        {isLoggedIn ? (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {user?.image && <img src={user.image} className="w-8 h-8 rounded-full" />}
+              <span className="text-sm">{user?.name}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={onLogout}>登出</Button>
+          </div>
+        ) : (
+          <Button variant="default" className="w-full" onClick={onLogin}>登录以同步书签</Button>
+        )}
+      </div>
+
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-foreground">Folders</h3>
         <div className="flex gap-1">
