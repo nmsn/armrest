@@ -34,3 +34,6 @@ yarn-error.log*
 
 # Local files
 *.local
+
+# Local SQLite database
+apps/server/dev.db

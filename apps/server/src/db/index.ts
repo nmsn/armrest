@@ -1,14 +1,24 @@
 import { drizzle } from 'drizzle-orm/libsql';
-import type { Client } from '@libsql/client';
+import { createClient } from '@libsql/client';
 import * as schema from './schema';
 
 const globalForDb = globalThis as unknown as {
   db: ReturnType<typeof drizzle> | undefined;
 };
 
-export function getDb(env: { DB: D1Database }) {
+export function getDb(env: { DB: D1Database } | { local: true }) {
   if (globalForDb.db) return globalForDb.db;
-  globalForDb.db = drizzle(env.DB as unknown as Client, { schema });
+
+  // Check if we're using local development
+  if ('local' in env && env.local === true) {
+    const client = createClient({ url: 'file:./dev.db' });
+    globalForDb.db = drizzle(client, { schema });
+  } else {
+    // Production: use D1 binding (Cloudflare Workers)
+    const dbEnv = env as { DB: D1Database };
+    globalForDb.db = drizzle(dbEnv.DB, { schema });
+  }
+
   return globalForDb.db;
 }
 
