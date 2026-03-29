@@ -32,17 +32,17 @@ interface BookmarkItemProps {
 
 const SIZE_CONFIG = {
   sm: {
-    icon: "w-5 h-5 rounded-md text-[9px]",
+    icon: "w-5 h-5 rounded-full text-[9px]",
     container: "gap-1 px-1 py-1",
     text: "text-[10px]",
   },
   md: {
-    icon: "w-6 h-6 rounded-md text-xs",
+    icon: "w-6 h-6 rounded-full text-xs",
     container: "gap-1.5 px-2 py-1.5",
     text: "text-xs",
   },
   lg: {
-    icon: "w-11 h-11 rounded-xl text-sm",
+    icon: "w-11 h-11 rounded-full text-sm",
     container: "gap-2 p-3",
     text: "text-sm",
   },
@@ -76,7 +76,7 @@ export function BookmarkItem({
     >
       <div
         className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}
-        style={{ backgroundColor: bookmark.color || getRandomColor(BOOKMARK_COLORS) }}
+        style={{ backgroundColor: bookmark.logo ? 'black' : getRandomColor(BOOKMARK_COLORS) }}
       >
         {showFallback ? (
           <span className="text-white font-bold">
