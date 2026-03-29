@@ -47,7 +47,11 @@ function getSimpleLunarDate(date: Date): string {
   return `${yearGanZhi}${monthStr}${dayStr}`;
 }
 
-export default function Clock() {
+interface ClockProps {
+  compact?: boolean
+}
+
+export default function Clock({ compact = false }: ClockProps) {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -61,10 +65,34 @@ export default function Clock() {
   const weekday = WEEKDAYS[time.getDay()];
   const lunarDate = getSimpleLunarDate(time);
 
+  const hours = time.getHours().toString().padStart(2, '0');
+  const minutes = time.getMinutes().toString().padStart(2, '0');
+  const seconds = time.getSeconds().toString().padStart(2, '0');
+
+  if (compact) {
+    return (
+      <div className="flex flex-col justify-center h-full">
+        <div className="text-3xl font-bold tracking-tight text-primary font-mono tabular-nums mb-2">
+          <span>{hours}:{minutes}</span>
+          <span className="text-primary/30">:</span>
+          <span className="text-primary/30">{seconds}</span>
+        </div>
+        <div className="text-xs text-primary/70 mt-0.5">
+          {month}/{date} {weekday}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {lunarDate}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center space-y-3">
       <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-mono tabular-nums [transition:opacity_0.1s_ease]">
-        {time.toLocaleTimeString()}
+        <span>{hours}:{minutes}</span>
+        <span className="text-primary/60">:</span>
+        <span className="text-primary/80">{seconds}</span>
       </div>
       <div className="flex flex-col items-center space-y-1.5">
         <div className="text-lg md:text-xl font-medium text-primary/80">
