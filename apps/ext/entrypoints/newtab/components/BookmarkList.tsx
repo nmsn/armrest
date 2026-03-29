@@ -14,11 +14,15 @@ interface BookmarkListProps {
   bookmarks: Bookmark[]
   onBookmarkClick: (url: string) => void
   onAddBookmark: () => void
+  onEditBookmark?: (bookmark: Bookmark) => void
+  onDeleteBookmark?: (bookmark: Bookmark) => void
 }
 
 interface SortableBookmarkItemProps {
   bookmark: Bookmark
   onBookmarkClick: (url: string) => void
+  onEdit?: (bookmark: Bookmark) => void
+  onDelete?: (bookmark: Bookmark) => void
 }
 
 const BOOKMARK_DRAG_ID_PREFIX = "bookmark:"
@@ -27,7 +31,7 @@ export function getBookmarkDragId(bookmarkId: string): string {
   return `${BOOKMARK_DRAG_ID_PREFIX}${bookmarkId}`
 }
 
-function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkItemProps) {
+function SortableBookmarkItem({ bookmark, onBookmarkClick, onEdit, onDelete }: SortableBookmarkItemProps) {
   const {
     attributes,
     listeners,
@@ -54,6 +58,8 @@ function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkIte
       <BookmarkItem
         bookmark={bookmark}
         onClick={onBookmarkClick}
+        onEdit={onEdit}
+        onDelete={onDelete}
         size="lg"
         maxNameLength={20}
       />
@@ -61,7 +67,7 @@ function SortableBookmarkItem({ bookmark, onBookmarkClick }: SortableBookmarkIte
   )
 }
 
-export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark }: BookmarkListProps) {
+export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark, onEditBookmark, onDeleteBookmark }: BookmarkListProps) {
   const itemIds = useMemo(
     () => bookmarks.map((bookmark) => getBookmarkDragId(bookmark.id)),
     [bookmarks]
@@ -75,6 +81,8 @@ export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark }: Book
             key={bookmark.id}
             bookmark={bookmark}
             onBookmarkClick={onBookmarkClick}
+            onEdit={onEditBookmark}
+            onDelete={onDeleteBookmark}
           />
         ))}
         <button

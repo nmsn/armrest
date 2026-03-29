@@ -6,6 +6,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 
 const BOOKMARK_COLORS = BOOKMARK_CONFIG.BOOKMARK_COLORS
 
@@ -18,6 +24,8 @@ export type BookmarkItemSize = "sm" | "md" | "lg"
 interface BookmarkItemProps {
   bookmark: Bookmark
   onClick: (url: string) => void
+  onEdit?: (bookmark: Bookmark) => void
+  onDelete?: (bookmark: Bookmark) => void
   size?: BookmarkItemSize
   maxNameLength?: number
 }
@@ -43,6 +51,8 @@ const SIZE_CONFIG = {
 export function BookmarkItem({
   bookmark,
   onClick,
+  onEdit,
+  onDelete,
   size = "sm",
   maxNameLength = 8
 }: BookmarkItemProps) {
@@ -54,13 +64,16 @@ export function BookmarkItem({
     ? bookmark.name.slice(0, maxNameLength) + "..."
     : bookmark.name
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={() => onClick(bookmark.url)}
-          className={`flex flex-col items-center justify-center ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2`}
-        >
+  const tooltipText = bookmark.description
+    ? `${bookmark.name}\n${bookmark.description}`
+    : bookmark.name
+
+  const buttonContent = (
+    <button
+      onClick={() => onClick(bookmark.url)}
+      title={tooltipText}
+      className={`flex flex-col items-center justify-center ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2`}
+    >
       <div
         className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}
         style={{ backgroundColor: bookmark.color || getRandomColor(BOOKMARK_COLORS) }}
@@ -81,7 +94,25 @@ export function BookmarkItem({
       <span className={`truncate ${sizeClasses.text} text-foreground/80 group-hover:text-accent transition-colors font-normal w-full text-center`}>
         {displayName}
       </span>
-        </button>
+    </button>
+  )
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            {buttonContent}
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={() => onEdit?.(bookmark)}>
+              编辑
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => onDelete?.(bookmark)} className="text-red-500 focus:text-red-500">
+              删除
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       </TooltipTrigger>
       <TooltipContent className="max-w-xs">
         <div className="font-medium">{bookmark.name}</div>

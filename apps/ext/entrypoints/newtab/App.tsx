@@ -23,7 +23,7 @@ import { BookmarksSettings } from "./components/BookmarksSettings"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { BookmarkList, getBookmarkDragId } from "./components/BookmarkList"
-import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, reorderFolders, moveBookmark, BookmarkFolder } from "@/lib/bookmarks"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, reorderBookmarks, reorderFolders, moveBookmark, deleteBookmark, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme, defaultThemeConfig } from "@/lib/theme"
 
 const FOLDER_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -192,6 +192,17 @@ export default function App() {
   const handleEditBookmark = (bookmark: { id: string; name: string; url: string; color?: string }) => {
     setEditingBookmark(bookmark)
     setIsBookmarkModalOpen(true)
+  }
+
+  const handleDeleteBookmark = async (bookmark: { id: string }) => {
+    const folder = foldersData[activeFolderIndex]
+    if (!folder) return
+    try {
+      await deleteBookmark(folder.id, bookmark.id)
+      await loadFolders()
+    } catch (error) {
+      console.error("Failed to delete bookmark:", error)
+    }
   }
 
   const handleOpenBookmarkModal = () => {
@@ -420,6 +431,8 @@ export default function App() {
                       bookmarks={currentFolder?.bookmarks || []}
                       onBookmarkClick={handleBookmarkClick}
                       onAddBookmark={handleOpenBookmarkModal}
+                      onEditBookmark={handleEditBookmark}
+                      onDeleteBookmark={handleDeleteBookmark}
                     />
                   </motion.div>
                 </AnimatePresence>
