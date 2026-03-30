@@ -18,7 +18,7 @@ export function SearchBar({ searchQuery, onSearchQueryChange, onSearch, onSearch
         value={searchQuery}
         onChange={(e) => onSearchQueryChange(e.target.value)}
         onKeyDown={onSearchKeyDown}
-        className="h-9 rounded-lg border-border bg-card pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-accent focus:ring-accent/20"
+        className="h-9 rounded-lg border-border bg-card pr-10 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus:border-accent focus:ring-0"
       />
       <Button
         size="icon"
