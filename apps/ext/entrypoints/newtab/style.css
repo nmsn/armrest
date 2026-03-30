@@ -111,3 +111,150 @@
     color: var(--foreground);
   }
 }
+
+/* ============================================================
+   PAGE GRID — Bento-style layout
+   ============================================================ */
+.app-page {
+  display: grid;
+  grid-template-columns: var(--ds-sidebar) 1fr;
+  grid-template-rows: var(--ds-u1) auto;
+  column-gap: var(--ds-section-gap);
+  row-gap: var(--ds-section-gap);
+  align-items: start;
+  padding: var(--ds-page-pad);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   HEADER ROW
+   ============================================================ */
+.app-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: var(--ds-sidebar) 1fr;
+  align-items: center;
+  column-gap: var(--ds-section-gap);
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.app-header-search {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================================
+   APP LOGO
+   ============================================================ */
+.app-logo {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--foreground);
+}
+.app-logo span { color: var(--accent); }
+
+/* ============================================================
+   CARD — shared across all modules
+   ============================================================ */
+.app-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--ds-r2);
+  padding: 18px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.app-card:hover { border-color: hsl(0 0% 45%); }
+
+.app-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.app-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.app-card-action {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  height: auto;
+}
+.app-card-action:hover { color: var(--accent-light); }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.app-sidebar {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-section-gap);
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.app-main {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-section-gap);
+}
+
+/* ============================================================
+   NEWS + WORD ROW
+   ============================================================ */
+.news-word-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--ds-section-gap);
+  height: var(--ds-u3);
+}
+
+@media (max-width: 900px) {
+  .app-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .app-header {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 12px;
+  }
+  .app-header-left { width: 100%; }
+  .app-header-search { grid-column: 1; width: 100%; }
+  .app-sidebar {
+    grid-template-columns: var(--ds-u2) var(--ds-u2);
+  }
+  .news-word-row {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .app-card { height: auto !important; }
+}
+
+@media (max-width: 600px) {
+  .app-sidebar { grid-template-columns: 1fr; }
+}

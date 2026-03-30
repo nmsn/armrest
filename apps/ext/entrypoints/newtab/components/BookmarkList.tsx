@@ -75,7 +75,7 @@ export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark, onEdit
 
   return (
     <SortableContext items={itemIds} strategy={rectSortingStrategy}>
-      <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+      <div className="grid grid-cols-6 gap-3">
         {bookmarks.map((bookmark) => (
           <SortableBookmarkItem
             key={bookmark.id}
@@ -95,7 +95,7 @@ export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark, onEdit
           )}
         >
           <Plus className="w-11 h-11 rounded-xl text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">新增</span>
+          <span className="text-sm text-muted-foreground">Add</span>
         </button>
       </div>
     </SortableContext>

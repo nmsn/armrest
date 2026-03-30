@@ -48,7 +48,7 @@
   --ds-col:   var(--ds-u3);    /* 264px */
 
   /* ---- Section / layout spacing ---- */
-  --ds-section-gap:  20px;   /* gap between major sections */
+  --ds-section-gap:  12px;   /* gap between major sections */
   --ds-page-pad:     32px;   /* page padding */
 
   /* ---- Corner radius (3 sizes) ---- */
