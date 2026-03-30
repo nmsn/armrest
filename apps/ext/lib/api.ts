@@ -16,6 +16,8 @@ export const API_60S = {
     history: API_CONFIG.API_60S.ENDPOINTS.HISTORY,
     dailyBackground: API_CONFIG.API_60S.ENDPOINTS.DAILY_BACKGROUND,
     hitokoto: API_CONFIG.API_60S.ENDPOINTS.HITOKOTO,
+    readWorld: API_CONFIG.API_60S.ENDPOINTS.READ_WORLD,
+    aiNews: API_CONFIG.API_60S.ENDPOINTS.AI_NEWS,
   },
 }
 
@@ -88,6 +90,32 @@ export const API_60S_CONFIG = {
     baseUrl: API_60S.base,
     endpoint: API_60S.api.hitokoto,
     cacheExpiry: 24 * 60 * 60 * 1000,
+  },
+  readWorld: {
+    name: '每天 60 秒读懂世界',
+    description: '每日新闻资讯简报，包含当天重要新闻标题列表、图片和日期信息',
+    method: 'GET',
+    baseUrl: API_60S.base,
+    endpoint: API_60S.api.readWorld,
+    params: {
+      date: '可选，格式 YYYY-MM-DD，默认当天',
+      encoding: '可选，支持 text/json/markdown/image/image-proxy，默认 json',
+      'force-update': '可选，是否强制重新拉取最新数据',
+    },
+    cacheExpiry: 1 * 60 * 60 * 1000,
+  },
+  aiNews: {
+    name: 'AI 资讯快报',
+    description: 'AI、大模型等领域最新资讯，数据来源于 ai-bot.cn，新闻非每天都有',
+    method: 'GET',
+    baseUrl: API_60S.base,
+    endpoint: API_60S.api.aiNews,
+    params: {
+      date: '可选，格式 YYYY-MM-DD，默认当天',
+      all: '可选，设置为 1 可一次性拉取所有历史数据',
+      encoding: '可选，支持 text/json/markdown，默认 json',
+    },
+    cacheExpiry: 12 * 60 * 60 * 1000,
   },
 }
 

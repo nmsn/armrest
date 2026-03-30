@@ -14,6 +14,8 @@ const API_CONFIG = {
       HISTORY: '/v2/today-in-history',
       DAILY_BACKGROUND: '/v2/bing',
       HITOKOTO: '/v2/hitokoto',
+      READ_WORLD: '/v2/60s',
+      AI_NEWS: '/v2/ai-news',
     },
   },
   API_BIGDATACLOUD: {
