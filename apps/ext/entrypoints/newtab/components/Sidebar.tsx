@@ -34,6 +34,9 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <div className="app-sidebar overflow-y-auto">
+      {/* Logo */}
+      <div className="app-logo h-10 flex items-center px-2">Arm<span>rest</span></div>
+
       {/* Clock */}
       <div className="app-card" style={{ height: "172px" }}>
         <Clock compact />

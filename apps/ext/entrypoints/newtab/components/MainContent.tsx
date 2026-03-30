@@ -1,3 +1,4 @@
+import { SearchBar } from "./SearchBar"
 import { BookmarkGrid } from "./BookmarkGrid"
 import { InfoRow } from "./InfoRow"
 import type { Bookmark } from "@/lib/bookmarks"
@@ -9,6 +10,10 @@ interface MainContentProps {
   onAddBookmark: () => void
   onEditBookmark?: (bookmark: Bookmark) => void
   onDeleteBookmark?: (bookmark: Bookmark) => void
+  searchQuery: string
+  onSearchQueryChange: (query: string) => void
+  onSearch: () => void
+  onSearchKeyDown: (e: React.KeyboardEvent) => void
 }
 
 export function MainContent({
@@ -18,9 +23,21 @@ export function MainContent({
   onAddBookmark,
   onEditBookmark,
   onDeleteBookmark,
+  searchQuery,
+  onSearchQueryChange,
+  onSearch,
+  onSearchKeyDown,
 }: MainContentProps) {
   return (
     <div className="app-main overflow-y-auto">
+      {/* Search */}
+      <SearchBar
+        searchQuery={searchQuery}
+        onSearchQueryChange={onSearchQueryChange}
+        onSearch={onSearch}
+        onSearchKeyDown={onSearchKeyDown}
+      />
+
       {/* Bookmarks */}
       <div className="app-card" style={{ height: "256px" }}>
         <div className="app-card-header">

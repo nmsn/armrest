@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { DndContext, closestCenter } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { Header } from "./components/Header"
 import { Sidebar } from "./components/Sidebar"
 import { MainContent } from "./components/MainContent"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
@@ -194,16 +193,6 @@ function App() {
     <div className="h-screen overflow-hidden bg-surface flex items-center justify-center p-4">
       <div className="mt-[-20px]">
         <div className="w-full max-w-5xl h-full flex flex-col">
-          {/* Header */}
-          <div className="app-header shrink-0">
-            <Header
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-              onSearch={handleSearch}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-
           {/* Body */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, foldersData, activeFolderIndex)}>
             <div className="grid grid-cols-[176px_1fr] gap-[var(--ds-section-gap)] overflow-hidden min-h-0">
@@ -247,6 +236,10 @@ function App() {
                 onAddBookmark={handleOpenBookmarkModal}
                 onEditBookmark={handleEditBookmark}
                 onDeleteBookmark={handleDeleteBookmark}
+                searchQuery={searchQuery}
+                onSearchQueryChange={setSearchQuery}
+                onSearch={handleSearch}
+                onSearchKeyDown={handleKeyDown}
               />
             </div>
           </DndContext>
