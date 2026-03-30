@@ -1,4 +1,4 @@
-import { Settings, Bookmark as BookmarkIcon } from "lucide-react"
+import { Settings, Bookmark as BookmarkIcon, Sun, Moon, Monitor } from "lucide-react"
 import {
   Drawer,
   DrawerContent,
@@ -12,6 +12,7 @@ import Clock from "./Clock"
 import { Weather } from "./Weather"
 import { FolderList } from "./FolderList"
 import { Logo } from "./Logo"
+import { useTheme } from "@/lib/theme"
 import type { BookmarkFolder } from "@/lib/bookmarks"
 
 interface SidebarProps {
@@ -33,6 +34,14 @@ export function Sidebar({
   onSettingsTabChange,
   children,
 }: SidebarProps) {
+  const { mode, setMode } = useTheme()
+
+  const ThemeIcon = mode === "dark" ? Moon : mode === "light" ? Sun : Monitor
+
+  const cycleMode = () => {
+    setMode(mode === "dark" ? "light" : mode === "light" ? "system" : "dark")
+  }
+
   return (
     <div className="app-sidebar overflow-y-auto">
       {/* Logo */}
@@ -65,8 +74,17 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Settings Button */}
-      <div className="flex items-center justify-end">
+      {/* Theme + Settings */}
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={cycleMode}
+          title={`Theme: ${mode}`}
+          className="h-9 w-9 rounded-lg border-border bg-card hover:border-accent/30 hover:bg-accent/10 transition-all"
+        >
+          <ThemeIcon className="h-4 w-4 text-muted-foreground hover:text-accent" />
+        </Button>
         <Drawer direction="right">
           <DrawerTrigger asChild>
             <Button

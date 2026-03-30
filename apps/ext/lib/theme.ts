@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { STORAGE_KEYS, THEME_CONFIG, THEME_COLORS, DARK_THEME_COLORS } from "./constants"
 
 export type ThemeMode = "light" | "dark" | "system"
@@ -149,4 +150,31 @@ export function subscribeToThemeChanges(
   return () => {
     chrome.storage.onChanged.removeListener(handleStorageChange)
   }
+}
+
+export function useTheme() {
+  const [mode, setModeState] = useState<ThemeMode>("system")
+
+  useEffect(() => {
+    getThemeConfig().then((config) => {
+      setModeState(config.mode)
+      applyTheme(config.mode)
+    })
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = subscribeToThemeChanges((config) => {
+      setModeState(config.mode)
+      applyTheme(config.mode)
+    })
+    return unsubscribe
+  }, [])
+
+  const setMode = async (newMode: ThemeMode) => {
+    setModeState(newMode)
+    applyTheme(newMode)
+    await setThemeConfig({ mode: newMode })
+  }
+
+  return { mode, setMode }
 }
