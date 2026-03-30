@@ -47,11 +47,7 @@ function getSimpleLunarDate(date: Date): string {
   return `${yearGanZhi}${monthStr}${dayStr}`;
 }
 
-interface ClockProps {
-  compact?: boolean
-}
-
-export default function Clock({ compact = false }: ClockProps) {
+export default function Clock() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -59,7 +55,7 @@ export default function Clock({ compact = false }: ClockProps) {
     return () => clearInterval(timer);
   }, []);
 
-  const year = time.getFullYear();
+  // const year = time.getFullYear();
   const month = time.getMonth() + 1;
   const date = time.getDate();
   const weekday = WEEKDAYS[time.getDay()];
@@ -67,40 +63,22 @@ export default function Clock({ compact = false }: ClockProps) {
 
   const hours = time.getHours().toString().padStart(2, '0');
   const minutes = time.getMinutes().toString().padStart(2, '0');
-  const seconds = time.getSeconds().toString().padStart(2, '0');
-
-  if (compact) {
-    return (
-      <div className="flex flex-col justify-center h-full">
-        <div className="text-3xl font-bold tracking-tight text-primary font-mono tabular-nums mb-2">
-          <span>{hours}:{minutes}</span>
-          <span className="text-primary/30">:</span>
-          <span className="text-primary/30">{seconds}</span>
-        </div>
-        <div className="text-xs text-primary/70 mt-0.5">
-          {month}/{date} {weekday}
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {lunarDate}
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-3">
-      <div className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-mono tabular-nums [transition:opacity_0.1s_ease]">
-        <span>{hours}:{minutes}</span>
-        <span className="text-primary/60">:</span>
-        <span className="text-primary/80">{seconds}</span>
+    <div className="flex flex-col justify-between h-full">
+      <div className="flex flex-col items-baseline gap-1">
+        <span className="text-4xl font-bold tracking-tight text-primary tabular-nums">
+          {hours}
+        </span>
+        <span className="text-4xl font-bold tracking-tight text-primary/30 tabular-nums">
+          {minutes}
+        </span>
       </div>
-      <div className="flex flex-col items-center space-y-1.5">
-        <div className="text-lg md:text-xl font-medium text-primary/80">
-          {year}年{month}月{date}日 {weekday}
-        </div>
-        <div className="text-base md:text-lg text-primary/70">
-          {lunarDate}
-        </div>
+      <div className="text-xs text-primary/70 mt-0.5">
+        {month}/{date} {weekday}
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {lunarDate}
       </div>
     </div>
   );

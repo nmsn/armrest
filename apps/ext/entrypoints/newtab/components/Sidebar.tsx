@@ -49,7 +49,7 @@ export function Sidebar({
 
       {/* Clock */}
       <div className="app-card" style={{ height: "172px" }}>
-        <Clock compact />
+        <Clock />
       </div>
 
       {/* Weather */}
