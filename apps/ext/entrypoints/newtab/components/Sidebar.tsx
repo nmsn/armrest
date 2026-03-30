@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import Clock from "./Clock"
 import { Weather } from "./Weather"
 import { FolderList } from "./FolderList"
+import { Logo } from "./Logo"
 import type { BookmarkFolder } from "@/lib/bookmarks"
 
 interface SidebarProps {
@@ -35,7 +36,7 @@ export function Sidebar({
   return (
     <div className="app-sidebar overflow-y-auto">
       {/* Logo */}
-      <div className="app-logo h-10 flex items-center px-2">Arm<span>rest</span></div>
+      <Logo />
 
       {/* Clock */}
       <div className="app-card" style={{ height: "172px" }}>
