@@ -6,25 +6,7 @@ const TIME_UNITS = {
   DAY: 24 * 60 * 60 * 1000,
 } as const
 
-const API_CONFIG = {
-  API_60S: {
-    BASE: 'https://60s.viki.moe',
-    ENDPOINTS: {
-      WEATHER: '/v2/weather',
-      HISTORY: '/v2/today-in-history',
-      DAILY_BACKGROUND: '/v2/bing',
-      HITOKOTO: '/v2/hitokoto',
-      READ_WORLD: '/v2/60s',
-      AI_NEWS: '/v2/ai-news',
-    },
-  },
-  API_BIGDATACLOUD: {
-    BASE: 'https://api.bigdatacloud.net',
-    ENDPOINTS: {
-      REVERSE_GEOCODE: '/data/reverse-geocode-client',
-    },
-  },
-} as const
+const API_CONFIG = {} as const
 
 const STORAGE_KEYS = {
   BOOKMARKS: 'armrest_bookmarks',
