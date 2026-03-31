@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+
 import { createAuth } from './auth';
 import { authRouter } from './routes/auth';
 import { bookmarksRouter } from './routes/bookmarks';
@@ -10,7 +11,6 @@ import { geocodeRouter } from './routes/geocode';
 import { faviconRouter } from './routes/favicon';
 import { metadataRouter } from './routes/metadata';
 import type { Auth } from './auth';
-import type { Schema } from 'hono';
 
 export interface Env {
   DB: D1Database;
@@ -49,7 +49,7 @@ app.all('/auth/*', async (c) => {
   return auth.handler(c.req.raw);
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 app.route('/auth', authRouter() as unknown as Hono<any, any, any>);
 app.route('/api/bookmarks', bookmarksRouter as unknown as Hono<any, any, any>);
 app.route('/api/bookmarks/sync', syncRouter as unknown as Hono<any, any, any>);
@@ -58,5 +58,6 @@ app.route('/api/60s', sixtyRouter as unknown as Hono<any, any, any>);
 app.route('/api', geocodeRouter as unknown as Hono<any, any, any>);
 app.route('/api', faviconRouter as unknown as Hono<any, any, any>);
 app.route('/api', metadataRouter as unknown as Hono<any, any, any>);
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default app;

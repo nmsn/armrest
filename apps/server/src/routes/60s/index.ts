@@ -1,5 +1,6 @@
 // apps/server/src/routes/60s/index.ts
 import { Hono } from 'hono';
+
 import { weatherRouter } from './weather';
 import { quoteRouter } from './quote';
 import { historyRouter } from './history';
