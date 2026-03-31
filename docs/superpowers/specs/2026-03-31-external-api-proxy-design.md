@@ -264,20 +264,18 @@ GET /api/metadata?url=https://github.com
 
 ### api-client.ts
 
-新增扩展端代理接口调用：
+扩展端 `api-client.ts` 新增接口：
 ```typescript
 export const api = {
   // ... existing
-  proxy: {
-    weather60s: (city: string) => apiRequest(`/api/60s/weather?city=${encodeURIComponent(city)}`),
-    quote60s: () => apiRequest('/api/60s/quote'),
-    history60s: () => apiRequest('/api/60s/history'),
-    aiNews60s: () => apiRequest('/api/60s/ai-news'),
-    bing60s: () => apiRequest('/api/60s/bing'),
-    geocode: (lat: number, lon: number) => apiRequest(`/api/geocode?lat=${lat}&lon=${lon}`),
-    favicon: (url: string, size?: number) => apiRequest(`/api/favicon?url=${encodeURIComponent(url)}${size ? `&size=${size}` : ''}`),
-    metadata: (url: string) => apiRequest(`/api/metadata?url=${encodeURIComponent(url)}`),
-  },
+  weather60s: (city: string) => apiRequest(`/api/60s/weather?city=${encodeURIComponent(city)}`),
+  quote60s: () => apiRequest('/api/60s/quote'),
+  history60s: () => apiRequest('/api/60s/history'),
+  aiNews60s: () => apiRequest('/api/60s/ai-news'),
+  bing60s: () => apiRequest('/api/60s/bing'),
+  geocode: (lat: number, lon: number) => apiRequest(`/api/geocode?lat=${lat}&lon=${lon}`),
+  favicon: (url: string, size?: number) => apiRequest(`/api/favicon?url=${encodeURIComponent(url)}${size ? `&size=${size}` : ''}`),
+  metadata: (url: string) => apiRequest(`/api/metadata?url=${encodeURIComponent(url)}`),
 }
 ```
 
