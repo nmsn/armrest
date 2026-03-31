@@ -59,9 +59,40 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
   }),
 }));
 
+// 一言缓存
+export const dailyQuotes = sqliteTable('daily_quotes', {
+  id: text('id').$defaultFn(() => 'latest'), // 固定值
+  content: text('content').notNull(),
+  author: text('author').notNull().default('一言'),
+  date: text('date').notNull(), // YYYY-MM-DD
+  fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// 历史上的今天缓存
+export const dailyHistory = sqliteTable('daily_history', {
+  id: text('id').$defaultFn(() => 'latest'),
+  events: text('events').notNull(), // JSON string
+  date: text('date').notNull(),
+  fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// AI 新闻缓存
+export const dailyNews = sqliteTable('daily_news', {
+  id: text('id').$defaultFn(() => 'latest'),
+  news: text('news').notNull(), // JSON string
+  date: text('date').notNull(),
+  fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;
 export type Folder = typeof folders.$inferSelect;
 export type NewFolder = typeof folders.$inferInsert;
+export type DailyQuote = typeof dailyQuotes.$inferSelect;
+export type NewDailyQuote = typeof dailyQuotes.$inferInsert;
+export type DailyHistory = typeof dailyHistory.$inferSelect;
+export type NewDailyHistory = typeof dailyHistory.$inferInsert;
+export type DailyNews = typeof dailyNews.$inferSelect;
+export type NewDailyNews = typeof dailyNews.$inferInsert;
