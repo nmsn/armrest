@@ -1,5 +1,5 @@
 import { CACHE_CONFIG, STORAGE_KEYS, DEFAULT_VALUES } from "./constants"
-import { API_60S } from "./api"
+import { api } from "./api-client"
 
 export interface WeatherData {
   city: string
@@ -65,8 +65,6 @@ function isCacheValid(data: DailyData, dataType: DataType, city?: string): boole
 }
 
 export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<WeatherData | null> {
-  const requestUrl = `${API_60S.base}${API_60S.api.weather}?query=${encodeURIComponent(city)}`
-
   try {
     const storedData = await getStoredData()
 
@@ -74,30 +72,16 @@ export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): P
       return storedData.weather
     }
 
-    const response = await fetch(requestUrl)
+    const result = await api.weather60s(city)
 
-    if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`)
-    }
-
-    const result = await response.json()
-
-    if (result.code === 200 && result.data) {
-      const location = result.data.location
-      const weatherData = result.data.weather
-      const airQuality = result.data.air_quality
-
+    if (result.data) {
       const weather: WeatherData = {
-        city: location?.city || location?.name || city,
-        temperature: weatherData?.temperature != null
-          ? `${weatherData.temperature}°C`
-          : DEFAULT_VALUES.WEATHER_UNKNOWN,
-        weather: weatherData?.condition || DEFAULT_VALUES.WEATHER_UNKNOWN,
-        wind: weatherData?.wind_direction && weatherData?.wind_power
-          ? `${weatherData.wind_direction} ${weatherData.wind_power}级`
-          : DEFAULT_VALUES.WEATHER_UNKNOWN,
-        humidity: airQuality?.quality || airQuality?.aqi?.toString() || DEFAULT_VALUES.WEATHER_UNKNOWN,
-        updateTime: weatherData?.updated || new Date().toLocaleString("zh-CN"),
+        city: result.data.city,
+        temperature: result.data.temperature,
+        weather: result.data.weather,
+        wind: result.data.wind,
+        humidity: result.data.humidity,
+        updateTime: result.data.updateTime,
       }
 
       const currentData = await getStoredData()
@@ -119,8 +103,6 @@ export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): P
 }
 
 export async function getDailyQuote(): Promise<DailyQuoteData | null> {
-  const requestUrl = `${API_60S.base}${API_60S.api.hitokoto}`
-
   try {
     const storedData = await getStoredData()
 
@@ -128,18 +110,12 @@ export async function getDailyQuote(): Promise<DailyQuoteData | null> {
       return storedData.dailyQuote
     }
 
-    const response = await fetch(requestUrl)
+    const result = await api.quote60s()
 
-    if (!response.ok) {
-      throw new Error(`Daily quote API error: ${response.status}`)
-    }
-
-    const result = await response.json()
-
-    if (result.code === 200 && result.data) {
+    if (result.data) {
       const dailyQuote: DailyQuoteData = {
-        content: result.data.hitokoto || DEFAULT_VALUES.HITOKOTO_DEFAULT,
-        author: DEFAULT_VALUES.HITOKOTO_AUTHOR,
+        content: result.data.content,
+        author: result.data.author,
       }
 
       const currentData = await getStoredData()
