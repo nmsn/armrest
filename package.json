@@ -12,5 +12,14 @@
     "lint:fix": "pnpm -r run lint:fix",
     "db:push": "pnpm --filter @armrest/server db:push",
     "db:studio": "pnpm --filter @armrest/server db:studio"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-typescript": "^0.14.0"
   }
 }

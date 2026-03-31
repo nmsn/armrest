@@ -8,6 +8,7 @@ import { serve } from '@hono/node-server';
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
 import { eq } from 'drizzle-orm';
+
 import * as schema from './db/schema';
 
 const client = createClient({ url: 'file:./dev.db' });
