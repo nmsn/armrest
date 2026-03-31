@@ -1,6 +1,14 @@
 // apps/server/src/routes/60s/history.ts
 import { Hono } from 'hono';
 
+interface SixtyHistoryResponse {
+  code: number;
+  data?: {
+    events?: Array<{ year?: string; title?: string }>;
+    date?: string;
+  };
+}
+
 const router = new Hono();
 
 router.get('/', async (c) => {
@@ -15,7 +23,7 @@ router.get('/', async (c) => {
       return c.json({ data: null, error: `Upstream error: ${response.status}` });
     }
 
-    const result = await response.json();
+    const result = await response.json() as SixtyHistoryResponse;
     const duration = Date.now() - start;
     console.log(`[60s] GET /history → 200 (${duration}ms)`);
 

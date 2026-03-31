@@ -1,6 +1,14 @@
 // apps/server/src/routes/60s/ai-news.ts
 import { Hono } from 'hono';
 
+interface SixtyAiNewsResponse {
+  code: number;
+  data?: {
+    news?: Array<{ title?: string; source?: string; url?: string }>;
+    date?: string;
+  };
+}
+
 const router = new Hono();
 
 router.get('/', async (c) => {
@@ -15,7 +23,7 @@ router.get('/', async (c) => {
       return c.json({ data: null, error: `Upstream error: ${response.status}` });
     }
 
-    const result = await response.json();
+    const result = await response.json() as SixtyAiNewsResponse;
     const duration = Date.now() - start;
     console.log(`[60s] GET /ai-news → 200 (${duration}ms)`);
 

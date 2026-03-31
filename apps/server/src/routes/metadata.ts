@@ -1,5 +1,20 @@
 import { Hono } from 'hono';
 
+interface MicrolinkResponse {
+  status?: string;
+  data?: {
+    title?: string;
+    description?: string;
+    image?: { url?: string };
+    logo?: { url?: string };
+    favicon?: { url?: string };
+  };
+}
+
+interface AllOriginsResponse {
+  contents?: string;
+}
+
 const router = new Hono();
 
 router.get('/metadata', async (c) => {
@@ -37,7 +52,7 @@ router.get('/metadata', async (c) => {
 
     // Parse Microlink response (takes priority)
     if (microlinkResponse.ok) {
-      const microlinkData = await microlinkResponse.json();
+      const microlinkData = await microlinkResponse.json() as MicrolinkResponse;
       if (microlinkData.status === 'success' && microlinkData.data) {
         const { title: t, description: d, image: img, logo: l, favicon: f } = microlinkData.data;
         title = t || '';
@@ -50,7 +65,7 @@ router.get('/metadata', async (c) => {
 
     // Parse AllOrigins response (fallback for missing fields)
     if (proxyResponse.ok) {
-      const proxyData = await proxyResponse.json();
+      const proxyData = await proxyResponse.json() as AllOriginsResponse;
       if (proxyData.contents) {
         // AllOrigins doesn't parse HTML in Workers, so we can't extract metadata from it
         // This is a limitation - in practice, Microlink alone may be sufficient

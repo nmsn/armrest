@@ -1,6 +1,21 @@
 // apps/server/src/routes/60s/weather.ts
 import { Hono } from 'hono';
 
+interface SixtyWeatherResponse {
+  code: number;
+  data?: {
+    location?: { city?: string; name?: string };
+    weather?: {
+      temperature?: number;
+      condition?: string;
+      wind_direction?: string;
+      wind_power?: string;
+      updated?: string;
+    };
+    air_quality?: { quality?: string; aqi?: number };
+  };
+}
+
 const router = new Hono();
 
 router.get('/', async (c) => {
@@ -20,7 +35,7 @@ router.get('/', async (c) => {
       return c.json({ data: null, error: `Upstream error: ${response.status}` });
     }
 
-    const result = await response.json();
+    const result = await response.json() as SixtyWeatherResponse;
     const duration = Date.now() - start;
     console.log(`[60s] GET /weather?city=${city} → 200 (${duration}ms)`);
 

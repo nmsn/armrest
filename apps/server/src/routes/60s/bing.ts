@@ -1,6 +1,16 @@
 // apps/server/src/routes/60s/bing.ts
 import { Hono } from 'hono';
 
+interface SixtyBingResponse {
+  code: number;
+  data?: {
+    image?: string;
+    copyright?: string;
+    startdate?: string;
+    url?: string;
+  };
+}
+
 const router = new Hono();
 
 router.get('/', async (c) => {
@@ -15,7 +25,7 @@ router.get('/', async (c) => {
       return c.json({ data: null, error: `Upstream error: ${response.status}` });
     }
 
-    const result = await response.json();
+    const result = await response.json() as SixtyBingResponse;
     const duration = Date.now() - start;
     console.log(`[60s] GET /bing → 200 (${duration}ms)`);
 

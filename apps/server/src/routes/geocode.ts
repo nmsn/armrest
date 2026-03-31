@@ -1,6 +1,13 @@
 // apps/server/src/routes/geocode.ts
 import { Hono } from 'hono';
 
+interface BigDataCloudResponse {
+  city?: string;
+  locality?: string;
+  countryName?: string;
+  principalSubdivision?: string;
+}
+
 const router = new Hono();
 
 router.get('/geocode', async (c) => {
@@ -41,7 +48,7 @@ router.get('/geocode', async (c) => {
       return c.json({ data: null, error: `Upstream error: ${response.status}` });
     }
 
-    const result = await response.json();
+    const result = await response.json() as BigDataCloudResponse;
     const duration = Date.now() - start;
     console.log(`[geocode] GET /geocode?lat=${lat}&lon=${lon} → 200 (${duration}ms)`);
 

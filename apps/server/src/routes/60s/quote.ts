@@ -1,6 +1,11 @@
 // apps/server/src/routes/60s/quote.ts
 import { Hono } from 'hono';
 
+interface SixtyQuoteResponse {
+  code: number;
+  data?: { hitokoto?: string };
+}
+
 const router = new Hono();
 
 router.get('/', async (c) => {
@@ -15,7 +20,7 @@ router.get('/', async (c) => {
       return c.json({ data: null, error: `Upstream error: ${response.status}` });
     }
 
-    const result = await response.json();
+    const result = await response.json() as SixtyQuoteResponse;
     const duration = Date.now() - start;
     console.log(`[60s] GET /quote → 200 (${duration}ms)`);
 
