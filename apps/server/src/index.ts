@@ -6,6 +6,7 @@ import { bookmarksRouter } from './routes/bookmarks';
 import { weatherRouter } from './routes/weather';
 import { syncRouter } from './routes/sync';
 import { sixtyRouter } from './routes/60s';
+import { geocodeRouter } from './routes/geocode';
 import type { Auth } from './auth';
 import type { Schema } from 'hono';
 
@@ -52,5 +53,6 @@ app.route('/api/bookmarks', bookmarksRouter as unknown as Hono<any, any, any>);
 app.route('/api/bookmarks/sync', syncRouter as unknown as Hono<any, any, any>);
 app.route('/api', weatherRouter as unknown as Hono<any, any, any>);
 app.route('/api/60s', sixtyRouter as unknown as Hono<any, any, any>);
+app.route('/api', geocodeRouter as unknown as Hono<any, any, any>);
 
 export default app;
