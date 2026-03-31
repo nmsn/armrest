@@ -10,6 +10,7 @@ import { sixtyRouter } from './routes/60s';
 import { geocodeRouter } from './routes/geocode';
 import { faviconRouter } from './routes/favicon';
 import { metadataRouter } from './routes/metadata';
+import { cronRouter } from './routes/cron';
 import type { Auth } from './auth';
 
 export interface Env {
@@ -58,6 +59,8 @@ app.route('/api/60s', sixtyRouter as unknown as Hono<any, any, any>);
 app.route('/api', geocodeRouter as unknown as Hono<any, any, any>);
 app.route('/api', faviconRouter as unknown as Hono<any, any, any>);
 app.route('/api', metadataRouter as unknown as Hono<any, any, any>);
+app.route('/internal/cron', cronRouter as unknown as Hono<any, any, any>);
+app.route('/api/cron', cronRouter as unknown as Hono<any, any, any>);
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default app;
