@@ -233,7 +233,7 @@ GET /api/metadata?url=https://github.com
 - `https://api.allorigins.win/get?url=xxx` (提取 title, description, og:image)
 - `https://api.microlink.io?url=xxx&palette=true` (提取 title, description, image, logo, favicon)
 
-后端合并两个数据源返回统一的元数据。
+后端合并两个数据源返回统一的元数据。合并策略：Microlink 数据优先；AllOrigins 用于补充 Microlink 缺失的字段（如 description、og:image）。
 
 ## 扩展端改造
 
@@ -248,6 +248,9 @@ GET /api/metadata?url=https://github.com
 1. 删除 `API_60S` 导入
 2. `getWeather()` 改为调用 `GET /api/60s/weather?city=xxx`
 3. `getDailyQuote()` 改为调用 `GET /api/60s/quote`
+4. `getHistory()` 改为调用 `GET /api/60s/history`
+5. `getAiNews()` 改为调用 `GET /api/60s/ai-news`
+6. `getBingImage()` 改为调用 `GET /api/60s/bing`
 
 ### lib/geo.ts
 
