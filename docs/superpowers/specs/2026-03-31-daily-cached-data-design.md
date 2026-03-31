@@ -38,7 +38,7 @@
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| id | TEXT (PK) | 默认 "latest" |
+| id | TEXT (PK) | 固定值 "latest" |
 | content | TEXT | 一言内容 |
 | author | TEXT | 作者（固定"一言"） |
 | date | TEXT | 日期 (YYYY-MM-DD) |
@@ -48,7 +48,7 @@
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| id | TEXT (PK) | 默认 "latest" |
+| id | TEXT (PK) | 固定值 "latest" |
 | events | TEXT (JSON) | 事件列表 |
 | date | TEXT | 日期 (YYYY-MM-DD) |
 | fetched_at | INTEGER | 抓取时间戳 (Unix ms) |
@@ -57,7 +57,7 @@
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| id | TEXT (PK) | 默认 "latest" |
+| id | TEXT (PK) | 固定值 "latest" |
 | news | TEXT (JSON) | 新闻列表 |
 | date | TEXT | 日期 (YYYY-MM-DD) |
 | fetched_at | INTEGER | 抓取时间戳 (Unix ms) |
@@ -103,8 +103,14 @@ crons = ["0 8 * * *"]
 
 ### 本地开发
 
-```bash
-pnpm cron:run
+在 `apps/server/package.json` 中添加脚本：
+
+```json
+{
+  "scripts": {
+    "cron:run": "wrangler dev --local --env cron"
+  }
+}
 ```
 
 本地命令直接调用 `/internal/cron/fetch`，无需验证。
@@ -176,6 +182,13 @@ apps/server/src/
 │   └── cron.ts           # 新增：定时任务入口
 ├── services/
 │   └── daily-cache.ts    # 新增：缓存读写服务
+│       # getQuote(): Promise<CachedQuote | null>
+│       # setQuote(content, author, date): Promise<void>
+│       # getHistory(): Promise<CachedHistory | null>
+│       # setHistory(events, date): Promise<void>
+│       # getNews(): Promise<CachedNews | null>
+│       # setNews(news, date): Promise<void>
+│       # cleanExpired(): Promise<void>
 └── index.ts              # 注册 /api/cron/* 路由
 ```
 
