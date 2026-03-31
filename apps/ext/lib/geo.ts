@@ -1,5 +1,6 @@
 import { GEOLOCATION_CONFIG } from "./constants"
-import { API_BIGDATACLOUD, ReverseGeocodeResponse } from "./api"
+import { ReverseGeocodeResponse } from "./api"
+import { api } from "./api-client"
 
 interface UserLocation {
   latitude: number
@@ -52,34 +53,13 @@ async function getCityNameByCoordinates(latitude: number, longitude: number): Pr
       throw new Error('Invalid longitude: must be between -180 and 180')
     }
 
-    const requestUrl = new URL(`${API_BIGDATACLOUD.base}${API_BIGDATACLOUD.api.reverseGeocode}`)
-    requestUrl.searchParams.append('latitude', latitude.toString())
-    requestUrl.searchParams.append('longitude', longitude.toString())
-    requestUrl.searchParams.append('localityLanguage', GEOLOCATION_CONFIG.LOCALITY_LANGUAGE)
+    const result = await api.geocode(latitude, longitude)
 
-    const response = await fetch(requestUrl.toString())
-
-    if (!response.ok) {
-      throw new Error(`Reverse geocoding API error: ${response.status} ${response.statusText}`)
+    if (result.data) {
+      return result.data.city || result.data.locality || result.data.principalSubdivision || result.data.countryName || ''
     }
 
-    const result: ReverseGeocodeResponse = await response.json()
-
-    let cityName = result.city || result.locality || ''
-
-    if (!cityName && result.principalSubdivision) {
-      cityName = result.principalSubdivision
-    }
-
-    if (!cityName && result.countryName) {
-      cityName = result.countryName
-    }
-
-    if (!cityName) {
-      throw new Error('City name not found in response')
-    }
-
-    return cityName
+    throw new Error('City name not found in response')
   } catch (error) {
     throw error
   }
