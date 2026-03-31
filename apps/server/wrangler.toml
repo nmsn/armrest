@@ -12,3 +12,6 @@ database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
 NODE_ENV = "development"
+
+[triggers]
+crons = ["0 8 * * *"]
