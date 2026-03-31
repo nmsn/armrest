@@ -18,6 +18,9 @@
 ─────────                          ──────────────
 lib/daily.ts    ──────────────→    /api/60s/weather
                                    /api/60s/quote
+                                   /api/60s/history
+                                   /api/60s/ai-news
+                                   /api/60s/bing
 
 lib/geo.ts      ──────────────→    /api/geocode
 
@@ -33,6 +36,9 @@ lib/website.ts   ──────────────→    /api/favicon
 |------|------|----------|
 | `apps/server/src/routes/60s/weather.ts` | `GET /api/60s/weather?city=xxx` | 60s 天气 |
 | `apps/server/src/routes/60s/quote.ts` | `GET /api/60s/quote` | 60s 一言 |
+| `apps/server/src/routes/60s/history.ts` | `GET /api/60s/history` | 60s 历史上的今天 |
+| `apps/server/src/routes/60s/ai-news.ts` | `GET /api/60s/ai-news` | 60s AI 资讯 |
+| `apps/server/src/routes/60s/bing.ts` | `GET /api/60s/bing` | 60s 必应每日壁纸 |
 | `apps/server/src/routes/geocode.ts` | `GET /api/geocode?lat=xx&lon=xx` | BigDataCloud 逆地理编码 |
 | `apps/server/src/routes/favicon.ts` | `GET /api/favicon?url=xxx&size=xx` | Google Favicons |
 | `apps/server/src/routes/metadata.ts` | `GET /api/metadata?url=xxx` | AllOrigins + Microlink 网页元数据 |
@@ -94,7 +100,75 @@ GET /api/60s/quote
 
 **代理目标**: `https://60s.viki.moe/v2/hitokoto`
 
-### 3. /api/geocode
+### 3. /api/60s/history
+
+**请求**
+```
+GET /api/60s/history
+```
+
+**响应**
+```json
+{
+  "data": {
+    "events": [
+      { "year": "1949年", "title": "中华人民共和国成立" },
+      { "year": "1997年", "title": "香港回归祖国" }
+    ],
+    "updateTime": "2026-03-31"
+  },
+  "error": null
+}
+```
+
+**代理目标**: `https://60s.viki.moe/v2/today-in-history`
+
+### 4. /api/60s/ai-news
+
+**请求**
+```
+GET /api/60s/ai-news
+```
+
+**响应**
+```json
+{
+  "data": {
+    "news": [
+      { "title": "OpenAI 发布 GPT-5", "source": "TechCrunch", "url": "https://..." },
+      { "title": "Google 发布 Gemini 2.0", "source": "The Verge", "url": "https://..." }
+    ],
+    "updateTime": "2026-03-31"
+  },
+  "error": null
+}
+```
+
+**代理目标**: `https://60s.viki.moe/v2/ai-news`
+
+### 5. /api/60s/bing
+
+**请求**
+```
+GET /api/60s/bing
+```
+
+**响应**
+```json
+{
+  "data": {
+    "image": "https://bing.com/api/image.jpg",
+    "copyright": "长城，中国",
+    "startdate": "20260331",
+    "url": "https://bing.com/..."
+  },
+  "error": null
+}
+```
+
+**代理目标**: `https://60s.viki.moe/v2/bing`
+
+### 6. /api/geocode
 
 **请求**
 ```
@@ -116,7 +190,7 @@ GET /api/geocode?lat=30.274&lon=120.138
 
 **代理目标**: `https://api.bigdatacloud.net/data/reverse-geocode-client`
 
-### 4. /api/favicon
+### 7. /api/favicon
 
 **请求**
 ```
@@ -135,7 +209,7 @@ GET /api/favicon?url=https://github.com&size=64
 
 **代理目标**: `https://www.google.com/s2/favicons?domain=xxx&sz=xx`
 
-### 5. /api/metadata
+### 8. /api/metadata
 
 **请求**
 ```
@@ -194,6 +268,9 @@ export const api = {
   proxy: {
     weather60s: (city: string) => apiRequest(`/api/60s/weather?city=${encodeURIComponent(city)}`),
     quote60s: () => apiRequest('/api/60s/quote'),
+    history60s: () => apiRequest('/api/60s/history'),
+    aiNews60s: () => apiRequest('/api/60s/ai-news'),
+    bing60s: () => apiRequest('/api/60s/bing'),
     geocode: (lat: number, lon: number) => apiRequest(`/api/geocode?lat=${lat}&lon=${lon}`),
     favicon: (url: string, size?: number) => apiRequest(`/api/favicon?url=${encodeURIComponent(url)}${size ? `&size=${size}` : ''}`),
     metadata: (url: string) => apiRequest(`/api/metadata?url=${encodeURIComponent(url)}`),
@@ -234,8 +311,8 @@ interface ProxyResponse<T> {
 
 ## 实现顺序
 
-1. 创建路由文件结构
-2. 实现 `/api/60s/weather` 和 `/api/60s/quote`
+1. 创建路由文件结构 (`apps/server/src/routes/60s/`)
+2. 实现 `/api/60s/weather`、`/api/60s/quote`、`/api/60s/history`、`/api/60s/ai-news`、`/api/60s/bing`
 3. 实现 `/api/geocode`
 4. 实现 `/api/favicon` 和 `/api/metadata`
 5. 扩展端改造
@@ -243,6 +320,8 @@ interface ProxyResponse<T> {
 
 ## 待确认
 
-- [ ] 60s API 是否有其他端点需要代理？（历史上的今天、必应壁纸等）
-- [ ] 是否需要保留 60s 的 `history`（历史上的今天）接口？
-- [ ] 是否需要保留 60s 的 `ai-news` 接口？
+- [x] 60s API 是否有其他端点需要代理？（历史上的今天、必应壁纸等）
+- [x] 是否需要保留 60s 的 `history`（历史上的今天）接口？
+- [x] 是否需要保留 60s 的 `ai-news` 接口？
+
+> **确认结果**：history、ai-news、bing 均需要代理，已纳入设计。
