@@ -1,3 +1,5 @@
+import { api } from "./api-client"
+
 export function extractDomain(url: string): string {
   try {
     const urlObj = new URL(url)
@@ -7,7 +9,16 @@ export function extractDomain(url: string): string {
   }
 }
 
-export function getFaviconUrl(url: string, size: number = 32): string {
+export async function getFaviconUrl(url: string, size: number = 32): Promise<string> {
+  try {
+    const result = await api.favicon(url, size)
+    if (result.data) {
+      return result.data.favicon
+    }
+  } catch (error) {
+    console.error("Favicon fetch error:", error)
+  }
+  // fallback
   const domain = extractDomain(url)
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`
 }
@@ -37,99 +48,37 @@ export interface WebsiteMetadata {
   image?: string
 }
 
-async function getMetadataFromProxy(url: string): Promise<Partial<WebsiteMetadata>> {
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-
-  try {
-    const response = await fetch(proxyUrl)
-    const data = await response.json()
-
-    if (data.contents) {
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(data.contents, "text/html")
-
-      const title = doc.querySelector("title")?.textContent || ""
-      const description = doc.querySelector('meta[name="description"]')?.getAttribute("content") || ""
-      const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute("content") || ""
-
-      return { title, description, image: ogImage }
-    }
-  } catch (error) {
-    console.error("Proxy fetch error:", error)
-  }
-
-  return {}
-}
-
-async function getMetadataFromMicrolink(url: string): Promise<Partial<WebsiteMetadata>> {
-  try {
-    const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}&palette=true`)
-    const data = await response.json()
-
-    if (data.status === "success" && data.data) {
-      const { title, description, image, logo, favicon } = data.data
-      return {
-        title: title || "",
-        description: description || "",
-        image: image?.url || "",
-        logo: logo?.url || "",
-        favicon: favicon?.url || "",
-      }
-    }
-  } catch (error) {
-    console.error("Microlink fetch error:", error)
-  }
-
-  return {}
-}
-
 export async function fetchWebsiteInfo(url: string): Promise<WebsiteMetadata> {
   const domain = extractDomain(url)
   const normalizedUrl = normalizeUrl(url)
 
-  const baseInfo: WebsiteMetadata = {
-    title: domain.charAt(0).toUpperCase() + domain.slice(1),
-    favicon: getFaviconUrl(url, 64),
-    logo: getFaviconUrl(url, 128),
-    domain,
-  }
+  // Fallback favicon/logo
+  const fallbackFavicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+  const fallbackLogo = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
 
   try {
-    const [proxyMetadata, microlinkMetadata] = await Promise.all([
-      getMetadataFromProxy(normalizedUrl),
-      getMetadataFromMicrolink(normalizedUrl),
-    ])
+    const result = await api.metadata(normalizedUrl)
 
-    const mergedMetadata = {
-      ...baseInfo,
-      ...proxyMetadata,
-      ...microlinkMetadata,
+    if (result.data) {
+      return {
+        title: result.data.title || domain.charAt(0).toUpperCase() + domain.slice(1),
+        description: result.data.description,
+        image: result.data.image,
+        logo: result.data.logo || fallbackLogo,
+        favicon: result.data.favicon || fallbackFavicon,
+        domain,
+      }
     }
-
-    if (mergedMetadata.title && mergedMetadata.title !== domain) {
-      baseInfo.title = mergedMetadata.title
-    }
-
-    if (mergedMetadata.description) {
-      baseInfo.description = mergedMetadata.description
-    }
-
-    if (mergedMetadata.image) {
-      baseInfo.image = mergedMetadata.image
-    }
-
-    if (mergedMetadata.logo) {
-      baseInfo.logo = mergedMetadata.logo
-    }
-
-    if (mergedMetadata.favicon) {
-      baseInfo.favicon = mergedMetadata.favicon
-    }
-
-    return baseInfo
   } catch (error) {
     console.error("Failed to fetch website metadata:", error)
-    return baseInfo
+  }
+
+  // Fallback if API call fails
+  return {
+    title: domain.charAt(0).toUpperCase() + domain.slice(1),
+    favicon: fallbackFavicon,
+    logo: fallbackLogo,
+    domain,
   }
 }
 
