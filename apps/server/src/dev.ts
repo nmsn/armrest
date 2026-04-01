@@ -4,6 +4,7 @@
  */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
@@ -11,6 +12,8 @@ import { eq } from 'drizzle-orm';
 
 import * as schema from './db/schema';
 import { cronRouter } from './routes/cron';
+import { translate, saveTranslation, getTodayTranslations } from './services/translation';
+import { sixtyRouter } from './routes/60s';
 
 const client = createClient({ url: 'file:./dev.db' });
 const db = drizzle(client, { schema });
@@ -36,6 +39,9 @@ app.use('/*', cors({
   origin: ['chrome-extension://*', 'http://localhost:*', 'http://127.0.0.1:*'],
   credentials: true,
 }));
+
+// Request logging middleware
+app.use('/*', logger());
 
 app.get('/', (c) => c.json({ status: 'ok', version: '1.0.0', mode: 'local-dev' }));
 
@@ -185,111 +191,50 @@ app.post('/api/bookmarks/sync', async (c) => {
   return c.json({ success: true });
 });
 
-// 60s test page (direct local SQLite queries, bypasses daily-cache service)
-app.get('/api/60s/test', async (c) => {
-  const today = new Date().toISOString().split('T')[0];
-  const quoteRows = await db.select().from(schema.dailyQuotes).where(eq(schema.dailyQuotes.date, today)).all();
-  const historyRows = await db.select().from(schema.dailyHistory).where(eq(schema.dailyHistory.date, today)).all();
-  const newsRows = await db.select().from(schema.dailyAiNews).where(eq(schema.dailyAiNews.date, today)).all();
+// POST /api/translate - translate text
+app.post('/api/translate', async (c) => {
+  const body = await c.req.json<{ text?: string; from?: string; to?: string }>();
 
-  const quoteData = quoteRows[0];
-  const historyData = historyRows[0];
-  const newsData = newsRows[0];
+  if (!body.text) {
+    return c.json({ success: false, error: 'text is required' }, 400);
+  }
 
-  const quoteHtml = quoteData
-    ? `<blockquote>"${quoteData.content}"</blockquote>`
-    : '<p>暂无一言数据</p>';
+  const result = await translate({ local: true } as any, {
+    text: body.text,
+    from: body.from,
+    to: body.to,
+  });
 
-  const events = historyData ? JSON.parse(historyData.events) : [];
-  const historyHtml = events.length
-    ? `<ul>${events.map((e: { year?: string; title?: string }) => `<li><strong>${e.year}</strong> ${e.title}</li>`).join('')}</ul>`
-    : '<p>暂无历史上的今天数据</p>';
+  if (!result) {
+    return c.json({ success: false, error: 'Translation failed' }, 500);
+  }
 
-  const news = newsData ? JSON.parse(newsData.news) : [];
-  const newsHtml = news.length
-    ? `<ul>${news.map((n: { title?: string; source?: string; url?: string }) => `<li><a href="${n.url}" target="_blank">${n.title}</a> <span>${n.source}</span></li>`).join('')}</ul>`
-    : '<p>暂无AI新闻数据</p>';
+  const userId = 'local-user';
+  await saveTranslation(
+    { local: true } as any,
+    userId,
+    result.source.text,
+    result.source.type,
+    result.source.typeDesc,
+    result.source.pronounce,
+    result.target.text,
+    result.target.type,
+    result.target.typeDesc,
+    result.target.pronounce,
+  );
 
-  const html = `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>60s 测试</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-    h1 { text-align: center; color: #333; }
-    section { margin-bottom: 32px; border: 1px solid #eee; border-radius: 8px; padding: 20px; }
-    h2 { margin-top: 0; color: #555; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-    blockquote { font-size: 1.2em; text-align: center; margin: 0; padding: 16px; background: #f9f9f9; border-radius: 8px; }
-    cite { display: block; margin-top: 8px; font-size: 0.85em; color: #888; font-style: normal; }
-    ul { padding-left: 20px; }
-    li { margin-bottom: 6px; }
-    li strong { color: #e67e22; }
-    span { color: #888; font-size: 0.85em; }
-    a { color: #3498db; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .refresh { text-align: center; margin-top: 32px; display: flex; gap: 12px; justify-content: center; align-items: center; }
-    .refresh a, .refresh button { background: #3498db; color: #fff; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    .refresh button:disabled { background: #aaa; cursor: not-allowed; }
-  </style>
-</head>
-<body>
-  <h1>📅 60s 每日数据</h1>
-
-  <section>
-    <h2>💬 一言</h2>
-    ${quoteHtml}
-  </section>
-
-  <section>
-    <h2>📆 历史上的今天</h2>
-    ${historyHtml}
-  </section>
-
-  <section>
-    <h2>🤖 AI 科技新闻</h2>
-    ${newsHtml}
-  </section>
-
-  <div class="refresh">
-    <button id="fetchBtn">📥 拉取并写入数据库</button>
-    <a href="/api/60s/test">🔄 刷新</a>
-  </div>
-  <div id="status" style="text-align:center; margin-top:16px; min-height:24px; font-size:14px;"></div>
-  <script>
-    document.getElementById('fetchBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('fetchBtn');
-      const status = document.getElementById('status');
-      btn.disabled = true;
-      btn.textContent = '写入中...';
-      status.textContent = '';
-      try {
-        const res = await fetch('/internal/cron/fetch', { method: 'POST' });
-        const result = await res.json();
-        if (result.success) {
-          status.textContent = '✅ 写入成功，耗时 ' + result.duration + 'ms';
-          status.style.color = 'green';
-          location.reload();
-        } else {
-          status.textContent = '❌ 写入失败: ' + result.error;
-          status.style.color = 'red';
-          btn.disabled = false;
-          btn.textContent = '📥 拉取并写入数据库';
-        }
-      } catch (e) {
-        status.textContent = '❌ 请求失败: ' + e;
-        status.style.color = 'red';
-        btn.disabled = false;
-        btn.textContent = '📥 拉取并写入数据库';
-      }
-    });
-  </script>
-</body>
-</html>`;
-
-  return c.html(html);
+  return c.json({ success: true, data: result });
 });
+
+// GET /api/translate/history
+app.get('/api/translate/history', async (c) => {
+  const userId = 'local-user';
+  const rows = await getTodayTranslations({ local: true } as any, userId);
+  return c.json({ success: true, data: rows });
+});
+
+// Mount sixtyRouter for local dev
+app.route('/api/60s', sixtyRouter);
 
 const port = 3001;
 
@@ -299,6 +244,13 @@ initLocalUser().then(() => {
     fetch: app.fetch,
     port,
   }, (info) => {
-    console.log(`Local dev server running on http://localhost:${info.port}`);
+    console.log('');
+    console.log('  🏠 Armrest Server (Local Dev)');
+    console.log(`  🌐 http://localhost:${info.port}`);
+    console.log(`  📋 API Docs:`);
+    console.log(`     - GET  /api/60s/test          60s 测试页面`);
+    console.log(`     - POST /internal/cron/fetch   执行定时任务`);
+    console.log(`     - GET  /api/translate/history 翻译历史`);
+    console.log('');
   });
 });

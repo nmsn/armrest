@@ -83,6 +83,21 @@ export const dailyAiNews = sqliteTable('daily_ai_news', {
   fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
+// 翻译记录
+export const translations = sqliteTable('translations', {
+  id: integer('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  sourceText: text('source_text').notNull(),
+  sourceType: text('source_type').notNull(),
+  sourceTypeDesc: text('source_type_desc'),
+  sourcePronounce: text('source_pronounce'),
+  targetText: text('target_text').notNull(),
+  targetType: text('target_type').notNull(),
+  targetTypeDesc: text('target_type_desc'),
+  targetPronounce: text('target_pronounce'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Bookmark = typeof bookmarks.$inferSelect;
@@ -95,3 +110,5 @@ export type DailyHistory = typeof dailyHistory.$inferSelect;
 export type NewDailyHistory = typeof dailyHistory.$inferInsert;
 export type DailyAiNews = typeof dailyAiNews.$inferSelect;
 export type NewDailyAiNews = typeof dailyAiNews.$inferInsert;
+export type Translation = typeof translations.$inferSelect;
+export type NewTranslation = typeof translations.$inferInsert;
