@@ -1,3 +1,14 @@
 {
-  "permissions": "allow-all"
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run *)",
+      "Bash(git commit *)",
+      "Bash(git * main)",
+      "Bash(* --version)",
+      "Bash(* --help *)"
+    ],
+    "deny": [
+      "Bash(git push *)"
+    ]
+  }
 }
