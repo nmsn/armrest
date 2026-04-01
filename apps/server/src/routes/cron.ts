@@ -17,6 +17,9 @@ async function fetchSixtyData(url: string): Promise<SixtyData | null> {
   } catch { return null; }
 }
 
+interface HistoryItem { year?: string; title?: string; description?: string; }
+interface NewsItem { title?: string; source?: string; url?: string; }
+
 router.post('/fetch', async (c) => {
   const env = c.env;
   const start = Date.now();
@@ -35,20 +38,22 @@ router.post('/fetch', async (c) => {
     ]);
 
     if (quoteData?.hitokoto) {
-      await setQuote(env, quoteData.hitokoto as string, '一言', today);
+      await setQuote(env, quoteData.hitokoto as string, today);
       console.log('[cron] Saved quote');
     }
 
-    if (historyData?.events) {
-      const events = (historyData.events as Array<{ year?: string; title?: string }>).map(e => ({ year: e.year || '', title: e.title || '' }));
+    if (historyData?.items) {
+      const events = (historyData.items as Array<HistoryItem>).map(e => ({ year: e.year || '', title: e.title || '' }));
       await setHistory(env, events, today);
       console.log('[cron] Saved history');
     }
 
-    if (newsData?.news) {
-      const news = (newsData.news as Array<{ title?: string; source?: string; url?: string }>).map(n => ({ title: n.title || '', source: n.source || '', url: n.url || '' }));
+    if (newsData?.news && (newsData.news as Array<NewsItem>).length > 0) {
+      const news = (newsData.news as Array<NewsItem>).map(n => ({ title: n.title || '', source: n.source || '', url: n.url || '' }));
       await setNews(env, news, today);
       console.log('[cron] Saved news');
+    } else {
+      console.log('[cron] No news data available (API returned empty)');
     }
 
     const duration = Date.now() - start;

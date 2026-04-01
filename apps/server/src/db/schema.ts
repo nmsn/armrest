@@ -61,26 +61,25 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
 
 // 一言缓存
 export const dailyQuotes = sqliteTable('daily_quotes', {
-  id: text('id').$defaultFn(() => 'latest'), // 固定值
+  id: integer('id').primaryKey(),
   content: text('content').notNull(),
-  author: text('author').notNull().default('一言'),
-  date: text('date').notNull(), // YYYY-MM-DD
+  date: text('date').notNull().unique(), // YYYY-MM-DD
   fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
 // 历史上的今天缓存
 export const dailyHistory = sqliteTable('daily_history', {
-  id: text('id').$defaultFn(() => 'latest'),
+  id: integer('id').primaryKey(),
   events: text('events').notNull(), // JSON string
-  date: text('date').notNull(),
+  date: text('date').notNull().unique(), // YYYY-MM-DD
   fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
 // AI 新闻缓存
-export const dailyNews = sqliteTable('daily_news', {
-  id: text('id').$defaultFn(() => 'latest'),
+export const dailyAiNews = sqliteTable('daily_ai_news', {
+  id: integer('id').primaryKey(),
   news: text('news').notNull(), // JSON string
-  date: text('date').notNull(),
+  date: text('date').notNull().unique(), // YYYY-MM-DD
   fetchedAt: integer('fetched_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
@@ -94,5 +93,5 @@ export type DailyQuote = typeof dailyQuotes.$inferSelect;
 export type NewDailyQuote = typeof dailyQuotes.$inferInsert;
 export type DailyHistory = typeof dailyHistory.$inferSelect;
 export type NewDailyHistory = typeof dailyHistory.$inferInsert;
-export type DailyNews = typeof dailyNews.$inferSelect;
-export type NewDailyNews = typeof dailyNews.$inferInsert;
+export type DailyAiNews = typeof dailyAiNews.$inferSelect;
+export type NewDailyAiNews = typeof dailyAiNews.$inferInsert;

@@ -16,7 +16,7 @@ router.get('/', async (c) => {
   if (cached) {
     const duration = Date.now() - start;
     console.log(`[60s] GET /quote (cache hit) → 200 (${duration}ms)`);
-    return c.json({ data: { content: cached.content, author: cached.author, date: cached.date }, error: null });
+    return c.json({ data: { content: cached.content, date: cached.date }, error: null });
   }
 
   // 2. 缓存未命中，回退到 60s API
@@ -38,12 +38,12 @@ router.get('/', async (c) => {
       // 异步更新缓存
       setTimeout(async () => {
         try {
-          await setQuote(env, result.data!.hitokoto!, '一言', today);
+          await setQuote(env, result.data!.hitokoto!, today);
           console.log(`[60s] Quote cached for today`);
         } catch (e) { console.error('[60s] Failed to cache quote:', e); }
       }, 0);
 
-      return c.json({ data: { content: result.data.hitokoto, author: '一言', date: today }, error: null });
+      return c.json({ data: { content: result.data.hitokoto, date: today }, error: null });
     }
 
     return c.json({ data: null, error: 'Invalid response format' });

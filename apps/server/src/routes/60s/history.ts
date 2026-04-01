@@ -5,7 +5,7 @@ import type { Env } from '../../index';
 
 interface SixtyHistoryResponse {
   code: number;
-  data?: { events?: Array<{ year?: string; title?: string }>; date?: string };
+  data?: { items?: Array<{ year?: string; title?: string }>; date?: string };
 }
 
 const router = new Hono<{ Bindings: Env }>();
@@ -36,9 +36,9 @@ router.get('/', async (c) => {
     const duration = Date.now() - start;
     console.log(`[60s] GET /history → 200 (${duration}ms)`);
 
-    if (result.code === 200 && result.data?.events) {
+    if (result.code === 200 && result.data?.items) {
       const today = result.data.date || new Date().toISOString().split('T')[0];
-      const events = result.data.events.map(e => ({ year: e.year || '', title: e.title || '' }));
+      const events = result.data.items.map((e: { year?: string; title?: string }) => ({ year: e.year || '', title: e.title || '' }));
 
       // 异步更新缓存
       setTimeout(async () => {
