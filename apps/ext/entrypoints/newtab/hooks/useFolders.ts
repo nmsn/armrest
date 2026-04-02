@@ -14,10 +14,6 @@ export function useFolders() {
 
   const direction = activeFolderIndex > prevFolderIndexRef.current ? 1 : -1
 
-  const loadFolders = useCallback(async () => {
-    // This will be connected to the bookmarks hook
-  }, [])
-
   const handleFolderChange = useCallback((index: number) => {
     prevFolderIndexRef.current = activeFolderIndex
     setActiveFolderIndex(index)

@@ -59,7 +59,7 @@ export async function saveTranslation(
   targetPronounce: string | null,
 ): Promise<number> {
   const db = getDb(env);
-  const rows = await db.insert(translations).values({
+  const rows = await (db.insert(translations).values({
     userId,
     sourceText,
     sourceType,
@@ -69,12 +69,12 @@ export async function saveTranslation(
     targetType,
     targetTypeDesc,
     targetPronounce,
-  }).returning({ id: translations.id });
+  }) as any).returning({ id: translations.id });
   return rows[0].id;
 }
 
 export async function getTodayTranslations(env: Env, userId: string) {
-  const db = getDb(env);
+  const db = getDb(env) as any;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

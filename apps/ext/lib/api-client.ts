@@ -1,8 +1,15 @@
+import type { GeocodeResponse } from './api';
+
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 interface RequestOptions {
   method?: string;
   body?: unknown;
+}
+
+interface ApiResponse<T> {
+  data: T | null;
+  error: string | null;
 }
 
 export async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -22,7 +29,7 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
     throw new Error(`API Error: ${response.status}`);
   }
 
-  return response.json();
+  return response.json() as T;
 }
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
@@ -55,7 +62,7 @@ export const api = {
   history60s: () => apiRequest('/api/60s/history'),
   aiNews60s: () => apiRequest('/api/60s/ai-news'),
   bing60s: () => apiRequest('/api/60s/bing'),
-  geocode: (lat: number, lon: number) => apiRequest(`/api/geocode?lat=${lat}&lon=${lon}`),
+  geocode: (lat: number, lon: number) => apiRequest<ApiResponse<GeocodeResponse>>(`/api/geocode?lat=${lat}&lon=${lon}`),
   favicon: (url: string, size?: number) => apiRequest(`/api/favicon?url=${encodeURIComponent(url)}${size ? `&size=${size}` : ''}`),
   metadata: (url: string) => apiRequest(`/api/metadata?url=${encodeURIComponent(url)}`),
 };

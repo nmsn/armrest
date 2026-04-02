@@ -1,5 +1,4 @@
 import { GEOLOCATION_CONFIG } from "./constants"
-import { ReverseGeocodeResponse } from "./api"
 import { api } from "./api-client"
 
 interface UserLocation {
@@ -36,33 +35,29 @@ function getUserLocation(): Promise<UserLocation> {
 }
 
 async function getCityNameByCoordinates(latitude: number, longitude: number): Promise<string> {
-  try {
-    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-      throw new Error('Invalid coordinates: latitude and longitude must be numbers')
-    }
-
-    if (isNaN(latitude) || isNaN(longitude)) {
-      throw new Error('Invalid coordinates: latitude and longitude cannot be NaN')
-    }
-
-    if (latitude < -90 || latitude > 90) {
-      throw new Error('Invalid latitude: must be between -90 and 90')
-    }
-
-    if (longitude < -180 || longitude > 180) {
-      throw new Error('Invalid longitude: must be between -180 and 180')
-    }
-
-    const result = await api.geocode(latitude, longitude)
-
-    if (result.data) {
-      return result.data.city || result.data.locality || result.data.principalSubdivision || result.data.countryName || ''
-    }
-
-    throw new Error('City name not found in response')
-  } catch (error) {
-    throw error
+  if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+    throw new Error('Invalid coordinates: latitude and longitude must be numbers')
   }
+
+  if (isNaN(latitude) || isNaN(longitude)) {
+    throw new Error('Invalid coordinates: latitude and longitude cannot be NaN')
+  }
+
+  if (latitude < -90 || latitude > 90) {
+    throw new Error('Invalid latitude: must be between -90 and 90')
+  }
+
+  if (longitude < -180 || longitude > 180) {
+    throw new Error('Invalid longitude: must be between -180 and 180')
+  }
+
+  const result = await api.geocode(latitude, longitude)
+
+  if (result.data) {
+    return result.data.city || result.data.locality || result.data.principalSubdivision || result.data.countryName || ''
+  }
+
+  throw new Error('City name not found in response')
 }
 
 export { getUserLocation, getCityNameByCoordinates }

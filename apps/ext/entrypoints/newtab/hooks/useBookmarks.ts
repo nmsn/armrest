@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { Bookmark, deleteBookmark, reorderBookmarks, moveBookmark } from "@/lib/bookmarks"
+import { deleteBookmark, reorderBookmarks, moveBookmark } from "@/lib/bookmarks"
 
 interface BookmarkFormData {
   name: string

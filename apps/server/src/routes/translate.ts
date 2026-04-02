@@ -5,7 +5,8 @@ import type { Env } from '../index';
 const router = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
 
 router.post('/', async (c) => {
-  const env = c.env;
+  const isLocal = !c.env.DB;
+  const env = isLocal ? { local: true } as unknown as Env : c.env;
   const userId = c.get('userId') || 'anonymous';
   const body = await c.req.json<{ text?: string; from?: string; to?: string }>();
 
@@ -41,7 +42,8 @@ router.post('/', async (c) => {
 });
 
 router.get('/history', async (c) => {
-  const env = c.env;
+  const isLocal = !c.env.DB;
+  const env = isLocal ? { local: true } as unknown as Env : c.env;
   const userId = c.get('userId') || 'anonymous';
 
   const rows = await getTodayTranslations(env, userId);

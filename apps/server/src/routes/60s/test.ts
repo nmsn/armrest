@@ -33,7 +33,7 @@ router.get('/', async (c) => {
     : '<p>暂无AI新闻数据</p>';
 
   const translationHistoryHtml = translationHistory.length
-    ? `<ul>${translationHistory.map(t => `<li><strong>${t.sourceText}</strong> → ${t.targetText} <span>(${t.sourceType} → ${t.targetType})</span></li>`).join('')}</ul>`
+    ? `<ul>${translationHistory.map((t: { sourceText: string; targetText: string; sourceType: string; targetType: string }) => `<li><strong>${t.sourceText}</strong> → ${t.targetText} <span>(${t.sourceType} → ${t.targetType})</span></li>`).join('')}</ul>`
     : '<p>暂无翻译记录</p>';
 
   const html = `<!DOCTYPE html>

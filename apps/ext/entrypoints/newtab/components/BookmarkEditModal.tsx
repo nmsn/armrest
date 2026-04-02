@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { WebsiteMetadata, fetchWebsiteInfo, normalizeUrl, isValidUrl } from "@/lib/website"
+import { fetchWebsiteInfo, normalizeUrl, isValidUrl } from "@/lib/website"
 import { cn } from "@/lib/utils"
 
 function checkImageAvailable(url: string): Promise<boolean> {
@@ -48,7 +48,6 @@ export function BookmarkEditModal({
   const [url, setUrl] = useState(initialData?.url || "")
   const [logo, setLogo] = useState(initialData?.logo || "")
   const [description, setDescription] = useState(initialData?.description || "")
-  const [websiteInfo, setWebsiteInfo] = useState<WebsiteMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [iconSources, setIconSources] = useState<{ url: string; available: boolean }[]>([])
   const [selectedIconIndex, setSelectedIconIndex] = useState(0)
@@ -66,7 +65,6 @@ export function BookmarkEditModal({
         setLogo("")
         setDescription("")
       }
-      setWebsiteInfo(null)
       setIconSources([])
       setSelectedIconIndex(0)
     }
@@ -79,7 +77,6 @@ export function BookmarkEditModal({
     setIsLoading(true)
     try {
       const info = await fetchWebsiteInfo(normalizedUrl)
-      setWebsiteInfo(info)
 
       // Check which icon sources are available
       const sources: { url: string; available: boolean }[] = []
@@ -112,7 +109,6 @@ export function BookmarkEditModal({
         setName(info.title)
       }
     } catch {
-      setWebsiteInfo(null)
       setIconSources([])
     } finally {
       setIsLoading(false)

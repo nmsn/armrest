@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Cloud, Wind, Droplets, Loader2 } from "lucide-react"
+import { Cloud, Loader2 } from "lucide-react"
 import { WeatherData, getWeather } from "@/lib/daily"
 import { getUserLocation, getCityNameByCoordinates } from "@/lib/geo"
 import { DEFAULT_VALUES } from "@/lib/constants"

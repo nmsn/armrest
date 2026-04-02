@@ -8,7 +8,8 @@ interface SixtyQuoteResponse { code: number; data?: { hitokoto?: string }; }
 const router = new Hono<{ Bindings: Env }>();
 
 router.get('/', async (c) => {
-  const env = c.env;
+  const isLocal = !c.env.DB;
+  const env = isLocal ? { local: true } as unknown as Env : c.env;
   const start = Date.now();
 
   // 1. 尝试从缓存读取

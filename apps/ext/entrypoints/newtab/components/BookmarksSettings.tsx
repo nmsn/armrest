@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, Pencil, FolderPlus, Upload, Download } from "lucide-react"
+import { Trash2, Pencil, FolderPlus, Upload, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   BookmarkFolder,
@@ -32,7 +32,7 @@ interface BookmarksSettingsProps {
   onLogout?: () => void
 }
 
-export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, isBookmarkModalOpen: _isBookmarkModalOpen, onBookmarkModalClose: _onBookmarkModalClose, onBookmarkModalOpen, editingBookmark: _editingBookmark, onSaveBookmark: _onSaveBookmark, onEditBookmark, isFolderModalOpen: _isFolderModalOpen, onFolderModalClose: _onFolderModalClose, onFolderModalOpen: _onFolderModalOpen, editingFolder: _editingFolder, onSaveFolder: _onSaveFolder, onOpenFolderModal, isLoggedIn = false, user = null, onLogin, onLogout }: BookmarksSettingsProps) {
+export function BookmarksSettings({ folders: _folderOptions, onBookmarkAdded, isBookmarkModalOpen: _isBookmarkModalOpen, onBookmarkModalClose: _onBookmarkModalClose, onBookmarkModalOpen: _onBookmarkModalOpen, editingBookmark: _editingBookmark, onSaveBookmark: _onSaveBookmark, onEditBookmark, isFolderModalOpen: _isFolderModalOpen, onFolderModalClose: _onFolderModalClose, onFolderModalOpen: _onFolderModalOpen, editingFolder: _editingFolder, onSaveFolder: _onSaveFolder, onOpenFolderModal, isLoggedIn = false, user = null, onLogin, onLogout }: BookmarksSettingsProps) {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
   const [activeFolderId, setActiveFolderId] = useState<string>("")
   const [isExporting, setIsExporting] = useState(false)
