@@ -19,7 +19,6 @@ function getSimpleLunarDate(date: Date): string {
 
   let year = 1900;
   let month = 1;
-  let day = 1;
 
   const lunarMonthDays = [29, 30];
   let lunarYearDays = 354;
@@ -32,13 +31,13 @@ function getSimpleLunarDate(date: Date): string {
     lunarYearDays = 354 + (leap === 0 ? 1 : 0);
   }
 
-  let isLeap = false;
+  const isLeap = false;
   while (days > (lunarMonthDays[month % 2]) && month <= 12) {
     days -= lunarMonthDays[month % 2];
     month++;
   }
 
-  day = days + 1;
+  const day = days + 1;
 
   const yearGanZhi = getYearGanZhi(year);
   const monthStr = isLeap ? `闰${MONTHS[month - 1]}` : MONTHS[month - 1];
@@ -67,10 +66,10 @@ export default function Clock() {
   return (
     <div className="flex flex-col justify-between h-full">
       <div className="flex flex-col items-baseline gap-1">
-        <span className="text-4xl font-bold tracking-tight text-primary tabular-nums">
+        <span className="text-4xl font-extrabold tracking-tight text-primary font-['Wix_Madefor_Text'] tabular-nums">
           {hours}
         </span>
-        <span className="text-4xl font-bold tracking-tight text-primary/30 tabular-nums">
+        <span className="text-4xl font-extrabold tracking-tight text-primary/30 font-['Wix_Madefor_Text'] tabular-nums">
           {minutes}
         </span>
       </div>
