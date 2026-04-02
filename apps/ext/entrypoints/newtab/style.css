@@ -177,6 +177,11 @@
 }
 .app-card:hover { border-color: hsl(0 0% 45%); }
 
+.read-later-card {
+  position: relative;
+  overflow: visible;
+}
+
 .app-card-header {
   display: flex;
   align-items: center;

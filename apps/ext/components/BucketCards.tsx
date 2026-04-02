@@ -27,13 +27,22 @@ const defaultCards: CardItem[] = [
 ]
 
 // Card dimensions
+// Base square size for each card.
 const CARD_SIZE = 80
+// Horizontal distance between card anchors.
 const CARD_GAP = 60
+// Baseline Y offset inside the bucket area.
 const CARD_OFFSET_Y = 20
 
 // Hover effects
-const HOVER_FLOAT_Y = -20
+// How much hovered card moves up (negative = upward).
+const HOVER_FLOAT_Y = -40
+// How much neighboring cards spread out from hovered card.
 const HOVER_SPREAD_FACTOR = 15
+// Extra top room reserved so hovered cards can "break out" upward.
+const HOVER_BLEED_TOP = 28
+// Bottom clipping amount to keep card bottoms hidden by the bucket edge.
+const BOTTOM_CLIP = 0
 
 // Random ranges
 const ROTATION_RANGE = 15
@@ -98,53 +107,69 @@ export default function BucketCards({
   const metas = generateCardMetas(cards.length)
 
   return (
-    <div className="relative h-full w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
-      <div className="relative h-full" style={{ width: cards.length * CARD_GAP + 100 }}>
-        {cards.map((card, i) => {
-          const meta = metas[i]
-          const baseOffset = i * CARD_GAP
-          const isHovered = hoveredIndex === i
+    <div
+      className="relative h-full w-full overflow-visible"
+      style={{
+        clipPath: `inset(${-HOVER_BLEED_TOP}px 0px ${BOTTOM_CLIP}px 0px round var(--ds-r2))`,
+      }}
+    >
+      <div
+        className="absolute left-0 right-0 bottom-0 overflow-x-auto overflow-y-hidden scrollbar-hide"
+        style={{ top: -HOVER_BLEED_TOP }}
+      >
+        <div
+          className="relative"
+          style={{
+            width: cards.length * CARD_GAP + 100,
+            height: `calc(100% + ${HOVER_BLEED_TOP}px)`,
+          }}
+        >
+          {cards.map((card, i) => {
+            const meta = metas[i]
+            const baseOffset = i * CARD_GAP
+            const isHovered = hoveredIndex === i
 
-          const distance = hoveredIndex !== null ? Math.abs(i - hoveredIndex) : 0
-          const spread = hoveredIndex !== null ? distance * HOVER_SPREAD_FACTOR : 0
-          const direction = i > hoveredIndex! ? 1 : -1
+            const distance = hoveredIndex !== null ? Math.abs(i - hoveredIndex) : 0
+            const spread = hoveredIndex !== null ? distance * HOVER_SPREAD_FACTOR : 0
+            const direction = i > hoveredIndex! ? 1 : -1
 
-          const translateX = baseOffset + meta.offsetX + (isHovered ? 0 : spread * direction)
-          const translateY = CARD_OFFSET_Y + meta.offsetY + (isHovered ? HOVER_FLOAT_Y : 0)
-          const rotation = isHovered ? 0 : meta.rotation
-          const zIndex = isHovered ? 99 : i
+            const translateX = baseOffset + meta.offsetX + (isHovered ? 0 : spread * direction)
+            const translateY = HOVER_BLEED_TOP + CARD_OFFSET_Y + meta.offsetY + (isHovered ? HOVER_FLOAT_Y : 0)
+            const rotation = isHovered ? 0 : meta.rotation
+            const zIndex = isHovered ? 99 : i
 
-          return (
-            <div
-              key={i}
-              className="absolute flex flex-col items-center justify-between p-2 rounded-xl border border-black/10 cursor-pointer transition-all duration-300 gap-1"
-              style={{
-                width: CARD_SIZE,
-                height: CARD_SIZE,
-                background: meta.bg,
-                transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotation}deg)`,
-                boxShadow: isHovered ? '0 12px 32px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.12)',
-                zIndex,
-              }}
-              onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              <img
-                src={getFaviconUrl(card.url)}
-                alt=""
-                className="w-5 h-5 mt-1"
-              />
-              <div className="flex flex-col items-center flex-1 justify-center min-w-0">
-                <div className="font-medium text-[#1a1a1a] text-center leading-tight text-[10px] line-clamp-2">
-                  {card.title}
-                </div>
-                <div className="text-[8px] text-[#1a1a1a]/60 truncate max-w-full mt-0.5">
-                  {getDomain(card.url)}
+            return (
+              <div
+                key={i}
+                className="absolute flex flex-col items-center justify-between p-2 rounded-xl border border-black/10 cursor-pointer transition-all duration-300 gap-1"
+                style={{
+                  width: CARD_SIZE,
+                  height: CARD_SIZE,
+                  background: meta.bg,
+                  transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotation}deg)`,
+                  boxShadow: isHovered ? '0 12px 32px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.12)',
+                  zIndex,
+                }}
+                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <img
+                  src={getFaviconUrl(card.url)}
+                  alt=""
+                  className="w-5 h-5 mt-1"
+                />
+                <div className="flex flex-col items-center flex-1 justify-center min-w-0">
+                  <div className="font-medium text-[#1a1a1a] text-center leading-tight text-[10px] line-clamp-2">
+                    {card.title}
+                  </div>
+                  <div className="text-[8px] text-[#1a1a1a]/60 truncate max-w-full mt-0.5">
+                    {getDomain(card.url)}
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )
