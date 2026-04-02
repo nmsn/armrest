@@ -66,10 +66,10 @@ export default function Clock() {
   return (
     <div className="flex flex-col justify-between h-full">
       <div className="flex flex-col items-baseline gap-1">
-        <span className="text-4xl font-extrabold tracking-tight text-primary font-['Wix_Madefor_Text'] tabular-nums">
+        <span className="text-4xl font-black tracking-tight text-primary font-['Figtree'] tabular-nums">
           {hours}
         </span>
-        <span className="text-4xl font-extrabold tracking-tight text-primary/30 font-['Wix_Madefor_Text'] tabular-nums">
+        <span className="text-4xl font-black tracking-tight text-primary/30 font-['Figtree'] tabular-nums">
           {minutes}
         </span>
       </div>
