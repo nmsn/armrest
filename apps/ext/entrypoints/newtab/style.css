@@ -275,3 +275,8 @@
 @media (max-width: 600px) {
   .app-sidebar { grid-template-columns: 1fr; }
 }
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
