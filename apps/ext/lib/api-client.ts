@@ -1,4 +1,4 @@
-import type { GeocodeResponse } from './api';
+import type { GeocodeResponse, WeatherResponse } from './api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -57,7 +57,7 @@ export const api = {
   weather: {
     get: (lat: number, lon: number) => apiRequest(`/api/weather?latitude=${lat}&longitude=${lon}`),
   },
-  weather60s: (city: string) => apiRequest(`/api/60s/weather?city=${encodeURIComponent(city)}`),
+  weather60s: (city: string) => apiRequest<ApiResponse<WeatherResponse>>(`/api/60s/weather?city=${encodeURIComponent(city)}`),
   quote60s: () => apiRequest('/api/60s/quote'),
   history60s: () => apiRequest('/api/60s/history'),
   aiNews60s: () => apiRequest('/api/60s/ai-news'),

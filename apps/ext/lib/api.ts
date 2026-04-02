@@ -13,3 +13,13 @@ export interface GeocodeResponse {
   countryName?: string
   principalSubdivision?: string
 }
+
+export interface WeatherResponse {
+  city: string
+  temperature: string
+  weather: string
+  weatherCode: string
+  wind: string
+  humidity: string
+  updateTime: string
+}

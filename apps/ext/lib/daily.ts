@@ -5,6 +5,7 @@ export interface WeatherData {
   city: string
   temperature: string
   weather: string
+  weatherCode: string
   wind: string
   humidity: string
   updateTime: string
@@ -21,6 +22,12 @@ export interface DailyData {
   weatherLastUpdated?: number
   dailyQuoteLastUpdated?: number
   weatherCity?: string
+  location?: {
+    lat: number
+    lon: number
+    city: string
+  }
+  locationLastUpdated?: number
 }
 
 const DAILY_STORAGE_KEY = STORAGE_KEYS.DAILY_DATA
@@ -46,7 +53,7 @@ async function setStoredData(data: DailyData): Promise<void> {
   }
 }
 
-type DataType = 'weather' | 'dailyQuote'
+type DataType = 'weather' | 'dailyQuote' | 'location'
 
 function isCacheValid(data: DailyData, dataType: DataType, city?: string): boolean {
   const lastUpdatedKey = `${dataType}LastUpdated` as keyof DailyData
@@ -59,9 +66,32 @@ function isCacheValid(data: DailyData, dataType: DataType, city?: string): boole
     if (cachedCity !== city) return false
   }
 
-  const configKey = dataType === 'weather' ? 'WEATHER' : 'DAILY_QUOTE'
+  const configKey = dataType === 'weather' ? 'WEATHER' : dataType === 'dailyQuote' ? 'DAILY_QUOTE' : 'WEATHER'
   const expiry = CACHE_CONFIG[configKey].EXPIRY
   return Date.now() - lastUpdated < expiry
+}
+
+export interface CachedLocation {
+  lat: number
+  lon: number
+  city: string
+}
+
+export async function getCachedLocation(): Promise<CachedLocation | null> {
+  const data = await getStoredData()
+  if (!data?.location || !isCacheValid(data, 'location')) {
+    return null
+  }
+  return data.location
+}
+
+export async function setCachedLocation(location: CachedLocation): Promise<void> {
+  const currentData = await getStoredData()
+  await setStoredData({
+    ...currentData,
+    location,
+    locationLastUpdated: Date.now(),
+  })
 }
 
 export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): Promise<WeatherData | null> {
@@ -79,6 +109,7 @@ export async function getWeather(city: string = DEFAULT_VALUES.FALLBACK_CITY): P
         city: result.data.city,
         temperature: result.data.temperature,
         weather: result.data.weather,
+        weatherCode: result.data.weatherCode,
         wind: result.data.wind,
         humidity: result.data.humidity,
         updateTime: result.data.updateTime,

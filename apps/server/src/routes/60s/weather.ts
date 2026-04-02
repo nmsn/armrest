@@ -6,8 +6,9 @@ interface SixtyWeatherResponse {
   data?: {
     location?: { city?: string; name?: string };
     weather?: {
-      temperature?: number;
       condition?: string;
+      condition_code?: string;
+      temperature?: number;
       wind_direction?: string;
       wind_power?: string;
       updated?: string;
@@ -49,6 +50,7 @@ router.get('/', async (c) => {
           city: location?.city || location?.name || city,
           temperature: weatherData?.temperature != null ? `${weatherData.temperature}°C` : '未知',
           weather: weatherData?.condition || '未知',
+          weatherCode: weatherData?.condition_code || '99',
           wind: weatherData?.wind_direction && weatherData?.wind_power
             ? `${weatherData.wind_direction} ${weatherData.wind_power}级`
             : '未知',
