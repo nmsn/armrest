@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Moon, Sun } from "lucide-react"
+import { MoonIcon } from "./moon"
+import { SunIcon } from "./sun"
+import { MonitorCheckIcon } from "./monitor-check"
 import { flushSync } from "react-dom"
 import { Button } from "./button"
 
 import { cn } from "@/lib/utils"
+
+type ThemeMode = "light" | "dark" | "system"
 
 interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"button"> {
   duration?: number
@@ -14,24 +18,37 @@ export const AnimatedThemeToggler = ({
   duration = 400,
   ...props
 }: AnimatedThemeTogglerProps) => {
-  const [isDark, setIsDark] = useState(false)
+  const [mode, setMode] = useState<ThemeMode>("system")
   const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(document.documentElement.classList.contains("dark"))
+    const stored = localStorage.getItem("theme") as ThemeMode | null
+    if (stored) {
+      setMode(stored)
+      applyMode(stored)
+    } else {
+      setMode("system")
+      applyMode("system")
     }
-
-    updateTheme()
-
-    const observer = new MutationObserver(updateTheme)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    })
-
-    return () => observer.disconnect()
   }, [])
+
+  const applyMode = (newMode: ThemeMode) => {
+    const isDark =
+      newMode === "dark" ||
+      (newMode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    document.documentElement.classList.toggle("dark", isDark)
+    localStorage.setItem("theme", newMode)
+  }
+
+  useEffect(() => {
+    if (mode !== "system") return
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    const handler = () => applyMode("system")
+
+    mediaQuery.addEventListener("change", handler)
+    return () => mediaQuery.removeEventListener("change", handler)
+  }, [mode])
 
   const toggleTheme = useCallback(() => {
     const button = buttonRef.current
@@ -47,11 +64,12 @@ export const AnimatedThemeToggler = ({
       Math.max(y, viewportHeight - y)
     )
 
+    const cycleMode: ThemeMode[] = ["light", "dark", "system"]
+    const nextMode = cycleMode[(cycleMode.indexOf(mode) + 1) % cycleMode.length]
+
     const applyTheme = () => {
-      const newTheme = !isDark
-      setIsDark(newTheme)
-      document.documentElement.classList.toggle("dark")
-      localStorage.setItem("theme", newTheme ? "dark" : "light")
+      setMode(nextMode)
+      applyMode(nextMode)
     }
 
     if (typeof document.startViewTransition !== "function") {
@@ -81,7 +99,9 @@ export const AnimatedThemeToggler = ({
         )
       })
     }
-  }, [isDark, duration])
+  }, [mode, duration])
+
+  const ThemeIcon = mode === "light" ? SunIcon : mode === "dark" ? MoonIcon : MonitorCheckIcon
 
   return (
     <Button
@@ -91,11 +111,7 @@ export const AnimatedThemeToggler = ({
       className={cn(className)}
       {...props}
     >
-      {isDark ? (
-        <Sun className="h-4 w-4 text-muted-foreground hover:text-accent transition-colors" />
-      ) : (
-        <Moon className="h-4 w-4 text-muted-foreground hover:text-accent transition-colors" />
-      )}
+      <ThemeIcon className="h-4 w-4 text-muted-foreground hover:text-accent transition-colors" />
       <span className="sr-only">Toggle theme</span>
     </Button>
   )

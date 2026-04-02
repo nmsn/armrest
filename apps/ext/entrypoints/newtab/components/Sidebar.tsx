@@ -1,4 +1,5 @@
-import { Settings, Bookmark as BookmarkIcon } from "lucide-react"
+import { Bookmark as BookmarkIcon } from "lucide-react"
+import { SettingsIcon } from "@/components/ui/settings"
 import {
   Drawer,
   DrawerContent,
@@ -76,7 +77,7 @@ export function Sidebar({
               size="icon"
               className="h-9 w-9 rounded-lg border-border bg-card hover:border-accent/30 hover:bg-accent/10 transition-all"
             >
-              <Settings className="h-4 w-4 text-muted-foreground hover:text-accent" />
+              <SettingsIcon className="h-4 w-4 text-muted-foreground hover:text-accent" />
             </Button>
           </DrawerTrigger>
           <DrawerContent className="h-full max-w-md top-0 right-0 left-auto mt-0 rounded-none border-l border-border bg-card">
