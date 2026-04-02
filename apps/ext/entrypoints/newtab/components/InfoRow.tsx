@@ -1,6 +1,7 @@
 import { NewsCard } from "./NewsCard"
 import { WordCard } from "./WordCard"
 import { DailyQuote } from "./DailyQuote"
+import { ReadLater } from "./ReadLater"
 
 export function InfoRow() {
   return (
@@ -11,9 +12,12 @@ export function InfoRow() {
         <WordCard />
       </div>
 
-      {/* Quote — full width */}
-      <div className="app-card flex items-center justify-center px-6" style={{ height: "80px" }}>
-        <DailyQuote compact />
+      {/* ReadLater + Quote — 1fr 2fr */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 2fr" }}>
+        <div className="app-card flex items-center justify-center px-6" style={{ height: "80px" }}>
+          <DailyQuote compact />
+        </div>
+        <ReadLater />
       </div>
     </>
   )
