@@ -137,7 +137,7 @@ export function Weather({ city }: WeatherProps) {
   const weatherInfo = WEATHER_CODE_MAP[weather.weatherCode]
 
   return (
-    <div className="flex items-stretch gap-4">
+    <div className="flex items-center justify-center gap-4 h-full">
       <WeatherIcon className="w-12 h-12 text-primary" />
       <div className="flex flex-col justify-center gap-1">
         <div className="flex items-baseline gap-2">
