@@ -6,7 +6,7 @@ export function Logo() {
   const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
   return (
-    <div className="app-logo h-10 flex items-center justify-end px-2">
+    <div className="app-logo h-14 flex items-end justify-end px-2">
       <ShinyText
         text="✨ Armrest"
         className="font-semibold"
