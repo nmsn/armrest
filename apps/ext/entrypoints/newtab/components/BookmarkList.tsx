@@ -5,10 +5,9 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Plus } from "lucide-react"
 import { Bookmark } from "@/lib/bookmarks"
 import { BookmarkItem } from "@/components/shared/BookmarkItem"
-import { cn } from "@/lib/utils"
+import { AddBookmarkButton } from "./AddBookmarkButton"
 
 interface BookmarkListProps {
   bookmarks: Bookmark[]
@@ -75,7 +74,7 @@ export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark, onEdit
 
   return (
     <SortableContext items={itemIds} strategy={rectSortingStrategy}>
-      <div className="grid grid-cols-6 gap-3">
+      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))", gridTemplateRows: "80px" }}>
         {bookmarks.map((bookmark) => (
           <SortableBookmarkItem
             key={bookmark.id}
@@ -85,18 +84,7 @@ export function BookmarkList({ bookmarks, onBookmarkClick, onAddBookmark, onEdit
             onDelete={onDeleteBookmark}
           />
         ))}
-        <button
-          onClick={onAddBookmark}
-          className={cn(
-            "flex flex-col items-center justify-center gap-2 p-3 rounded-lg",
-            "border-2 border-dashed border-border hover:border-accent/50",
-            "bg-surface hover:bg-accent/5 transition-colors cursor-pointer",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          )}
-        >
-          <Plus className="w-11 h-11 rounded-xl text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Add</span>
-        </button>
+        <AddBookmarkButton onClick={onAddBookmark} />
       </div>
     </SortableContext>
   )

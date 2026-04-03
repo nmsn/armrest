@@ -14,6 +14,7 @@ interface MainContentProps {
   onSearchQueryChange: (query: string) => void
   onSearch: () => void
   onSearchKeyDown: (e: React.KeyboardEvent) => void
+  intentDisplayText?: string
 }
 
 export function MainContent({
@@ -27,6 +28,7 @@ export function MainContent({
   onSearchQueryChange,
   onSearch,
   onSearchKeyDown,
+  intentDisplayText,
 }: MainContentProps) {
   return (
     <div className="app-main overflow-y-auto">
@@ -36,6 +38,7 @@ export function MainContent({
         onSearchQueryChange={onSearchQueryChange}
         onSearch={onSearch}
         onSearchKeyDown={onSearchKeyDown}
+        intentDisplayText={intentDisplayText}
       />
 
       {/* Bookmarks */}

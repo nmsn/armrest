@@ -42,9 +42,9 @@ const SIZE_CONFIG = {
     text: "text-xs",
   },
   lg: {
-    icon: "w-11 h-11 rounded-full text-sm",
-    container: "gap-2 p-3",
-    text: "text-sm",
+    icon: "w-8 h-8 rounded-full text-sm",
+    container: "gap-1 p-1.5",
+    text: "text-xs",
   },
 }
 
@@ -54,7 +54,7 @@ export function BookmarkItem({
   onEdit,
   onDelete,
   size = "sm",
-  maxNameLength = 8
+  maxNameLength = 10
 }: BookmarkItemProps) {
   const [imgError, setImgError] = useState(false)
 
@@ -72,7 +72,7 @@ export function BookmarkItem({
     <button
       onClick={() => onClick(bookmark.url)}
       title={tooltipText}
-      className={`flex flex-col items-center justify-center ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2`}
+      className={`flex flex-col items-center justify-center aspect-square ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2`}
     >
       <div
         className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}

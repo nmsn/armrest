@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { DndContext, closestCenter } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { Sidebar } from "./components/Sidebar"
 import { MainContent } from "./components/MainContent"
 import { BookmarkEditModal } from "./components/BookmarkEditModal"
@@ -9,11 +10,12 @@ import { BookmarksSettings } from "./components/BookmarksSettings"
 import { useDragAndDrop, getFolderItemDragId } from "./hooks/useDragAndDrop"
 import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme } from "@/lib/theme"
+import { useSearch } from "./hooks/useSearch"
+import type { FavoriteItem } from "./search-intent"
 
 type SettingsTab = "bookmarks"
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState("")
   const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>("bookmarks")
   const [foldersData, setFoldersData] = useState<BookmarkFolder[]>([])
   const [activeFolderIndex, setActiveFolderIndex] = useState(0)
@@ -25,6 +27,19 @@ function App() {
 
   const direction = activeFolderIndex > prevFolderIndexRef.current ? 1 : -1
   const currentFolder = foldersData[activeFolderIndex]
+  const favoriteItems = useMemo<FavoriteItem[]>(
+    () =>
+      foldersData.flatMap((folder) =>
+        folder.bookmarks.map((bookmark) => ({
+          name: bookmark.name,
+          url: bookmark.url,
+          path: folder.name,
+        }))
+      ),
+    [foldersData]
+  )
+
+  const { searchQuery, intentDisplayText, handleSearchQueryChange, handleSearch, handleKeyDown } = useSearch(favoriteItems)
 
   const loadFolders = useCallback(async () => {
     try {
@@ -107,15 +122,6 @@ function App() {
     onRefresh: loadFolders,
   })
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      chrome.tabs.create({ url: `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}` })
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch()
-  }
 
   const handleBookmarkClick = (url: string) => {
     chrome.tabs.create({ url })
@@ -190,59 +196,62 @@ function App() {
   const folderIds = foldersData.map((folder) => getFolderItemDragId(folder.id))
 
   return (
-    <div className="h-screen overflow-hidden bg-surface flex items-center justify-center p-4">
-      <div className="mt-[-20px]">
-        <div className="w-full max-w-5xl h-full flex flex-col">
-          {/* Body */}
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, foldersData, activeFolderIndex)}>
-            <div className="grid grid-cols-[176px_1fr] gap-[var(--ds-section-gap)] overflow-hidden min-h-0">
-              <SortableContext items={folderIds} strategy={verticalListSortingStrategy}>
-                <Sidebar
-                  folders={foldersData}
-                  activeFolderIndex={activeFolderIndex}
-                  onFolderSelect={handleFolderChange}
-                  onNewFolder={() => handleOpenFolderModal()}
-                  activeSettingsTab={activeSettingsTab}
-                  onSettingsTabChange={setActiveSettingsTab}
-                >
-                  <BookmarksSettings
+    <TooltipProvider>
+      <div className="h-screen overflow-hidden bg-surface flex items-center justify-center p-4">
+        <div className="mt-[-20px]">
+          <div className="w-full max-w-5xl h-full flex flex-col">
+            {/* Body */}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, foldersData, activeFolderIndex)}>
+              <div className="grid grid-cols-[176px_1fr] gap-[var(--ds-section-gap)] overflow-hidden min-h-0">
+                <SortableContext items={folderIds} strategy={verticalListSortingStrategy}>
+                  <Sidebar
                     folders={foldersData}
-                    onBookmarkAdded={handleBookmarkAdded}
-                    isBookmarkModalOpen={isBookmarkModalOpen}
-                    onBookmarkModalClose={() => {
-                      setIsBookmarkModalOpen(false)
-                      setEditingBookmark(null)
-                    }}
-                    onBookmarkModalOpen={handleOpenBookmarkModal}
-                    editingBookmark={editingBookmark}
-                    onSaveBookmark={handleSaveBookmark}
-                    onEditBookmark={handleEditBookmark}
-                    isFolderModalOpen={isFolderModalOpen}
-                    onFolderModalClose={() => {
-                      setIsFolderModalOpen(false)
-                      setEditingFolder(null)
-                    }}
-                    editingFolder={editingFolder}
-                    onSaveFolder={handleSaveFolder}
-                    onOpenFolderModal={handleOpenFolderModal}
-                  />
-                </Sidebar>
-              </SortableContext>
+                    activeFolderIndex={activeFolderIndex}
+                    onFolderSelect={handleFolderChange}
+                    onNewFolder={() => handleOpenFolderModal()}
+                    activeSettingsTab={activeSettingsTab}
+                    onSettingsTabChange={setActiveSettingsTab}
+                  >
+                    <BookmarksSettings
+                      folders={foldersData}
+                      onBookmarkAdded={handleBookmarkAdded}
+                      isBookmarkModalOpen={isBookmarkModalOpen}
+                      onBookmarkModalClose={() => {
+                        setIsBookmarkModalOpen(false)
+                        setEditingBookmark(null)
+                      }}
+                      onBookmarkModalOpen={handleOpenBookmarkModal}
+                      editingBookmark={editingBookmark}
+                      onSaveBookmark={handleSaveBookmark}
+                      onEditBookmark={handleEditBookmark}
+                      isFolderModalOpen={isFolderModalOpen}
+                      onFolderModalClose={() => {
+                        setIsFolderModalOpen(false)
+                        setEditingFolder(null)
+                      }}
+                      editingFolder={editingFolder}
+                      onSaveFolder={handleSaveFolder}
+                      onOpenFolderModal={handleOpenFolderModal}
+                    />
+                  </Sidebar>
+                </SortableContext>
 
-              <MainContent
-                bookmarks={currentFolder?.bookmarks || []}
-                direction={direction}
-                onBookmarkClick={handleBookmarkClick}
-                onAddBookmark={handleOpenBookmarkModal}
-                onEditBookmark={handleEditBookmark}
-                onDeleteBookmark={handleDeleteBookmark}
-                searchQuery={searchQuery}
-                onSearchQueryChange={setSearchQuery}
-                onSearch={handleSearch}
-                onSearchKeyDown={handleKeyDown}
-              />
-            </div>
-          </DndContext>
+                <MainContent
+                  bookmarks={currentFolder?.bookmarks || []}
+                  direction={direction}
+                  onBookmarkClick={handleBookmarkClick}
+                  onAddBookmark={handleOpenBookmarkModal}
+                  onEditBookmark={handleEditBookmark}
+                  onDeleteBookmark={handleDeleteBookmark}
+                  searchQuery={searchQuery}
+                  onSearchQueryChange={handleSearchQueryChange}
+                  onSearch={handleSearch}
+                  onSearchKeyDown={handleKeyDown}
+                  intentDisplayText={intentDisplayText}
+                />
+              </div>
+            </DndContext>
+          </div>
         </div>
       </div>
 
@@ -267,7 +276,7 @@ function App() {
         initialData={editingFolder?.data}
         title={editingFolder ? "Edit Folder" : "Add Folder"}
       />
-    </div>
+    </TooltipProvider>
   )
 }
 
