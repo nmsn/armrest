@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Search } from "lucide-react"
+import { SearchIcon } from "@/components/ui/saerch"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -39,7 +39,7 @@ export function WordCard() {
           onClick={handleLookup}
           className="h-9 px-3 text-xs border-border hover:border-accent/50"
         >
-          <Search className="w-3.5 h-3.5" />
+          <SearchIcon className="w-3.5 h-3.5" />
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto">

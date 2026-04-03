@@ -1,4 +1,4 @@
-import { Search } from "lucide-react"
+import { SearchIcon } from "@/components/ui/saerch"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -26,7 +26,7 @@ export function SearchBar({ searchQuery, onSearchQueryChange, onSearch, onSearch
         className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
         onClick={onSearch}
       >
-        <Search className="h-4 w-4" />
+        <SearchIcon className="h-4 w-4" />
       </Button>
     </div>
   )
