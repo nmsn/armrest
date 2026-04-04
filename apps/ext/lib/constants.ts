@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   BOOKMARKS: 'armrest_bookmarks',
   THEME: 'armrest-theme-config',
   DAILY_DATA: 'armrest-daily-data',
+  READ_LATER: 'armrest_readlater',
 } as const
 
 const CACHE_CONFIG = {
