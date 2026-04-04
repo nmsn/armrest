@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react"
-import { AnimatePresence, motion } from "motion/react"
 import { ArrowLeftIcon } from "@/components/ui/arrow-left"
 import { ArrowRightIcon } from "@/components/ui/arrow-right"
 import { RefreshCCWIcon } from "@/components/ui/refresh-ccw"
+import { NewsCard } from "./NewsCard"
 import { WordCard } from "./WordCard"
 import { DailyQuote } from "./DailyQuote"
 import { ReadLater } from "./ReadLater"
@@ -16,9 +16,9 @@ interface CategoryConfig {
 }
 
 const CATEGORIES: CategoryConfig[] = [
-  { key: "ai", title: "AI News" },
   { key: "it", title: "IT News" },
   { key: "hacker", title: "Hacker News" },
+  { key: "ai", title: "AI News" },
 ]
 
 function useNewsCategory() {
@@ -69,96 +69,57 @@ function useNewsCategory() {
     getRefresh()()
   }, [getRefresh])
 
-  const title = CATEGORIES[activeIndex].title
-  const news = getNews()
-  const loading = getLoading()
-
-  return { title, news, loading, direction, goNext, goPrev, refresh }
+  return {
+    title: CATEGORIES[activeIndex].title,
+    animationKey: activeCategory,
+    news: getNews(),
+    loading: getLoading(),
+    direction,
+    goNext,
+    goPrev,
+    refresh,
+  }
 }
 
 export function InfoRow() {
-  const { title, news, loading, direction, goNext, goPrev, refresh } = useNewsCategory()
+  const { title, animationKey, news, loading, direction, goNext, goPrev, refresh } = useNewsCategory()
 
-  const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
-  }
+  const headerRight = (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={goPrev}
+        className="p-1 rounded hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeftIcon size={14} />
+      </button>
+      <button
+        onClick={goNext}
+        className="p-1 rounded hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground"
+      >
+        <ArrowRightIcon size={14} />
+      </button>
+      <button
+        onClick={refresh}
+        disabled={loading}
+        className="p-1 rounded hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
+      >
+        <RefreshCCWIcon size={14} />
+      </button>
+    </div>
+  )
 
   return (
     <>
       {/* News + Word — side by side */}
       <div className="news-word-row">
-        <div className="app-card h-full flex flex-col">
-          <div className="app-card-header">
-            <span className="app-card-title">{title}</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={goPrev}
-                className="p-1 rounded hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeftIcon size={14} />
-              </button>
-              <button
-                onClick={goNext}
-                className="p-1 rounded hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground"
-              >
-                <ArrowRightIcon size={14} />
-              </button>
-              <button
-                onClick={refresh}
-                disabled={loading}
-                className="p-1 rounded hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
-              >
-                <RefreshCCWIcon size={14} />
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-1 flex-1 overflow-hidden">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={title}
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="grid grid-cols-1 gap-1 flex-1 overflow-hidden"
-              >
-                {loading ? (
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="flex items-start gap-3 px-2 py-1.5">
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="h-2.5 w-full bg-accent/10 rounded animate-pulse" />
-                        <div className="h-2 w-16 bg-accent/10 rounded animate-pulse" />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  news.map((item, i) => (
-                    <a
-                      key={i}
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start justify-between gap-3 px-2 py-1.5 rounded-lg hover:bg-accent/5 transition-colors group"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <span className="text-xs text-muted-foreground group-hover:text-foreground line-clamp-2 leading-snug block">
-                          {item.title}
-                        </span>
-                        {item.subtitle && (
-                          <span className="text-[10px] text-muted-foreground/40">{item.subtitle}</span>
-                        )}
-                      </div>
-                    </a>
-                  ))
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+        <NewsCard
+          title={title}
+          news={news}
+          loading={loading}
+          headerRight={headerRight}
+          animationKey={animationKey}
+          direction={direction}
+        />
         <WordCard />
       </div>
 
