@@ -61,6 +61,8 @@ export const api = {
   quote60s: () => apiRequest('/api/60s/quote'),
   history60s: () => apiRequest('/api/60s/history'),
   aiNews60s: () => apiRequest('/api/60s/ai-news'),
+  itNews60s: () => apiRequest('/api/60s/it-news'),
+  hackerNews60s: () => apiRequest('/api/60s/hacker-news'),
   bing60s: () => apiRequest('/api/60s/bing'),
   geocode: (lat: number, lon: number) => apiRequest<ApiResponse<GeocodeResponse>>(`/api/geocode?lat=${lat}&lon=${lon}`),
   favicon: (url: string, size?: number) => apiRequest(`/api/favicon?url=${encodeURIComponent(url)}${size ? `&size=${size}` : ''}`),

@@ -2,13 +2,16 @@ import { NewsCard } from "./NewsCard"
 import { WordCard } from "./WordCard"
 import { DailyQuote } from "./DailyQuote"
 import { ReadLater } from "./ReadLater"
+import { useAiNews } from "../hooks/useAiNews"
 
 export function InfoRow() {
+  const { news } = useAiNews()
+
   return (
     <>
       {/* News + Word — side by side */}
       <div className="news-word-row">
-        <NewsCard />
+        <NewsCard news={news} />
         <WordCard />
       </div>
 

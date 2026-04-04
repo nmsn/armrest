@@ -1,5 +1,7 @@
 export { useFolders } from "./useFolders"
 export { useBookmarks } from "./useBookmarks"
 export { useDragAndDrop } from "./useDragAndDrop"
+export { useAiNews } from "./useAiNews"
 export type { FolderFormData } from "./useFolders"
 export type { BookmarkFormData } from "./useBookmarks"
+export type { AiNewsItem } from "./useAiNews"
