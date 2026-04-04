@@ -57,20 +57,10 @@ const DEFAULT_CARDS_DATA = [
   { url: 'https://hono.dev', title: 'Hono' },
 ]
 
-function generateCardMeta(): { bg: string; rotation: number; offsetX: number; offsetY: number } {
-  const rand = seededRandom(RANDOM_SEED)
-  return {
-    bg: COLORS[Math.floor(rand() * COLORS.length)],
-    rotation: Math.floor(rand() * ROTATION_RANGE * 2) - ROTATION_RANGE,
-    offsetX: Math.floor(rand() * OFFSET_X_RANGE) - OFFSET_X_BIAS,
-    offsetY: Math.floor(rand() * OFFSET_Y_RANGE) - OFFSET_Y_BIAS,
-  }
-}
-
 export function getDefaultCards(): ReadLaterCard[] {
   const rand = seededRandom(RANDOM_SEED)
-  return DEFAULT_CARDS_DATA.map((card) => ({
-    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  return DEFAULT_CARDS_DATA.map((card, index) => ({
+    id: `default-${index}`,
     url: card.url,
     title: card.title,
     bg: COLORS[Math.floor(rand() * COLORS.length)],
@@ -112,7 +102,7 @@ export async function saveReadLater(state: ReadLaterState): Promise<void> {
 
 export async function addReadLaterCard(card: ReadLaterCard): Promise<void> {
   const state = await getReadLater()
-  state.cards.unshift(card) // 插入到最前面
+  state.cards.unshift(card)
   await saveReadLater(state)
 }
 
