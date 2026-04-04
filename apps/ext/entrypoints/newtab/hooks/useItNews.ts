@@ -1,30 +1,30 @@
 import { useState, useEffect } from "react"
 import { api } from "@/lib/api-client"
 
-export interface AiNewsItem {
+export interface ItNewsItem {
   title: string
-  source: string
-  url: string
+  description?: string
+  link: string
 }
 
-interface AiNewsResponse {
-  data?: { news?: AiNewsItem[]; date?: string }
+interface ItNewsResponse {
+  data?: { news?: ItNewsItem[] }
   error: string | null
 }
 
-export function useAiNews() {
-  const [news, setNews] = useState<AiNewsItem[]>([])
+export function useItNews() {
+  const [news, setNews] = useState<ItNewsItem[]>([])
   const [loading, setLoading] = useState(true)
 
   async function fetchNews() {
     setLoading(true)
     try {
-      const result = await api.aiNews60s() as AiNewsResponse
+      const result = await api.itNews60s() as ItNewsResponse
       if (result.data?.news) {
         setNews(result.data.news)
       }
     } catch (error) {
-      console.error("Failed to fetch AI news:", error)
+      console.error("Failed to fetch IT news:", error)
     } finally {
       setLoading(false)
     }
