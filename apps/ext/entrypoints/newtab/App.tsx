@@ -23,6 +23,8 @@ function App() {
   const [editingBookmark, setEditingBookmark] = useState<{ id: string; name: string; url: string; color?: string } | null>(null)
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<{ id: string; data: { name: string; icon: string; color: string } } | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<{ name?: string; image?: string } | null>(null)
   const prevFolderIndexRef = useRef(0)
 
   const direction = activeFolderIndex > prevFolderIndexRef.current ? 1 : -1
@@ -131,6 +133,17 @@ function App() {
     loadFolders()
   }
 
+  const handleLogin = () => {
+    // Placeholder for OAuth login - sync is handled via better-auth
+    setIsLoggedIn(true)
+    setUser({ name: "User" })
+  }
+
+  const handleLogout = () => {
+    setIsLoggedIn(false)
+    setUser(null)
+  }
+
   const handleEditBookmark = (bookmark: { id: string; name: string; url: string; color?: string }) => {
     setEditingBookmark(bookmark)
     setIsBookmarkModalOpen(true)
@@ -235,25 +248,10 @@ function App() {
                     onSettingsTabChange={setActiveSettingsTab}
                   >
                     <BookmarksSettings
-                      folders={foldersData}
-                      onBookmarkAdded={handleBookmarkAdded}
-                      isBookmarkModalOpen={isBookmarkModalOpen}
-                      onBookmarkModalClose={() => {
-                        setIsBookmarkModalOpen(false)
-                        setEditingBookmark(null)
-                      }}
-                      onBookmarkModalOpen={handleOpenBookmarkModal}
-                      editingBookmark={editingBookmark}
-                      onSaveBookmark={handleSaveBookmark}
-                      onEditBookmark={handleEditBookmark}
-                      isFolderModalOpen={isFolderModalOpen}
-                      onFolderModalClose={() => {
-                        setIsFolderModalOpen(false)
-                        setEditingFolder(null)
-                      }}
-                      editingFolder={editingFolder}
-                      onSaveFolder={handleSaveFolder}
-                      onOpenFolderModal={handleOpenFolderModal}
+                      isLoggedIn={isLoggedIn}
+                      user={user}
+                      onLogin={handleLogin}
+                      onLogout={handleLogout}
                     />
                   </Sidebar>
                 </SortableContext>
