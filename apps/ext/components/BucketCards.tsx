@@ -74,7 +74,7 @@ export default function BucketCards({
       }}
     >
       <div
-        className="absolute left-0 right-0 bottom-0 overflow-x-auto overflow-y-hidden scrollbar-hide"
+        className="absolute left-0 right-0 bottom-0 overflow-y-hidden scrollbar-hide"
         style={{ top: -HOVER_BLEED_TOP }}
       >
         <div

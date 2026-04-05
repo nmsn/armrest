@@ -44,7 +44,10 @@ export function ReadLater() {
   }, [])
 
   return (
-    <div className="app-card read-later-card p-0!" style={{ height: '80px' }}>
+    <div
+      className="app-card read-later-card p-0! overflow-x-auto overflow-y-hidden scrollbar-hide"
+      style={{ height: '80px' }}
+    >
       <BucketCards
         cards={cards}
         showAddCard={true}
