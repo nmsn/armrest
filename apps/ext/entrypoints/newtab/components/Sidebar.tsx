@@ -21,6 +21,8 @@ interface SidebarProps {
   activeFolderIndex: number
   onFolderSelect: (index: number) => void
   onNewFolder: () => void
+  onEditFolder?: (folder: BookmarkFolder) => void
+  onDeleteFolder?: (folderId: string) => void
   activeSettingsTab: "bookmarks"
   onSettingsTabChange: (tab: "bookmarks") => void
   children: React.ReactNode
@@ -31,6 +33,8 @@ export function Sidebar({
   activeFolderIndex,
   onFolderSelect,
   onNewFolder,
+  onEditFolder,
+  onDeleteFolder,
   activeSettingsTab,
   onSettingsTabChange,
   children,
@@ -63,6 +67,8 @@ export function Sidebar({
             folders={folders}
             activeIndex={activeFolderIndex}
             onSelect={onFolderSelect}
+            onEdit={onEditFolder}
+            onDelete={onDeleteFolder}
           />
         </div>
       </div>

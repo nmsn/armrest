@@ -8,7 +8,7 @@ import { BookmarkEditModal } from "./components/BookmarkEditModal"
 import { FolderEditModal } from "./components/FolderEditModal"
 import { BookmarksSettings } from "./components/BookmarksSettings"
 import { useDragAndDrop, getFolderItemDragId } from "./hooks/useDragAndDrop"
-import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, BookmarkFolder } from "@/lib/bookmarks"
+import { getBookmarks, addBookmark, updateBookmark, addFolder, updateFolder, deleteFolder, BookmarkFolder } from "@/lib/bookmarks"
 import { getThemeConfig, applyTheme } from "@/lib/theme"
 import { useSearch } from "./hooks/useSearch"
 import type { FavoriteItem } from "./search-intent"
@@ -193,6 +193,26 @@ function App() {
     setEditingFolder(null)
   }
 
+  const handleEditFolder = (folder: BookmarkFolder) => {
+    handleOpenFolderModal({
+      id: folder.id,
+      data: {
+        name: folder.name,
+        icon: folder.icon || "folder",
+        color: folder.color || "#6366F1",
+      },
+    })
+  }
+
+  const handleDeleteFolder = async (folderId: string) => {
+    try {
+      await deleteFolder(folderId)
+      await loadFolders()
+    } catch (error) {
+      console.error("Failed to delete folder:", error)
+    }
+  }
+
   const folderIds = foldersData.map((folder) => getFolderItemDragId(folder.id))
 
   return (
@@ -209,6 +229,8 @@ function App() {
                     activeFolderIndex={activeFolderIndex}
                     onFolderSelect={handleFolderChange}
                     onNewFolder={() => handleOpenFolderModal()}
+                    onEditFolder={handleEditFolder}
+                    onDeleteFolder={handleDeleteFolder}
                     activeSettingsTab={activeSettingsTab}
                     onSettingsTabChange={setActiveSettingsTab}
                   >
