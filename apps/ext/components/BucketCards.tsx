@@ -51,6 +51,7 @@ export default function BucketCards({
   onAddCard,
   showAddCard = false,
 }: BucketCardsProps) {
+  // -1 means hovering the add card slot
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const totalSlots = cards.length + (showAddCard ? 1 : 0)
@@ -76,6 +77,17 @@ export default function BucketCards({
           {Array.from({ length: totalSlots }, (_, i) => {
             // If first slot and showAddCard, render the add card placeholder
             if (i === 0 && showAddCard) {
+              const isAddHovered = hoveredIndex === -1
+
+              // When add card is hovered, all regular cards spread to the right (direction = 1)
+              const distance = hoveredIndex !== null ? Math.abs(i - hoveredIndex) : 0
+              const spread = hoveredIndex !== null ? distance * HOVER_SPREAD_FACTOR : 0
+              const direction = i > hoveredIndex! ? 1 : -1
+
+              const translateX = 0 + (isAddHovered ? 0 : spread * direction)
+              const translateY = HOVER_BLEED_TOP + CARD_OFFSET_Y + (isAddHovered ? HOVER_FLOAT_Y : 0)
+              const zIndex = isAddHovered ? 99 : 0
+
               return (
                 <div
                   key="add-card"
@@ -84,10 +96,13 @@ export default function BucketCards({
                     width: CARD_SIZE,
                     height: CARD_SIZE,
                     background: '#E5E7EB',
-                    transform: `translateX(0px) translateY(${HOVER_BLEED_TOP + CARD_OFFSET_Y}px) rotate(0deg)`,
-                    zIndex: 0,
+                    transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${isAddHovered ? 0 : 0}deg)`,
+                    boxShadow: isAddHovered ? '0 12px 32px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.12)',
+                    zIndex,
                   }}
                   onClick={onAddCard}
+                  onMouseEnter={() => setHoveredIndex(-1)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                 >
                   <span className="text-2xl text-gray-500">+</span>
                 </div>
@@ -101,6 +116,7 @@ export default function BucketCards({
             const baseOffset = cardIndex * CARD_GAP
             const isHovered = hoveredIndex === cardIndex
 
+            // When hovering add card (-1), all regular cards spread right (direction = 1)
             const distance = hoveredIndex !== null ? Math.abs(cardIndex - hoveredIndex) : 0
             const spread = hoveredIndex !== null ? distance * HOVER_SPREAD_FACTOR : 0
             const direction = cardIndex > hoveredIndex! ? 1 : -1
