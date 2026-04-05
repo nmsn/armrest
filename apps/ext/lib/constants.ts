@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   THEME: 'armrest-theme-config',
   DAILY_DATA: 'armrest-daily-data',
   READ_LATER: 'armrest_readlater',
+  WORD_HISTORY: 'armrest_word_history',
 } as const
 
 const CACHE_CONFIG = {
