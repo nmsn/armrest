@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import BucketCards from '@/components/BucketCards'
-import { getReadLater, addReadLaterCard, ReadLaterCard } from '@/lib/readlater'
+import { getReadLater, addReadLaterCard, deleteReadLaterCard, ReadLaterCard } from '@/lib/readlater'
 
 export function ReadLater() {
   const [cards, setCards] = useState<ReadLaterCard[]>([])
@@ -38,12 +38,18 @@ export function ReadLater() {
     setCards((prev) => [newCard, ...prev])
   }, [])
 
+  const handleDeleteCard = useCallback(async (id: string) => {
+    await deleteReadLaterCard(id)
+    setCards((prev) => prev.filter((card) => card.id !== id))
+  }, [])
+
   return (
     <div className="app-card read-later-card p-0!" style={{ height: '80px' }}>
       <BucketCards
         cards={cards}
         showAddCard={true}
         onAddCard={handleAddCard}
+        onDeleteCard={handleDeleteCard}
       />
     </div>
   )

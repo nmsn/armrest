@@ -1,6 +1,14 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
 
 interface CardItem {
+  id: string
   url: string
   title: string
   bg: string
@@ -12,6 +20,7 @@ interface CardItem {
 interface BucketCardsProps {
   cards: CardItem[]
   onAddCard?: () => void
+  onDeleteCard?: (id: string) => void
   showAddCard?: boolean
 }
 
@@ -49,6 +58,7 @@ function getDomain(url: string): string {
 export default function BucketCards({
   cards,
   onAddCard,
+  onDeleteCard,
   showAddCard = false,
 }: BucketCardsProps) {
   // -1 means hovering the add card slot
@@ -127,34 +137,46 @@ export default function BucketCards({
             const zIndex = isHovered ? 99 : cardIndex
 
             return (
-              <div
-                key={cardIndex}
-                className="absolute flex flex-col items-center justify-between p-2 rounded-xl border border-black/10 cursor-pointer transition-all duration-300 gap-1"
-                style={{
-                  width: CARD_SIZE,
-                  height: CARD_SIZE,
-                  background: meta.bg,
-                  transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotation}deg)`,
-                  boxShadow: isHovered ? '0 12px 32px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.12)',
-                  zIndex,
-                }}
-                onMouseEnter={() => setHoveredIndex(cardIndex)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <img
-                  src={getFaviconUrl(card.url)}
-                  alt=""
-                  className="w-5 h-5 mt-1"
-                />
-                <div className="flex flex-col items-center flex-1 justify-center min-w-0">
-                  <div className="font-medium text-[#1a1a1a] text-center leading-tight text-[10px] line-clamp-2">
-                    {card.title}
+              <ContextMenu key={cardIndex}>
+                <ContextMenuTrigger asChild>
+                  <div
+                    className="absolute flex flex-col items-center justify-between p-2 rounded-xl border border-black/10 cursor-pointer transition-all duration-300 gap-1"
+                    style={{
+                      width: CARD_SIZE,
+                      height: CARD_SIZE,
+                      background: meta.bg,
+                      transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotation}deg)`,
+                      boxShadow: isHovered ? '0 12px 32px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.12)',
+                      zIndex,
+                    }}
+                    onMouseEnter={() => setHoveredIndex(cardIndex)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    <img
+                      src={getFaviconUrl(card.url)}
+                      alt=""
+                      className="w-5 h-5 mt-1"
+                    />
+                    <div className="flex flex-col items-center flex-1 justify-center min-w-0">
+                      <div className="font-medium text-[#1a1a1a] text-center leading-tight text-[10px] line-clamp-2">
+                        {card.title}
+                      </div>
+                      <div className="text-[8px] text-[#1a1a1a]/60 truncate max-w-full mt-0.5">
+                        {getDomain(card.url)}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-[8px] text-[#1a1a1a]/60 truncate max-w-full mt-0.5">
-                    {getDomain(card.url)}
-                  </div>
-                </div>
-              </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    onClick={() => onDeleteCard?.(card.id)}
+                    className="text-red-500 focus:text-red-500"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    删除
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             )
           })}
         </div>
