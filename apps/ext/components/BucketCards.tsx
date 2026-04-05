@@ -22,6 +22,10 @@ interface BucketCardsProps {
   onAddCard?: () => void
   onDeleteCard?: (id: string) => void
   showAddCard?: boolean
+  columns?: number        // 新增：列数（多排模式），默认 1
+  columnGap?: number      // 新增：行间距（px），默认 60
+  overflowClip?: number   // 新增：底部裁剪量（px），默认 0
+  onCardClick?: (card: CardItem) => void  // 新增：卡片点击回调
 }
 
 // Card dimensions
@@ -31,6 +35,8 @@ const CARD_SIZE = 80
 const CARD_GAP = 60
 // Baseline Y offset inside the bucket area.
 const CARD_OFFSET_Y = 20
+// 多排模式：第二排相对第一排上移的量
+const COLUMN_OFFSET_Y = 30
 
 // Hover effects
 // How much hovered card moves up (negative = upward).
@@ -41,6 +47,14 @@ const HOVER_SPREAD_FACTOR = 15
 const HOVER_BLEED_TOP = 28
 // Bottom clipping amount to keep card bottoms hidden by the bucket edge.
 const BOTTOM_CLIP = 0
+
+function getCardPosition(index: number, columns: number, columnGap: number) {
+  const col = index % columns
+  const row = Math.floor(index / columns)
+  const x = col * CARD_GAP
+  const y = row * (CARD_SIZE + columnGap) + (row > 0 ? -COLUMN_OFFSET_Y : 0)
+  return { x, y, row, col }
+}
 
 function getFaviconUrl(url: string): string {
   const domain = new URL(url).origin
@@ -60,28 +74,40 @@ export default function BucketCards({
   onAddCard,
   onDeleteCard,
   showAddCard = false,
+  columns = 1,
+  columnGap = 60,
+  overflowClip = 0,
+  onCardClick,
 }: BucketCardsProps) {
   // -1 means hovering the add card slot
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const totalSlots = cards.length + (showAddCard ? 1 : 0)
+  const containerHeight = columns > 1
+    ? columns * (CARD_SIZE + columnGap) - columnGap + overflowClip
+    : `calc(100% + ${HOVER_BLEED_TOP}px)`
+  const containerWidth = columns > 1
+    ? columns * CARD_GAP + 100
+    : totalSlots * CARD_GAP + 100
 
   return (
     <div
       className="relative h-full w-full overflow-visible"
       style={{
-        clipPath: `inset(${-HOVER_BLEED_TOP}px 0px ${BOTTOM_CLIP}px 0px round var(--ds-r2))`,
+        clipPath: columns > 1
+          ? `inset(${HOVER_BLEED_TOP}px 0px ${overflowClip}px 0px round var(--ds-r2))`
+          : `inset(${-HOVER_BLEED_TOP}px 0px ${BOTTOM_CLIP}px 0px round var(--ds-r2))`,
       }}
     >
       <div
         className="absolute left-0 right-0 bottom-0 overflow-y-hidden scrollbar-hide"
-        style={{ top: -HOVER_BLEED_TOP }}
+        style={{ top: columns > 1 ? HOVER_BLEED_TOP : -HOVER_BLEED_TOP }}
       >
         <div
           className="relative"
           style={{
-            width: totalSlots * CARD_GAP + 100,
-            height: `calc(100% + ${HOVER_BLEED_TOP}px)`,
+            width: containerWidth,
+            height: containerHeight,
           }}
         >
           {Array.from({ length: totalSlots }, (_, i) => {
@@ -123,16 +149,26 @@ export default function BucketCards({
             const cardIndex = showAddCard ? i - 1 : i
             const card = cards[cardIndex]
             const meta = card
-            const baseOffset = cardIndex * CARD_GAP
+            const currentPos = getCardPosition(cardIndex, columns, columnGap)
             const isHovered = hoveredIndex === cardIndex
 
-            // When hovering add card (-1), all regular cards spread right (direction = 1)
+            // Multi-row spread calculation
             const distance = hoveredIndex !== null ? Math.abs(cardIndex - hoveredIndex) : 0
             const spread = hoveredIndex !== null ? distance * HOVER_SPREAD_FACTOR : 0
             const direction = cardIndex > hoveredIndex! ? 1 : -1
 
-            const translateX = baseOffset + meta.offsetX + (isHovered ? 0 : spread * direction)
-            const translateY = HOVER_BLEED_TOP + CARD_OFFSET_Y + meta.offsetY + (isHovered ? HOVER_FLOAT_Y : 0)
+            // Calculate spread for multi-row
+            let spreadX = spread * direction
+            let spreadY = 0
+            if (columns > 1 && hoveredIndex !== null) {
+              const hoverPos = getCardPosition(hoveredIndex, columns, columnGap)
+              const rowDiff = currentPos.row - hoverPos.row
+              spreadX = spread * direction
+              spreadY = rowDiff * HOVER_SPREAD_FACTOR * 0.5
+            }
+
+            const translateX = currentPos.x + meta.offsetX + spreadX
+            const translateY = HOVER_BLEED_TOP + CARD_OFFSET_Y + meta.offsetY + (isHovered ? HOVER_FLOAT_Y : 0) + spreadY
             const rotation = isHovered ? 0 : meta.rotation
             const zIndex = isHovered ? 99 : cardIndex
 
@@ -149,6 +185,7 @@ export default function BucketCards({
                       boxShadow: isHovered ? '0 12px 32px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.12)',
                       zIndex,
                     }}
+                    onClick={() => onCardClick?.(card)}
                     onMouseEnter={() => setHoveredIndex(cardIndex)}
                     onMouseLeave={() => setHoveredIndex(null)}
                   >
