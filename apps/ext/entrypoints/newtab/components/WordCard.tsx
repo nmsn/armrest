@@ -11,7 +11,6 @@ import {
   type WordHistoryItem,
 } from '@/lib/wordhistory'
 
-// 转换 WordHistoryItem 为 BucketCards 需要的 CardItem 格式
 function toCardItem(word: WordHistoryItem, index: number) {
   const colors = [
     '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
@@ -19,7 +18,7 @@ function toCardItem(word: WordHistoryItem, index: number) {
   ]
   return {
     id: word.id,
-    url: `#word-${word.word}`,  // 占位，实际不跳转
+    url: `#word-${word.word}`,
     title: word.word,
     bg: colors[index % colors.length],
     rotation: 0,
@@ -34,7 +33,6 @@ export function WordCard() {
   const [selectedWord, setSelectedWord] = useState<WordHistoryItem | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  // 初始化：检查并清除过期历史
   useEffect(() => {
     checkAndClearIfNeeded()
     getWordHistory().then((state) => setCards(state.cards))
@@ -52,17 +50,20 @@ export function WordCard() {
     }
 
     await addWordHistory(newWord)
-    setCards((prev) => [newWord, ...prev.filter(c => c.word !== newWord.word)])
+    setCards((prev) => [newWord, ...prev.filter((c) => c.word !== newWord.word)])
     setWord('')
   }, [word])
 
-  const handleCardClick = useCallback((card: { id: string }) => {
-    const found = cards.find((c) => c.id === card.id)
-    if (found) {
-      setSelectedWord(found)
-      setIsDialogOpen(true)
-    }
-  }, [cards])
+  const handleCardClick = useCallback(
+    (card: { id: string }) => {
+      const found = cards.find((c) => c.id === card.id)
+      if (found) {
+        setSelectedWord(found)
+        setIsDialogOpen(true)
+      }
+    },
+    [cards]
+  )
 
   return (
     <div className="app-card h-full flex flex-col">
