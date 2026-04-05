@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import BucketCards from '@/components/BucketCards'
+import SingleRowBucketCards from '@/components/SingleRowBucketCards'
 import { getReadLater, addReadLaterCard, deleteReadLaterCard, ReadLaterCard } from '@/lib/readlater'
 
 export function ReadLater() {
@@ -48,7 +48,7 @@ export function ReadLater() {
       className="app-card read-later-card p-0! overflow-x-auto overflow-y-hidden scrollbar-hide"
       style={{ height: '80px' }}
     >
-      <BucketCards
+      <SingleRowBucketCards
         cards={cards}
         showAddCard={true}
         onAddCard={handleAddCard}

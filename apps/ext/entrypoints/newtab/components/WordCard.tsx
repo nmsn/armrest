@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { SearchIcon } from '@/components/ui/saerch'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import BucketCards from '@/components/BucketCards'
+import MultiRowBucketCards from '@/components/MultiRowBucketCards'
 import { WordDetailDialog } from './WordDetailDialog'
 import {
   getWordHistory,
@@ -88,7 +88,7 @@ export function WordCard() {
         </Button>
       </div>
       <div className="flex-1 overflow-hidden">
-        <BucketCards
+        <MultiRowBucketCards
           cards={cards.map(toCardItem)}
           columns={2}
           columnGap={40}
