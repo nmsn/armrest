@@ -12,15 +12,15 @@ import {
 } from '@/lib/wordhistory'
 
 const MOCK_WORDS: WordHistoryItem[] = [
-  { id: '1', word: 'Serendipity', phonetic: '/ser.ən.dip.i.ti/', meaning: 'Finding something good by chance', searchedAt: Date.now() },
-  { id: '2', word: 'Ephemeral', phonetic: '/i.fem.er.al/', meaning: 'Lasting for a very short time', searchedAt: Date.now() },
-  { id: '3', word: 'Luminous', phonetic: '/lu:.mi.nəs/', meaning: 'Full of or shedding light', searchedAt: Date.now() },
-  { id: '4', word: 'Ethereal', phonetic: '/i.θɪə.ri.əl/', meaning: 'Extremely delicate', searchedAt: Date.now() },
-  { id: '5', word: 'Mellifluous', phonetic: '/me.lif.lu.əs/', meaning: 'Sweet or musical', searchedAt: Date.now() },
-  { id: '6', word: 'Sonder', phonetic: '/sɒn.dər/', meaning: 'Each passerby has a life as vivid as your own', searchedAt: Date.now() },
-  { id: '7', word: 'Petrichor', phonetic: '/pe.tri.kɔː/', meaning: 'The smell of rain on dry earth', searchedAt: Date.now() },
-  { id: '8', word: 'Apricity', phonetic: '/æp.rɪ.sɪ.ti/', meaning: 'The warmth of the sun in winter', searchedAt: Date.now() },
-  { id: '9', word: 'Nefarious', phonetic: '/ne.fɛə.ri.əs/', meaning: 'Wicked or criminal', searchedAt: Date.now() },
+  { id: '1', word: 'Serendipity', phonetic: '/ser.ən.dip.i.ti/', meaning: 'Finding something good by chance', searchedAt: Date.now(), rotation: -3, offsetX: 5, offsetY: -2 },
+  { id: '2', word: 'Ephemeral', phonetic: '/i.fem.er.al/', meaning: 'Lasting for a very short time', searchedAt: Date.now(), rotation: 2, offsetX: -8, offsetY: 4 },
+  { id: '3', word: 'Luminous', phonetic: '/lu:.mi.nəs/', meaning: 'Full of or shedding light', searchedAt: Date.now(), rotation: -5, offsetX: 10, offsetY: -3 },
+  { id: '4', word: 'Ethereal', phonetic: '/i.θɪə.ri.əl/', meaning: 'Extremely delicate', searchedAt: Date.now(), rotation: 4, offsetX: -3, offsetY: 6 },
+  { id: '5', word: 'Mellifluous', phonetic: '/me.lif.lu.əs/', meaning: 'Sweet or musical', searchedAt: Date.now(), rotation: -2, offsetX: 7, offsetY: -5 },
+  { id: '6', word: 'Sonder', phonetic: '/sɒn.dər/', meaning: 'Each passerby has a life as vivid as your own', searchedAt: Date.now(), rotation: 6, offsetX: -10, offsetY: 2 },
+  { id: '7', word: 'Petrichor', phonetic: '/pe.tri.kɔː/', meaning: 'The smell of rain on dry earth', searchedAt: Date.now(), rotation: -4, offsetX: 3, offsetY: -6 },
+  { id: '8', word: 'Apricity', phonetic: '/æp.rɪ.sɪ.ti/', meaning: 'The warmth of the sun in winter', searchedAt: Date.now(), rotation: 3, offsetX: -5, offsetY: 5 },
+  { id: '9', word: 'Nefarious', phonetic: '/ne.fɛə.ri.əs/', meaning: 'Wicked or criminal', searchedAt: Date.now(), rotation: -6, offsetX: 8, offsetY: -1 },
 ]
 
 function toCardItem(word: WordHistoryItem, index: number) {
@@ -34,9 +34,9 @@ function toCardItem(word: WordHistoryItem, index: number) {
     title: word.word,
     phonetic: word.phonetic,
     bg: colors[index % colors.length],
-    rotation: Math.floor(Math.random() * 16) - 8,
-    offsetX: Math.floor(Math.random() * 24) - 12,
-    offsetY: Math.floor(Math.random() * 16) - 8,
+    rotation: word.rotation,
+    offsetX: word.offsetX,
+    offsetY: word.offsetY,
   }
 }
 
@@ -62,6 +62,9 @@ export function WordCard() {
       phonetic: `/${word.trim().slice(0, 3)}./`,
       meaning: 'Definition for this word...',
       searchedAt: Date.now(),
+      rotation: Math.floor(Math.random() * 16) - 8,
+      offsetX: Math.floor(Math.random() * 24) - 12,
+      offsetY: Math.floor(Math.random() * 16) - 8,
     }
 
     await addWordHistory(newWord)

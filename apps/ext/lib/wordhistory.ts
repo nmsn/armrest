@@ -6,6 +6,9 @@ export interface WordHistoryItem {
   phonetic: string
   meaning: string
   searchedAt: number
+  rotation: number
+  offsetX: number
+  offsetY: number
 }
 
 export interface WordHistoryState {
