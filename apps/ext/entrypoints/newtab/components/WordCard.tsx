@@ -11,6 +11,18 @@ import {
   type WordHistoryItem,
 } from '@/lib/wordhistory'
 
+const MOCK_WORDS: WordHistoryItem[] = [
+  { id: '1', word: 'Serendipity', phonetic: '/ser.ən.dip.i.ti/', meaning: 'Finding something good by chance', searchedAt: Date.now() },
+  { id: '2', word: 'Ephemeral', phonetic: '/i.fem.er.al/', meaning: 'Lasting for a very short time', searchedAt: Date.now() },
+  { id: '3', word: 'Luminous', phonetic: '/lu:.mi.nəs/', meaning: 'Full of or shedding light', searchedAt: Date.now() },
+  { id: '4', word: 'Ethereal', phonetic: '/i.θɪə.ri.əl/', meaning: 'Extremely delicate', searchedAt: Date.now() },
+  { id: '5', word: 'Mellifluous', phonetic: '/me.lif.lu.əs/', meaning: 'Sweet or musical', searchedAt: Date.now() },
+  { id: '6', word: 'Sonder', phonetic: '/sɒn.dər/', meaning: 'Each passerby has a life as vivid as your own', searchedAt: Date.now() },
+  { id: '7', word: 'Petrichor', phonetic: '/pe.tri.kɔː/', meaning: 'The smell of rain on dry earth', searchedAt: Date.now() },
+  { id: '8', word: 'Apricity', phonetic: '/æp.rɪ.sɪ.ti/', meaning: 'The warmth of the sun in winter', searchedAt: Date.now() },
+  { id: '9', word: 'Nefarious', phonetic: '/ne.fɛə.ri.əs/', meaning: 'Wicked or criminal', searchedAt: Date.now() },
+]
+
 function toCardItem(word: WordHistoryItem, index: number) {
   const colors = [
     '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
@@ -20,10 +32,11 @@ function toCardItem(word: WordHistoryItem, index: number) {
     id: word.id,
     url: `#word-${word.word}`,
     title: word.word,
+    phonetic: word.phonetic,
     bg: colors[index % colors.length],
-    rotation: 0,
-    offsetX: 0,
-    offsetY: 0,
+    rotation: Math.floor(Math.random() * 16) - 8,
+    offsetX: Math.floor(Math.random() * 24) - 12,
+    offsetY: Math.floor(Math.random() * 16) - 8,
   }
 }
 
@@ -34,8 +47,10 @@ export function WordCard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
-    checkAndClearIfNeeded()
-    getWordHistory().then((state) => setCards(state.cards))
+    // TODO: Remove mock data when ready for production
+    // checkAndClearIfNeeded()
+    // getWordHistory().then((state) => setCards(state.cards))
+    setCards(MOCK_WORDS)
   }, [])
 
   const handleLookup = useCallback(async () => {
@@ -66,33 +81,34 @@ export function WordCard() {
   )
 
   return (
-    <div className="app-card h-full flex flex-col">
-      <div className="app-card-header">
-        <span className="app-card-title">Word Lookup</span>
+    <div className="app-card-p0 h-full flex flex-col overflow-hidden" style={{ height: 256 }}>
+      <div className="flex flex-col p-4.5 pb-2">
+        <div className="app-card-header">
+          <span className="app-card-title">Word Lookup</span>
+        </div>
+        <div className="flex gap-2 mb-3">
+          <Input
+            value={word}
+            onChange={(e) => setWord(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
+            placeholder="Search a word..."
+            className="h-9 text-xs bg-background border-border focus:border-accent"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleLookup}
+            className="h-9 px-3 text-xs border-border hover:border-accent/50"
+          >
+            <SearchIcon className="w-3.5 h-3.5" />
+          </Button>
+        </div>
       </div>
-      <div className="flex gap-2 mb-3">
-        <Input
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-          placeholder="Search a word..."
-          className="h-9 text-xs bg-background border-border focus:border-accent"
-        />
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleLookup}
-          className="h-9 px-3 text-xs border-border hover:border-accent/50"
-        >
-          <SearchIcon className="w-3.5 h-3.5" />
-        </Button>
-      </div>
-      <div className="flex-1 overflow-hidden">
+
+      <div className="flex justify-center flex-1 w-[115%] self-center">
         <MultiRowBucketCards
           cards={cards.map(toCardItem)}
-          columns={2}
-          columnGap={40}
-          overflowClip={30}
+          columns={3}
           onCardClick={handleCardClick}
         />
       </div>

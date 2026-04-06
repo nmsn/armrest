@@ -182,6 +182,13 @@
   overflow: visible;
 }
 
+.app-card-p0 {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--ds-r2);
+  transition: border-color 0.2s, background 0.2s;
+}
+
 .app-card-header {
   display: flex;
   align-items: center;
