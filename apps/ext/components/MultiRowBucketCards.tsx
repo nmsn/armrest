@@ -74,8 +74,6 @@ export default function MultiRowBucketCards({
         style={{
           gridTemplateColumns: `repeat(${columns}, 1fr)`,
           gridTemplateRows: `repeat(${rowCount}, auto)`,
-          gap: '8px',
-          padding: '16px',
           alignContent: 'end',
         }}
       >
