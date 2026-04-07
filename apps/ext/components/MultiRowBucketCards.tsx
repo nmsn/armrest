@@ -35,16 +35,6 @@ const SPREAD_FURTHER_X = 4
 const SPREAD_FURTHER_Y = -6
 const TRANSITION_TIMING = '0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
-function getFaviconUrl(url: string): string {
-  try {
-    if (url.startsWith('#')) return ''
-    const domain = new URL(url).origin
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-  } catch {
-    return ''
-  }
-}
-
 function getSpreadOffset(index: number, hovered: number | null, columns: number): { x: number; y: number } {
   if (hovered === null || index === hovered) return { x: 0, y: 0 }
 
@@ -78,7 +68,7 @@ export default function MultiRowBucketCards({
   const rowCount = Math.ceil(cards.length / columns)
 
   return (
-    <div className="relative h-full w-full mt-5">
+    <div className="relative h-full w-full">
       <div
         className="grid w-full h-full"
         style={{
@@ -124,9 +114,6 @@ export default function MultiRowBucketCards({
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  {getFaviconUrl(card.url) && (
-                    <img src={getFaviconUrl(card.url)} alt="" className="w-5 h-5 mt-1" />
-                  )}
                   <div className="flex flex-col items-center flex-1 justify-center min-w-0 w-full px-1">
                     <div className="font-medium text-[#1a1a1a] text-center leading-tight text-[10px] line-clamp-2">
                       {card.title}
