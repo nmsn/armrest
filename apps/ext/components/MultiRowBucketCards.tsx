@@ -33,8 +33,6 @@ const SPREAD_ADJACENT_ROW_X = 8
 const SPREAD_ADJACENT_ROW_Y = -12
 const SPREAD_FURTHER_X = 4
 const SPREAD_FURTHER_Y = -6
-const CARD_OVERLAP_X = -24
-const ROW_OFFSET_Y = -20
 const TRANSITION_TIMING = '0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
 function getFaviconUrl(url: string): string {
@@ -72,10 +70,12 @@ function getSpreadOffset(index: number, hovered: number | null, columns: number)
 
 export default function MultiRowBucketCards({
   cards,
-  columns = 4,
+  columns = 3,
   onCardClick,
 }: MultiRowBucketCardsProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+
+  const rowCount = Math.ceil(cards.length / columns)
 
   return (
     <div className="relative h-full w-full mt-5">
@@ -83,18 +83,22 @@ export default function MultiRowBucketCards({
         className="grid w-full h-full"
         style={{
           gridTemplateColumns: `repeat(${columns}, 1fr)`,
-          gridTemplateRows: 'repeat(3, 1fr)',
+          gridTemplateRows: `repeat(${rowCount}, auto)`,
           gap: '8px',
           padding: '16px',
+          alignContent: 'end',
         }}
       >
         {cards.map((card, index) => {
           const meta = card
           const isHovered = hoveredIndex === index
-          const col = index % columns
 
           const spread = getSpreadOffset(index, hoveredIndex, columns)
           const hoverTranslate = isHovered ? HOVER_TRANSLATE_Y : 0
+
+          // Calculate visual row: cards fill from bottom (rowCount) upward
+          const logicalRow = Math.floor(index / columns)
+          const visualRow = rowCount - logicalRow
 
           return (
             <ContextMenu key={card.id}>
@@ -103,6 +107,7 @@ export default function MultiRowBucketCards({
                   className="flex flex-col items-center justify-between p-2 rounded-xl border border-black/10 cursor-pointer"
                   style={{
                     background: meta.bg,
+                    gridRow: `${visualRow} / span 1`,
                     transform: `
                       scale(${isHovered ? SCALE_HOVERED : SCALE_DEFAULT})
                       rotate(${meta.rotation}deg)
@@ -113,8 +118,6 @@ export default function MultiRowBucketCards({
                       ? '0 20px 40px rgba(0,0,0,0.25)'
                       : '0 4px 12px rgba(0,0,0,0.12)',
                     zIndex: isHovered ? 99 : index,
-                    marginLeft: col === 0 ? '0' : CARD_OVERLAP_X,
-                    marginTop: ROW_OFFSET_Y,
                     transition: `transform ${TRANSITION_TIMING}, box-shadow 0.3s ease`,
                   }}
                   onClick={() => onCardClick?.(card)}
