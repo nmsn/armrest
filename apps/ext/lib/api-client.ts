@@ -62,7 +62,7 @@ export const api = {
       apiRequest<ApiResponse<{
         source: { text: string; type: string; typeDesc: string; pronounce: string };
         target: { text: string; type: string; typeDesc: string; pronounce: string };
-      }>>('/api/translate', { method: 'POST', body: { text, from: 'en', to: 'zh' } }),
+      }>>('/api/translate', { method: 'POST', body: { text, from: 'en', to: 'zh-CHS' } }),
   },
   weather60s: (city: string) => apiRequest<ApiResponse<WeatherResponse>>(`/api/60s/weather?city=${encodeURIComponent(city)}`),
   quote60s: () => apiRequest('/api/60s/quote'),
