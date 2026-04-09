@@ -3,6 +3,18 @@ import { getDb } from '../db';
 import { translations } from '../db/schema';
 import type { Env } from '../index';
 
+export async function callFreeDictionaryAPI(word: string) {
+  try {
+    const response = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+    );
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 interface TranslateOptions {
   text: string;
   from?: string;
