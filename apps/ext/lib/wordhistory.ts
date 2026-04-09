@@ -4,6 +4,7 @@ export interface WordHistoryItem {
   id: string
   word: string
   phonetic: string
+  phoneticAudio?: string
   meaning: string
   searchedAt: number
   rotation: number
