@@ -57,20 +57,12 @@ export const api = {
   weather: {
     get: (lat: number, lon: number) => apiRequest(`/api/weather?latitude=${lat}&longitude=${lon}`),
   },
-  dictionary: {
-    lookup: (word: string) =>
+  translate: {
+    lookup: (text: string) =>
       apiRequest<ApiResponse<{
-        word: string;
-        phonetic: string;
-        phoneticAudio: string;
-        meanings: Array<{
-          partOfSpeech: string;
-          definitions: Array<{
-            definition: string;
-            example?: string;
-          }>;
-        }>;
-      }>>('/api/dictionary', { method: 'POST', body: { word } }),
+        source: { text: string; type: string; typeDesc: string; pronounce: string };
+        target: { text: string; type: string; typeDesc: string; pronounce: string };
+      }>>('/api/translate', { method: 'POST', body: { text, from: 'en', to: 'zh' } }),
   },
   weather60s: (city: string) => apiRequest<ApiResponse<WeatherResponse>>(`/api/60s/weather?city=${encodeURIComponent(city)}`),
   quote60s: () => apiRequest('/api/60s/quote'),

@@ -62,29 +62,25 @@ export function WordCard() {
     setError(null)
 
     try {
-      const res = await api.dictionary.lookup(trimmed)
+      const res = await api.translate.lookup(trimmed)
       if (res.error || !res.data) {
-        setError(res.error || '未找到该单词')
+        setError(res.error || '翻译失败')
         return
       }
 
-      const d = res.data
-      const firstMeaning = d.meanings[0]
-      const meaning = firstMeaning
-        ? firstMeaning.definitions[0]?.definition || ''
-        : ''
+      const { source, target } = res.data
+      const translation = target.text
 
-      if (!meaning) {
-        setError('该单词暂无释义')
+      if (!translation) {
+        setError('未找到翻译结果')
         return
       }
 
       const newWord: WordHistoryItem = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        word: d.word,
-        phonetic: d.phonetic,
-        phoneticAudio: d.phoneticAudio || undefined,
-        meaning,
+        word: source.text,
+        phonetic: source.pronounce || '',
+        meaning: translation,
         searchedAt: Date.now(),
         rotation: Math.floor(Math.random() * 16) - 8,
         offsetX: Math.floor(Math.random() * 24) - 12,
