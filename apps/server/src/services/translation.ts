@@ -35,6 +35,7 @@ interface TranslateResult {
     typeDesc: string;
     pronounce: string;
   };
+  dictionaryData: Record<string, any> | null;
 }
 
 interface RawTranslateResult {
@@ -81,6 +82,7 @@ export async function translate(
           typeDesc: result.data.target.type_desc,
           pronounce: result.data.target.pronounce,
         },
+        dictionaryData: null,
       };
     }
     return null;
