@@ -40,7 +40,14 @@ Request:
 { "word": "serendipity" }
 ```
 
-Response (成功):
+**HTTP 状态码：**
+- `200` - 成功
+- `400` - 无效输入（校验失败）
+- `404` - 单词未找到
+- `502` - 外部 API 错误
+- `500` - 服务器内部错误
+
+Response (成功 - 200):
 ```json
 {
   "success": true,
@@ -63,16 +70,19 @@ Response (成功):
 }
 ```
 
-Response (失败):
+Response (失败 - 400/404/502/500):
 ```json
-{ "success": false, "error": "Word not found" }
+{ "success": false, "error": "错误描述" }
 ```
 
 ### 后端 → Free Dictionary API
 
 **GET `https://api.dictionaryapi.dev/api/v2/entries/en/{word}`**
 
-后端只返回第一个结果（简化处理）。
+- 调用前将单词转为小写：`word.toLowerCase()`
+- 使用 `encodeURIComponent()` 编码 URL（处理连字符、撇号等特殊字符）
+- 后端只返回第一个结果（简化处理）
+- 请求超时时间：5 秒
 
 ## 数据模型
 
@@ -104,7 +114,10 @@ interface WordHistoryItem {
 
 ## API 返回校验
 
-- 后端校验：响应必须包含 `meanings` 数组且非空
+- 后端校验：
+  - 响应必须包含 `meanings` 数组且非空
+  - `meanings[].definitions` 必须存在且非空
+  - JSON 解析成功
 - 前端校验：收到数据后检查 `meanings` 存在且有内容
 
 ## 显示逻辑
@@ -116,10 +129,13 @@ interface WordHistoryItem {
 
 | 场景 | 用户反馈 |
 |------|---------|
-| 输入校验失败 | 输入框下方显示红色提示 |
-| 网络错误 | Toast 或输入框下方显示"网络错误" |
+| 输入为空或格式错误 | 输入框下方显示"请输入有效单词（仅支持英文字母）" |
+| 单词过长（>50字符） | 输入框下方显示"单词过长（最多50字符）" |
+| 网络超时 | 输入框下方显示"网络超时，请检查网络连接" |
+| API 请求过于频繁 | 输入框下方显示"请求过于频繁，请稍后再试" |
 | 单词不存在 | 输入框下方显示"未找到该单词" |
 | API 无释义 | 输入框下方显示"该单词暂无释义" |
+| 其他网络错误 | 输入框下方显示"网络错误" |
 
 ## 文件结构
 
