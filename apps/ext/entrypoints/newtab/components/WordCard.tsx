@@ -78,8 +78,8 @@ export function WordCard() {
 
       const newWord: WordHistoryItem = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        word: source.text,
-        phonetic: source.pronounce || '',
+        word: target.text,
+        phonetic: target.pronounce || '',
         meaning: translation,
         searchedAt: Date.now(),
         rotation: Math.floor(Math.random() * 16) - 8,
