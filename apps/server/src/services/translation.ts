@@ -3,13 +3,13 @@ import { getDb } from '../db';
 import { translations } from '../db/schema';
 import type { Env } from '../index';
 
-export async function callFreeDictionaryAPI(word: string) {
+export async function callFreeDictionaryAPI(word: string): Promise<Record<string, any> | null> {
   try {
     const response = await fetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
     );
     if (!response.ok) return null;
-    return await response.json();
+    return await response.json() as Record<string, any>;
   } catch {
     return null;
   }
@@ -68,13 +68,27 @@ export async function translate(
 
     const result = (await response.json()) as { code: number; data?: RawTranslateResult };
     if (result.code === 200 && result.data) {
+      // Call FreeDictionary API to get pronunciation data
+      const freeDictData = await callFreeDictionaryAPI(text);
+
+      // Extract phonetic from FreeDict response if available
+      let pronounce = result.data.source.pronounce;
+      if (freeDictData && Array.isArray(freeDictData) && freeDictData.length > 0) {
+        const entry = freeDictData[0];
+        // Use phonetic field if available, otherwise try phonetics array
+        const phonetic = entry.phonetic || (entry.phonetics && entry.phonetics[0]?.text);
+        if (phonetic) {
+          pronounce = phonetic;
+        }
+      }
+
       // Map snake_case to camelCase
       return {
         source: {
           text: result.data.source.text,
           type: result.data.source.type,
           typeDesc: result.data.source.type_desc,
-          pronounce: result.data.source.pronounce,
+          pronounce: pronounce,
         },
         target: {
           text: result.data.target.text,
@@ -82,7 +96,7 @@ export async function translate(
           typeDesc: result.data.target.type_desc,
           pronounce: result.data.target.pronounce,
         },
-        dictionaryData: null,
+        dictionaryData: freeDictData,
       };
     }
     return null;
