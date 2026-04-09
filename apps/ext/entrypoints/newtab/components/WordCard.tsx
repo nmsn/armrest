@@ -74,6 +74,11 @@ export function WordCard() {
         ? firstMeaning.definitions[0]?.definition || ''
         : ''
 
+      if (!meaning) {
+        setError('该单词暂无释义')
+        return
+      }
+
       const newWord: WordHistoryItem = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         word: d.word,
