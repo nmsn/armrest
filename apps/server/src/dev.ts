@@ -293,21 +293,52 @@ app.get('/api/geocode', async (c) => {
   }
 });
 
-const port = 3001;
-
 // Initialize local user and start server
-initLocalUser().then(() => {
-  serve({
-    fetch: app.fetch,
-    port,
-  }, (info) => {
-    console.log('');
-    console.log('  🏠 Armrest Server (Local Dev)');
-    console.log(`  🌐 http://localhost:${info.port}`);
-    console.log(`  📋 API Docs:`);
-    console.log(`     - GET  /api/60s/test          60s 测试页面`);
-    console.log(`     - POST /internal/cron/fetch   执行定时任务`);
-    console.log(`     - GET  /api/translate/history 翻译历史`);
-    console.log('');
-  });
+initLocalUser().then(async () => {
+  const defaultPort = 3001;
+  let port = defaultPort;
+  const maxAttempts = 10;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const { createAdaptorServer } = await import('@hono/node-server');
+    const server = createAdaptorServer({ fetch: app.fetch });
+
+    try {
+      // Wrap listen in a Promise that resolves on success or rejects on EADDRINUSE
+      const serverInfo = await new Promise<{ port: number }>((resolve, reject) => {
+        server.on('error', (err: NodeJS.ErrnoException) => {
+          if (err.code === 'EADDRINUSE') {
+            server.close();
+            reject(err);
+          } else {
+            server.close();
+            reject(err);
+          }
+        });
+        server.listen(port, () => {
+          resolve({ port });
+        });
+      });
+
+      const portNote = serverInfo.port !== defaultPort ? ` (default ${defaultPort} was busy)` : '';
+      console.log('');
+      console.log('  🏠 Armrest Server (Local Dev)');
+      console.log(`  🌐 http://localhost:${serverInfo.port}${portNote}`);
+      console.log(`  📋 API Docs:`);
+      console.log(`     - GET  /api/60s/test          60s 测试页面`);
+      console.log(`     - POST /internal/cron/fetch   执行定时任务`);
+      console.log(`     - GET  /api/translate/history 翻译历史`);
+      console.log('');
+      return;
+    } catch (err: any) {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`  ⚠ Port ${port} is in use, trying ${port + 1}...`);
+        port++;
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw new Error(`No available port found after ${maxAttempts} attempts`);
 });

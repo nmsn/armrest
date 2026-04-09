@@ -35,7 +35,6 @@ interface TranslateResult {
     typeDesc: string;
     pronounce: string;
   };
-  dictionaryData: Record<string, any> | null;
 }
 
 interface RawTranslateResult {
@@ -59,60 +58,51 @@ const languageCodeMap: Record<string, string> = {
   'zh-Hant': 'zh-CHT',
 };
 
-export async function translate(
-  env: Env,
-  options: TranslateOptions,
-): Promise<TranslateResult | null> {
-  const { text, from = 'auto', to = 'auto', encoding } = options;
-
-  // Normalize language codes to API-supported values
+async function call60sAPI(
+  text: string,
+  from: string,
+  to: string,
+  encoding?: string,
+): Promise<RawTranslateResult | null> {
   const normalizedFrom = languageCodeMap[from] || from;
   const normalizedTo = languageCodeMap[to] || to;
 
   const params = new URLSearchParams({ text, from: normalizedFrom, to: normalizedTo });
   if (encoding) params.set('encoding', encoding);
 
-  try {
-    const response = await fetch(`https://60s.viki.moe/v2/fanyi?${params}`);
-    if (!response.ok) return null;
+  const response = await fetch(`https://60s.viki.moe/v2/fanyi?${params}`);
+  if (!response.ok) return null;
 
-    const result = (await response.json()) as { code: number; data?: RawTranslateResult };
-    if (result.code === 200 && result.data) {
-      // Call FreeDictionary API to get pronunciation data
-      const freeDictData = await callFreeDictionaryAPI(text);
-
-      // Extract phonetic from FreeDict response if available
-      let pronounce = result.data.source.pronounce;
-      if (freeDictData && Array.isArray(freeDictData) && freeDictData.length > 0) {
-        const entry = freeDictData[0];
-        // Use phonetic field if available, otherwise find first phonetic with text
-        const phonetic = entry.phonetic || (entry.phonetics?.find(p => p.text)?.text);
-        if (phonetic) {
-          pronounce = phonetic;
-        }
-      }
-
-      // Map snake_case to camelCase
-      return {
-        source: {
-          text: result.data.source.text,
-          type: result.data.source.type,
-          typeDesc: result.data.source.type_desc,
-          pronounce: pronounce,
-        },
-        target: {
-          text: result.data.target.text,
-          type: result.data.target.type,
-          typeDesc: result.data.target.type_desc,
-          pronounce: result.data.target.pronounce,
-        },
-        dictionaryData: freeDictData,
-      };
-    }
-    return null;
-  } catch {
-    return null;
+  const result = (await response.json()) as { code: number; data?: RawTranslateResult };
+  if (result.code === 200 && result.data) {
+    return result.data;
   }
+  return null;
+}
+
+export async function translate(
+  env: Env,
+  options: TranslateOptions,
+): Promise<TranslateResult | null> {
+  const { text, from = 'auto', to = 'auto', encoding } = options;
+
+  const data = await call60sAPI(text, from, to, encoding);
+  if (!data) return null;
+
+  return {
+    source: {
+      text: data.source.text,
+      type: data.source.type,
+      typeDesc: data.source.type_desc,
+      pronounce: data.source.pronounce,
+    },
+    target: {
+      text: data.target.text,
+      type: data.target.type,
+      typeDesc: data.target.type_desc,
+      pronounce: data.target.pronounce,
+    },
+  };
 }
 
 export async function saveTranslation(
