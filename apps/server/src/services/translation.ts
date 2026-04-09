@@ -53,13 +53,23 @@ interface RawTranslateResult {
   };
 }
 
+// Map common language codes to API-supported codes
+const languageCodeMap: Record<string, string> = {
+  zh: 'zh-CHS',
+  'zh-Hant': 'zh-CHT',
+};
+
 export async function translate(
   env: Env,
   options: TranslateOptions,
 ): Promise<TranslateResult | null> {
   const { text, from = 'auto', to = 'auto', encoding } = options;
 
-  const params = new URLSearchParams({ text, from, to });
+  // Normalize language codes to API-supported values
+  const normalizedFrom = languageCodeMap[from] || from;
+  const normalizedTo = languageCodeMap[to] || to;
+
+  const params = new URLSearchParams({ text, from: normalizedFrom, to: normalizedTo });
   if (encoding) params.set('encoding', encoding);
 
   try {
@@ -75,8 +85,8 @@ export async function translate(
       let pronounce = result.data.source.pronounce;
       if (freeDictData && Array.isArray(freeDictData) && freeDictData.length > 0) {
         const entry = freeDictData[0];
-        // Use phonetic field if available, otherwise try phonetics array
-        const phonetic = entry.phonetic || (entry.phonetics && entry.phonetics[0]?.text);
+        // Use phonetic field if available, otherwise find first phonetic with text
+        const phonetic = entry.phonetic || (entry.phonetics?.find(p => p.text)?.text);
         if (phonetic) {
           pronounce = phonetic;
         }
