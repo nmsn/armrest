@@ -25,6 +25,21 @@ interface TranslateResult {
   };
 }
 
+interface RawTranslateResult {
+  source: {
+    text: string;
+    type: string;
+    type_desc: string;
+    pronounce: string;
+  };
+  target: {
+    text: string;
+    type: string;
+    type_desc: string;
+    pronounce: string;
+  };
+}
+
 export async function translate(
   env: Env,
   options: TranslateOptions,
@@ -38,8 +53,24 @@ export async function translate(
     const response = await fetch(`https://60s.viki.moe/v2/fanyi?${params}`);
     if (!response.ok) return null;
 
-    const result = (await response.json()) as { code: number; data?: TranslateResult };
-    if (result.code === 200 && result.data) return result.data;
+    const result = (await response.json()) as { code: number; data?: RawTranslateResult };
+    if (result.code === 200 && result.data) {
+      // Map snake_case to camelCase
+      return {
+        source: {
+          text: result.data.source.text,
+          type: result.data.source.type,
+          typeDesc: result.data.source.type_desc,
+          pronounce: result.data.source.pronounce,
+        },
+        target: {
+          text: result.data.target.text,
+          type: result.data.target.type,
+          typeDesc: result.data.target.type_desc,
+          pronounce: result.data.target.pronounce,
+        },
+      };
+    }
     return null;
   } catch {
     return null;
