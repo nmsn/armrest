@@ -57,6 +57,21 @@ export const api = {
   weather: {
     get: (lat: number, lon: number) => apiRequest(`/api/weather?latitude=${lat}&longitude=${lon}`),
   },
+  dictionary: {
+    lookup: (word: string) =>
+      apiRequest<ApiResponse<{
+        word: string;
+        phonetic: string;
+        phoneticAudio: string;
+        meanings: Array<{
+          partOfSpeech: string;
+          definitions: Array<{
+            definition: string;
+            example?: string;
+          }>;
+        }>;
+      }>>('/api/dictionary', { method: 'POST', body: { word } }),
+  },
   weather60s: (city: string) => apiRequest<ApiResponse<WeatherResponse>>(`/api/60s/weather?city=${encodeURIComponent(city)}`),
   quote60s: () => apiRequest('/api/60s/quote'),
   history60s: () => apiRequest('/api/60s/history'),
