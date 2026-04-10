@@ -1,8 +1,7 @@
 // apps/server/src/routes/60s/test.ts
 import { Hono } from 'hono';
-import { getQuote } from '../../services/daily-cache';
-import { getHistory } from '../../services/daily-cache';
-import { getNews } from '../../services/daily-cache';
+
+import { getQuote , getHistory , getNews } from '../../services/daily-cache';
 import { translate, saveTranslation, getTodayTranslations } from '../../services/translation';
 import type { AppBindings } from '../../app/types';
 

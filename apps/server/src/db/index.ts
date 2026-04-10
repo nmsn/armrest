@@ -1,5 +1,6 @@
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import { drizzle as drizzleLibsql } from 'drizzle-orm/libsql';
+
 import type { LocalBindings } from '../dev/create-local-bindings';
 import * as schema from './schema';
 

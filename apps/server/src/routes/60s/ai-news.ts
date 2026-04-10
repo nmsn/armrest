@@ -1,5 +1,6 @@
 // apps/server/src/routes/60s/ai-news.ts
 import { Hono } from 'hono';
+
 import { getNews, setNews } from '../../services/daily-cache';
 import type { RuntimeContext } from '../../services/runtime-context';
 import type { AppEnv } from '../../app/types';

@@ -1,4 +1,5 @@
 import { eq, lt } from 'drizzle-orm';
+
 import { getDb } from '../db';
 import { dailyQuotes, dailyHistory, dailyAiNews, dailyItNews, dailyHackerNews } from '../db/schema';
 import type { RuntimeContext } from './runtime-context';

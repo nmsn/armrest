@@ -1,5 +1,6 @@
 // apps/server/src/routes/60s/hacker-news.ts
 import { Hono } from 'hono';
+
 import { getHackerNews, setHackerNews } from '../../services/daily-cache';
 import type { RuntimeContext } from '../../services/runtime-context';
 import type { AppEnv } from '../../app/types';
