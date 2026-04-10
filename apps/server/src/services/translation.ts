@@ -1,8 +1,7 @@
 import { eq, and, gte } from 'drizzle-orm';
 import { getDb } from '../db';
 import { translations } from '../db/schema';
-import type { AppBindings } from '../app/types';
-import type { LocalBindings } from '../dev/create-local-bindings';
+import type { RuntimeContext } from './runtime-context';
 
 export async function callFreeDictionaryAPI(word: string): Promise<Record<string, unknown> | null> {
   try {
@@ -82,7 +81,7 @@ async function call60sAPI(
 }
 
 export async function translate(
-  env: AppBindings | LocalBindings,
+  env: RuntimeContext,
   options: TranslateOptions,
 ): Promise<TranslateResult | null> {
   const { text, from = 'auto', to = 'auto', encoding } = options;
@@ -107,7 +106,7 @@ export async function translate(
 }
 
 export async function saveTranslation(
-  env: AppBindings | LocalBindings,
+  env: RuntimeContext,
   userId: string,
   sourceText: string,
   sourceType: string,
@@ -133,7 +132,7 @@ export async function saveTranslation(
   return rows[0].id;
 }
 
-export async function getTodayTranslations(env: AppBindings | LocalBindings, userId: string) {
+export async function getTodayTranslations(env: RuntimeContext, userId: string) {
   const db = getDb(env);
   const today = new Date();
   today.setHours(0, 0, 0, 0);

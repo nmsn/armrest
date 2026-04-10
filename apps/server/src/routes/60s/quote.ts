@@ -1,15 +1,16 @@
 // apps/server/src/routes/60s/quote.ts
 import { Hono } from 'hono';
 import { getQuote, setQuote } from '../../services/daily-cache';
-import type { AppBindings } from '../../app/types';
+import type { RuntimeContext } from '../../services/runtime-context';
+import type { AppEnv } from '../../app/types';
 
 interface SixtyQuoteResponse { code: number; data?: { hitokoto?: string }; }
 
-const router = new Hono<{ Bindings: AppBindings }>();
+const router = new Hono<AppEnv>();
 
 router.get('/', async (c) => {
-  const isLocal = !c.env.DB;
-  const env = isLocal ? { local: true } as unknown as AppBindings : c.env;
+  // env resolved from context
+  const env = c.env as RuntimeContext;
   const start = Date.now();
 
   // 1. 尝试从缓存读取
