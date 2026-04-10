@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
 
 import type { Auth } from '../auth';
+import type { AppEnv } from '../app/types';
 
 export function authRouter() {
-  const app = new Hono<{ Variables: { auth: Auth } }>();
+  const app = new Hono<AppEnv>();
 
   app.get('/session', async (c) => {
     const auth = c.get('auth');

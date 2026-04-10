@@ -1,7 +1,7 @@
 // apps/server/src/routes/60s/it-news.ts
 import { Hono } from 'hono';
 import { getItNews, setItNews } from '../../services/daily-cache';
-import type { Env } from '../../index';
+import type { AppBindings } from '../../app/types';
 
 interface SixtyItNewsResponse {
   code: number;
@@ -15,11 +15,11 @@ interface SixtyItNewsResponse {
   message?: string;
 }
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<{ Bindings: AppBindings }>();
 
 router.get('/', async (c) => {
   const isLocal = !c.env.DB;
-  const env = isLocal ? { local: true } as unknown as Env : c.env;
+  const env = isLocal ? { local: true } as unknown as AppBindings : c.env;
   const start = Date.now();
 
   // 1. 尝试从缓存读取

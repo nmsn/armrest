@@ -4,14 +4,14 @@ import { getQuote } from '../../services/daily-cache';
 import { getHistory } from '../../services/daily-cache';
 import { getNews } from '../../services/daily-cache';
 import { translate, saveTranslation, getTodayTranslations } from '../../services/translation';
-import type { Env } from '../../index';
+import type { AppBindings } from '../../app/types';
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<{ Bindings: AppBindings }>();
 
 router.get('/', async (c) => {
   // For local dev (no DB binding), use SQLite directly
   const isLocal = !c.env.DB;
-  const dbEnv = isLocal ? { local: true } as unknown as Env : c.env;
+  const dbEnv = isLocal ? { local: true } as unknown as AppBindings : c.env;
 
   const [quoteData, historyData, newsData, translationHistory] = await Promise.all([
     getQuote(dbEnv),

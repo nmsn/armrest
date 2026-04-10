@@ -1,9 +1,9 @@
 // apps/server/src/routes/cron.ts
 import { Hono } from 'hono';
 import { cleanExpired, setQuote, setHistory, setNews } from '../services/daily-cache';
-import type { Env } from '../index';
+import type { AppEnv } from '../app/types';
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<AppEnv>();
 
 interface SixtyData { [key: string]: unknown; }
 

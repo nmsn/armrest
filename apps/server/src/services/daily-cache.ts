@@ -1,7 +1,7 @@
 import { eq, lt } from 'drizzle-orm';
 import { getDb } from '../db';
 import { dailyQuotes, dailyHistory, dailyAiNews, dailyItNews, dailyHackerNews } from '../db/schema';
-import type { Env } from '../index';
+import type { AppBindings } from '../app/types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -18,7 +18,7 @@ function isExpired(fetchedAt: Date | null, ttlMs: number): boolean {
 }
 
 // ==================== Quote ====================
-export async function getQuote(env: Env): Promise<CachedQuote | null> {
+export async function getQuote(env: AppBindings): Promise<CachedQuote | null> {
   const db = getDb(env);
   const today = new Date().toISOString().split('T')[0];
   const rows = await db.select().from(dailyQuotes).where(eq(dailyQuotes.date, today)).limit(1);
@@ -28,7 +28,7 @@ export async function getQuote(env: Env): Promise<CachedQuote | null> {
   return { content: row.content, date: row.date };
 }
 
-export async function setQuote(env: Env, content: string, date: string): Promise<void> {
+export async function setQuote(env: AppBindings, content: string, date: string): Promise<void> {
   const db = getDb(env);
   await db.insert(dailyQuotes).values({ content, date }).onConflictDoUpdate({
     target: dailyQuotes.date,
@@ -37,7 +37,7 @@ export async function setQuote(env: Env, content: string, date: string): Promise
 }
 
 // ==================== History ====================
-export async function getHistory(env: Env): Promise<CachedHistory | null> {
+export async function getHistory(env: AppBindings): Promise<CachedHistory | null> {
   const db = getDb(env);
   const today = new Date().toISOString().split('T')[0];
   const rows = await db.select().from(dailyHistory).where(eq(dailyHistory.date, today)).limit(1);
@@ -47,7 +47,7 @@ export async function getHistory(env: Env): Promise<CachedHistory | null> {
   return { events: JSON.parse(row.events), date: row.date };
 }
 
-export async function setHistory(env: Env, events: Array<{ year: string; title: string }>, date: string): Promise<void> {
+export async function setHistory(env: AppBindings, events: Array<{ year: string; title: string }>, date: string): Promise<void> {
   const db = getDb(env);
   await db.insert(dailyHistory).values({ events: JSON.stringify(events), date }).onConflictDoUpdate({
     target: dailyHistory.date,
@@ -56,7 +56,7 @@ export async function setHistory(env: Env, events: Array<{ year: string; title: 
 }
 
 // ==================== News ====================
-export async function getNews(env: Env): Promise<CachedNews | null> {
+export async function getNews(env: AppBindings): Promise<CachedNews | null> {
   const db = getDb(env);
   const today = new Date().toISOString().split('T')[0];
   const rows = await db.select().from(dailyAiNews).where(eq(dailyAiNews.date, today)).limit(1);
@@ -66,7 +66,7 @@ export async function getNews(env: Env): Promise<CachedNews | null> {
   return { news: JSON.parse(row.news), date: row.date };
 }
 
-export async function setNews(env: Env, news: Array<{ title: string; source?: string; url?: string }>, date: string): Promise<void> {
+export async function setNews(env: AppBindings, news: Array<{ title: string; source?: string; url?: string }>, date: string): Promise<void> {
   const db = getDb(env);
   await db.insert(dailyAiNews).values({ news: JSON.stringify(news), date }).onConflictDoUpdate({
     target: dailyAiNews.date,
@@ -75,7 +75,7 @@ export async function setNews(env: Env, news: Array<{ title: string; source?: st
 }
 
 // ==================== IT News ====================
-export async function getItNews(env: Env): Promise<CachedItNews | null> {
+export async function getItNews(env: AppBindings): Promise<CachedItNews | null> {
   const db = getDb(env);
   const today = new Date().toISOString().split('T')[0];
   const rows = await db.select().from(dailyItNews).where(eq(dailyItNews.date, today)).limit(1);
@@ -85,7 +85,7 @@ export async function getItNews(env: Env): Promise<CachedItNews | null> {
   return { news: JSON.parse(row.news) };
 }
 
-export async function setItNews(env: Env, news: Array<{ title: string; description?: string; link: string }>, date: string): Promise<void> {
+export async function setItNews(env: AppBindings, news: Array<{ title: string; description?: string; link: string }>, date: string): Promise<void> {
   const db = getDb(env);
   await db.insert(dailyItNews).values({ news: JSON.stringify(news), date }).onConflictDoUpdate({
     target: dailyItNews.date,
@@ -94,7 +94,7 @@ export async function setItNews(env: Env, news: Array<{ title: string; descripti
 }
 
 // ==================== Hacker News ====================
-export async function getHackerNews(env: Env): Promise<CachedHackerNews | null> {
+export async function getHackerNews(env: AppBindings): Promise<CachedHackerNews | null> {
   const db = getDb(env);
   const rows = await db.select().from(dailyHackerNews).limit(1);
   if (rows.length === 0) return null;
@@ -103,7 +103,7 @@ export async function getHackerNews(env: Env): Promise<CachedHackerNews | null> 
   return { stories: JSON.parse(row.stories) };
 }
 
-export async function setHackerNews(env: Env, stories: Array<{ id: number; title: string; url: string; score: number; by: string; time: string }>): Promise<void> {
+export async function setHackerNews(env: AppBindings, stories: Array<{ id: number; title: string; url: string; score: number; by: string; time: string }>): Promise<void> {
   const db = getDb(env);
   await db.insert(dailyHackerNews).values({ id: 1, stories: JSON.stringify(stories) }).onConflictDoUpdate({
     target: dailyHackerNews.id,
@@ -112,7 +112,7 @@ export async function setHackerNews(env: Env, stories: Array<{ id: number; title
 }
 
 // ==================== Cleanup ====================
-export async function cleanExpired(env: Env): Promise<void> {
+export async function cleanExpired(env: AppBindings): Promise<void> {
   const db = getDb(env);
   const cutoff = new Date(Date.now() - SEVEN_DAYS_MS);
   await db.delete(dailyQuotes).where(lt(dailyQuotes.fetchedAt, cutoff));

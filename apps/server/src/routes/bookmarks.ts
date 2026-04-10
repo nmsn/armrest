@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 
 import { getDb } from '../db';
 import { BookmarkService } from '../services/bookmark';
-import type { Env } from '../index';
+import type { AppEnv } from '../app/types';
 
 const bookmarkSchema = z.object({
   folderId: z.string(),
@@ -16,7 +16,7 @@ const bookmarkSchema = z.object({
   position: z.number().optional(),
 });
 
-const router = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
+const router = new Hono<AppEnv>();
 
 router.get('/', async (c) => {
   const userId = c.get('userId');

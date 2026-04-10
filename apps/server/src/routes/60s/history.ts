@@ -1,18 +1,18 @@
 // apps/server/src/routes/60s/history.ts
 import { Hono } from 'hono';
 import { getHistory, setHistory } from '../../services/daily-cache';
-import type { Env } from '../../index';
+import type { AppBindings } from '../../app/types';
 
 interface SixtyHistoryResponse {
   code: number;
   data?: { items?: Array<{ year?: string; title?: string }>; date?: string };
 }
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<{ Bindings: AppBindings }>();
 
 router.get('/', async (c) => {
   const isLocal = !c.env.DB;
-  const env = isLocal ? { local: true } as unknown as Env : c.env;
+  const env = isLocal ? { local: true } as unknown as AppBindings : c.env;
   const start = Date.now();
 
   // 1. 尝试从缓存读取

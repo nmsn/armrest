@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 
-import type { Env } from '../index';
+import type { AppEnv } from '../app/types';
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<AppEnv>();
 
 router.get('/weather', async (c) => {
   const { latitude, longitude } = c.req.query();

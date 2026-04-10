@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import { translate, saveTranslation, getTodayTranslations } from '../services/translation';
-import type { Env } from '../index';
+import type { AppEnv, AppBindings } from '../app/types';
 
-const router = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
+const router = new Hono<AppEnv>();
 
 router.post('/', async (c) => {
   const isLocal = !c.env.DB;
-  const env = isLocal ? { local: true } as unknown as Env : c.env;
+  const env: AppBindings = isLocal ? { local: true } as unknown as AppBindings : c.env as unknown as AppBindings;
   const userId = c.get('userId') || 'anonymous';
   const body = await c.req.json<{ text?: string; from?: string; to?: string }>();
 
@@ -43,7 +43,7 @@ router.post('/', async (c) => {
 
 router.get('/history', async (c) => {
   const isLocal = !c.env.DB;
-  const env = isLocal ? { local: true } as unknown as Env : c.env;
+  const env: AppBindings = isLocal ? { local: true } as unknown as AppBindings : c.env as unknown as AppBindings;
   const userId = c.get('userId') || 'anonymous';
 
   const rows = await getTodayTranslations(env, userId);
