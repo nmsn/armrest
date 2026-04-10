@@ -2,14 +2,15 @@ import { eq, and, gte } from 'drizzle-orm';
 import { getDb } from '../db';
 import { translations } from '../db/schema';
 import type { AppBindings } from '../app/types';
+import type { LocalBindings } from '../dev/create-local-bindings';
 
-export async function callFreeDictionaryAPI(word: string): Promise<Record<string, any> | null> {
+export async function callFreeDictionaryAPI(word: string): Promise<Record<string, unknown> | null> {
   try {
     const response = await fetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
     );
     if (!response.ok) return null;
-    return await response.json() as Record<string, any>;
+    return await response.json() as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -81,7 +82,7 @@ async function call60sAPI(
 }
 
 export async function translate(
-  env: AppBindings,
+  env: AppBindings | LocalBindings,
   options: TranslateOptions,
 ): Promise<TranslateResult | null> {
   const { text, from = 'auto', to = 'auto', encoding } = options;
@@ -106,7 +107,7 @@ export async function translate(
 }
 
 export async function saveTranslation(
-  env: AppBindings,
+  env: AppBindings | LocalBindings,
   userId: string,
   sourceText: string,
   sourceType: string,
@@ -118,7 +119,7 @@ export async function saveTranslation(
   targetPronounce: string | null,
 ): Promise<number> {
   const db = getDb(env);
-  const rows = await (db.insert(translations).values({
+  const rows = await db.insert(translations).values({
     userId,
     sourceText,
     sourceType,
@@ -128,12 +129,12 @@ export async function saveTranslation(
     targetType,
     targetTypeDesc,
     targetPronounce,
-  }) as any).returning({ id: translations.id });
+  }).returning();
   return rows[0].id;
 }
 
-export async function getTodayTranslations(env: AppBindings, userId: string) {
-  const db = getDb(env) as any;
+export async function getTodayTranslations(env: AppBindings | LocalBindings, userId: string) {
+  const db = getDb(env);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
