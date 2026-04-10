@@ -1,7 +1,6 @@
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import { drizzle as drizzleLibsql } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
-
+import type { LocalBindings } from '../dev/create-local-bindings';
 import * as schema from './schema';
 
 // Use a union type that accommodates both D1 and libsql database instances
@@ -12,14 +11,13 @@ const globalForDb = globalThis as unknown as {
   db: DbInstance | undefined;
 };
 
-export function getDb(env: { DB: D1Database } | { local: true }): DbInstance {
+export function getDb(env: { DB: D1Database } | LocalBindings): DbInstance {
   if (globalForDb.db) return globalForDb.db;
 
-  // Check if we're using local development
-  if ('local' in env && env.local === true) {
-    // Local: use libsql client with drizzle-orm/libsql
-    const client = createClient({ url: 'file:./dev.db' });
-    globalForDb.db = drizzleLibsql(client, { schema });
+  // Check if we're using local development (LocalBindings has localDb property)
+  if ('localDb' in env) {
+    // Local: use the provided localDb from LocalBindings
+    globalForDb.db = env.localDb;
   } else {
     // Production: use D1 binding (Cloudflare Workers) with drizzle-orm/d1
     const dbEnv = env as { DB: D1Database };
