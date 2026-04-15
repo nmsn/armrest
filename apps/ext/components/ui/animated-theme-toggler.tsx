@@ -4,10 +4,9 @@ import { SunIcon } from "./sun"
 import { MonitorCheckIcon } from "./monitor-check"
 import { flushSync } from "react-dom"
 import { Button } from "./button"
+import { getThemeConfig, setThemeConfig, applyTheme, type ThemeMode } from "@/lib/theme"
 
 import { cn } from "@/lib/utils"
-
-type ThemeMode = "light" | "dark" | "system"
 
 interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"button"> {
   duration?: number
@@ -22,22 +21,15 @@ export const AnimatedThemeToggler = ({
   const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as ThemeMode | null
-    if (stored) {
-      setMode(stored)
-      applyMode(stored)
-    } else {
-      setMode("system")
-      applyMode("system")
-    }
+    getThemeConfig().then((config) => {
+      setMode(config.mode)
+      applyTheme(config.mode)
+    })
   }, [])
 
-  const applyMode = (newMode: ThemeMode) => {
-    const isDark =
-      newMode === "dark" ||
-      (newMode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    document.documentElement.classList.toggle("dark", isDark)
-    localStorage.setItem("theme", newMode)
+  const applyMode = async (newMode: ThemeMode) => {
+    applyTheme(newMode)
+    await setThemeConfig({ mode: newMode })
   }
 
   useEffect(() => {
@@ -67,18 +59,18 @@ export const AnimatedThemeToggler = ({
     const cycleMode: ThemeMode[] = ["light", "dark", "system"]
     const nextMode = cycleMode[(cycleMode.indexOf(mode) + 1) % cycleMode.length]
 
-    const applyTheme = () => {
+    const applyNextTheme = () => {
       setMode(nextMode)
       applyMode(nextMode)
     }
 
     if (typeof document.startViewTransition !== "function") {
-      applyTheme()
+      applyNextTheme()
       return
     }
 
     const transition = document.startViewTransition(() => {
-      flushSync(applyTheme)
+      flushSync(applyNextTheme)
     })
 
     const ready = transition?.ready

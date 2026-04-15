@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   manifest: {
-    name: 'Armrest Dashboard',
+    name: 'Armrest',
     description: 'Browser extension with custom new tab page',
     version: '1.0.0',
     action: {
@@ -17,7 +17,7 @@ export default defineConfig({
     permissions: [
       'storage',
       'tabs',
-      "geolocation"
+      'geolocation'
     ]
   },
   alias: {
