@@ -4,11 +4,36 @@
  */
 import { logger } from 'hono/logger';
 import { eq } from 'drizzle-orm';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { createApp } from './app/create-app';
+import type { AppEnv } from './app/types';
 import { createLocalBindings } from './dev/create-local-bindings';
 import { registerLocalRoutes } from './dev/register-local-routes';
 import * as schema from './db/schema';
+
+/**
+ * Load environment variables from .dev.vars file
+ */
+function loadDevVars(): Record<string, string> {
+  const devVarsPath = resolve(dirname(fileURLToPath(import.meta.url)), '../.env');
+  const content = readFileSync(devVarsPath, 'utf-8');
+  const vars: Record<string, string> = {};
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex);
+    const value = trimmed.slice(eqIndex + 1);
+    vars[key] = value;
+  }
+  return vars;
+}
+
+const devVars = loadDevVars();
 
 const localBindings = createLocalBindings();
 
@@ -30,7 +55,13 @@ async function initLocalUser() {
   }
 }
 
-const app = createApp();
+const app = createApp({
+  GITHUB_CLIENT_ID: devVars.GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET: devVars.GITHUB_CLIENT_SECRET,
+  BETTER_AUTH_SECRET: devVars.BETTER_AUTH_SECRET,
+  NODE_ENV: devVars.NODE_ENV || 'development',
+  OPENWEATHER_API_KEY: devVars.OPENWEATHER_API_KEY,
+} as AppEnv['Bindings'], localBindings);
 
 // Request logging middleware
 app.use('/*', logger());

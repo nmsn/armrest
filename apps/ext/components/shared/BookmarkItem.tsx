@@ -76,7 +76,7 @@ export function BookmarkItem({
     >
       <div
         className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}
-        style={{ backgroundColor: bookmark.logo ? 'black' : getRandomColor(BOOKMARK_COLORS) }}
+        style={{ backgroundColor: bookmark.logo ? '' : (bookmark.color || getRandomColor(BOOKMARK_COLORS)) }}
       >
         {showFallback ? (
           <span className="text-white font-bold">

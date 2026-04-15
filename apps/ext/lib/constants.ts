@@ -28,19 +28,25 @@ const CACHE_CONFIG = {
 const BOOKMARK_CONFIG = {
   CURRENT_VERSION: 1,
   DEFAULT_FOLDERS: [
-    { name: 'Work', icon: 'code', color: '#3B82F6', bookmarks: [] },
-    { name: 'Tools', icon: 'wrench', color: '#10B981', bookmarks: [] },
-    { name: 'Design', icon: 'palette', color: '#F59E0B', bookmarks: [] },
     {
-      name: 'AI', icon: 'sparkles', color: '#8B5CF6', bookmarks: [
-        { name: 'Grok', url: 'https://x.com/i/grok', color: '#10B981' },
-        { name: 'Claude', url: 'https://claude.ai', color: '#EC4899' },
-        { name: 'GLM', url: 'https://www.zhipuai.cn/', color: '#6366F1' },
-        { name: 'DeepSeek', url: 'https://www.deepseek.com/', color: '#3B82F6' },
-        { name: 'DeepWiki', url: 'https://deepwiki.com/', color: '#8B5CF6' },
-        { name: 'Skills.sh', url: 'https://skills.sh/', color: '#F59E0B' },
+      name: 'AI', icon: 'sparkles', color: '#8B5CF6', order: 0, bookmarks: [
+        { name: 'Grok', url: 'https://x.com/i/grok', logo: 'https://thesvg.org/icons/x/default.svg', color: '#10B981' },
+        { name: 'Claude', url: 'https://claude.ai', logo: 'https://thesvg.org/icons/claude/default.svg', color: '#EC4899' },
+        { name: 'GLM', url: 'https://www.zhipuai.cn/', logo: 'https://thesvg.org/icons/zhipu/default.svg', color: '#6366F1' },
+        { name: 'DeepSeek', url: 'https://www.deepseek.com/', logo: 'https://thesvg.org/icons/deepseek/default.svg', color: '#3B82F6' },
+        { name: 'Skills.sh', url: 'https://skills.sh/', logo: 'https://thesvg.org/icons/vercel/default.svg', color: '#F59E0B' },
       ]
     },
+    {
+      name: 'Design', icon: 'palette', color: '#F59E0B', order: 1, bookmarks: [
+        { name: 'Pinterest', url: 'https://www.pinterest.com/', logo: 'https://thesvg.org/icons/pinterest/default.svg', color: '#10B981' },
+        { name: 'Dribbble', url: 'https://dribbble.com/', logo: 'https://thesvg.org/icons/dribbble/default.svg', color: '#EC4899' },
+      ]
+    },
+    { name: 'Work', icon: 'code', color: '#3B82F6', order: 2, bookmarks: [] },
+    { name: 'Tools', icon: 'wrench', color: '#10B981', order: 3, bookmarks: [] },
+
+
   ],
   ICON_OPTIONS: [
     { id: 'folder', label: 'Folder' },
