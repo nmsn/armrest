@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Loader2 } from "lucide-react"
-import { getBookmarks, BookmarkFolder } from "@/lib/bookmarks"
+import { Loader2, Bookmark, Clock } from "lucide-react"
+import { getBookmarks, BookmarkFolder, addBookmark } from "@/lib/bookmarks"
+import { addReadLaterCard } from "@/lib/readlater"
 import { FolderSidebar, BookmarkList } from "./components"
 import { getThemeConfig, applyTheme } from "@/lib/theme"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -78,6 +79,31 @@ export default function Popup() {
     setCurrentPage(page)
   }
 
+  const handleAddToBookmark = async () => {
+    if (!selectedFolderId) return
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab?.url || !tab.title) return
+    await addBookmark(selectedFolderId, {
+      name: tab.title,
+      url: tab.url,
+      color: '#6366F1',
+    })
+  }
+
+  const handleAddToReadLater = async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab?.url || !tab.title) return
+    await addReadLaterCard({
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      url: tab.url,
+      title: tab.title,
+      bg: '#6366F1',
+      rotation: 0,
+      offsetX: 0,
+      offsetY: 0,
+    })
+  }
+
   if (loading) {
     return (
       <div className="h-[240px] flex items-center justify-center bg-background">
@@ -96,22 +122,41 @@ export default function Popup() {
 
   return (
     <TooltipProvider>
-    <div className="flex h-[240px] w-[320px] bg-background text-foreground">
-      <FolderSidebar
-        folders={folders}
-        selectedId={selectedFolderId}
-        onSelect={handleFolderSelect}
-      />
-      <BookmarkList
-        bookmarks={currentFolder?.bookmarks || []}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        onBookmarkClick={handleOpenUrl}
-        itemsPerPage={ITEMS_PER_PAGE}
-        emptyText="暂无书签"
-      />
-    </div>
+      <div className="flex flex-col h-[280px] w-[320px] bg-background text-foreground rounded-xl">
+        <div className="flex flex-1 min-h-0">
+          <FolderSidebar
+            folders={folders}
+            selectedId={selectedFolderId}
+            onSelect={handleFolderSelect}
+          />
+          <div className="w-px bg-border" />
+          <BookmarkList
+            bookmarks={currentFolder?.bookmarks || []}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            onBookmarkClick={handleOpenUrl}
+            itemsPerPage={ITEMS_PER_PAGE}
+            emptyText="暂无书签"
+          />
+        </div>
+        <div className="flex items-center gap-4 px-4 py-2 border-t border-border">
+          <button
+            onClick={handleAddToBookmark}
+            className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-80 transition-opacity"
+            title="添加到书签"
+          >
+            <Bookmark className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleAddToReadLater}
+            className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-80 transition-opacity"
+            title="稍后阅读"
+          >
+            <Clock className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
     </TooltipProvider>
   )
 }

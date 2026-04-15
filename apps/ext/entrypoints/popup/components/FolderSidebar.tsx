@@ -15,7 +15,7 @@ export function FolderSidebar({
   onSelect,
 }: FolderSidebarProps) {
   return (
-    <div className="w-11 shrink-0 flex flex-col justify-center py-2 gap-1">
+    <div className="w-12 shrink-0 flex flex-col items-center py-4 px-2 gap-1">
       {folders.map((folder) => {
         const FolderIcon = getIconComponent(folder.icon || "folder")
         const isSelected = selectedId === folder.id
