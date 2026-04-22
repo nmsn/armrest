@@ -32,6 +32,15 @@ export interface ReadLaterCard {
   offsetY: number
 }
 
+export function generateRandomCardVisual(): Pick<ReadLaterCard, 'bg' | 'rotation' | 'offsetX' | 'offsetY'> {
+  return {
+    bg: COLORS[Math.floor(Math.random() * COLORS.length)],
+    rotation: Math.floor(Math.random() * 30) - 15,
+    offsetX: Math.floor(Math.random() * 40) - 10,
+    offsetY: Math.floor(Math.random() * 10) - 5,
+  }
+}
+
 export interface ReadLaterState {
   cards: ReadLaterCard[]
   version: number

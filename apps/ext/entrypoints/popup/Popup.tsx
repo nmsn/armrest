@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Loader2, Bookmark, Clock } from "lucide-react"
 import { getBookmarks, BookmarkFolder, addBookmark } from "@/lib/bookmarks"
-import { addReadLaterCard } from "@/lib/readlater"
+import { addReadLaterCard, generateRandomCardVisual } from "@/lib/readlater"
 import { FolderSidebar, BookmarkList } from "./components"
 import { getThemeConfig, applyTheme, type ThemeMode } from "@/lib/theme"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -86,25 +86,31 @@ export default function Popup() {
     if (!selectedFolderId) return
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (!tab?.url || !tab.title) return
-    await addBookmark(selectedFolderId, {
-      name: tab.title,
-      url: tab.url,
-      color: '#6366F1',
-    })
+    try {
+      await addBookmark(selectedFolderId, {
+        name: tab.title,
+        url: tab.url,
+        color: '#6366F1',
+      })
+      await loadData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "添加书签失败")
+    }
   }
 
   const handleAddToReadLater = async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (!tab?.url || !tab.title) return
-    await addReadLaterCard({
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      url: tab.url,
-      title: tab.title,
-      bg: '#6366F1',
-      rotation: 0,
-      offsetX: 0,
-      offsetY: 0,
-    })
+    try {
+      await addReadLaterCard({
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+        url: tab.url,
+        title: tab.title,
+        ...generateRandomCardVisual(),
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "添加稍后阅读失败")
+    }
   }
 
   if (loading) {
