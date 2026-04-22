@@ -35,7 +35,7 @@ export function BookmarkList({
           </div>
         ) : (
           <div className="flex items-center  h-full">
-            <div className="grid grid-cols-4 grid-rows-3 gap-1">
+            <div className="grid grid-cols-4 grid-rows-4 gap-1">
               {paginatedBookmarks.map((bookmark) => (
                 <BookmarkItem
                   key={bookmark.id}

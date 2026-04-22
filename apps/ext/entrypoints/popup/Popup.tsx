@@ -152,7 +152,7 @@ export default function Popup() {
 
   if (loading) {
     return (
-      <div className="h-[240px] flex items-center justify-center bg-background">
+      <div className="h-[320px] flex items-center justify-center bg-background">
         <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
       </div>
     )
@@ -168,7 +168,7 @@ export default function Popup() {
 
   return (
     <TooltipProvider>
-      <div className={`flex flex-col h-[280px] w-[320px] bg-background text-foreground rounded-xl ${themeMode === "dark" ? "dark" : ""}`}>
+      <div className={`flex flex-col h-[360px] w-[320px] bg-background text-foreground rounded-xl ${themeMode === "dark" ? "dark" : ""}`}>
         <div className="flex flex-1 min-h-0">
           <FolderSidebar
             folders={folders}
@@ -182,7 +182,7 @@ export default function Popup() {
             totalPages={totalPages}
             onPageChange={handlePageChange}
             onBookmarkClick={handleOpenUrl}
-            itemsPerPage={ITEMS_PER_PAGE}
+            itemsPerPage={16}
             emptyText="暂无书签"
           />
         </div>
