@@ -36,7 +36,7 @@ export function ReadLater() {
     >
       <SingleRowBucketCards
         cards={cards}
-        showAddCard={true}
+        showAddCard={false}
         onAddCard={handleAddCard}
         onDeleteCard={handleDeleteCard}
       />
