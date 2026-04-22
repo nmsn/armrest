@@ -8,13 +8,11 @@ import { getThemeConfig, applyTheme, type ThemeMode } from "@/lib/theme"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
 
-const ITEMS_PER_PAGE = 8
 type PageToastType = "SAVED" | "READ_LATER" | "SAVE_FAILED" | "READ_LATER_FAILED"
 
 export default function Popup() {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
-  const [currentPage, setCurrentPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [themeMode, setThemeMode] = useState<ThemeMode>("system")
@@ -65,15 +63,6 @@ export default function Popup() {
     return folders.find((f) => f.id === selectedFolderId) || null
   }, [selectedFolderId, folders])
 
-  const totalPages = useMemo(() => {
-    if (!currentFolder) return 0
-    return Math.ceil(currentFolder.bookmarks.length / ITEMS_PER_PAGE)
-  }, [currentFolder])
-
-  useEffect(() => {
-    setCurrentPage(0)
-  }, [selectedFolderId])
-
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
       if (tab?.url && isInjectablePage(tab.url)) {
@@ -90,10 +79,6 @@ export default function Popup() {
 
   const handleFolderSelect = (id: string) => {
     setSelectedFolderId(id)
-  }
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
   }
 
   const isInjectablePage = (url: string) => {
@@ -168,7 +153,7 @@ export default function Popup() {
 
   return (
     <TooltipProvider>
-      <div className={`flex flex-col h-[360px] w-[320px] bg-background text-foreground rounded-xl ${themeMode === "dark" ? "dark" : ""}`}>
+      <div className={`flex flex-col h-[320px] w-[320px] bg-background text-foreground rounded-xl ${themeMode === "dark" ? "dark" : ""}`}>
         <div className="flex flex-1 min-h-0">
           <FolderSidebar
             folders={folders}
@@ -178,11 +163,7 @@ export default function Popup() {
           <div className="w-px bg-border" />
           <BookmarkList
             bookmarks={currentFolder?.bookmarks || []}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
             onBookmarkClick={handleOpenUrl}
-            itemsPerPage={16}
             emptyText="暂无书签"
           />
         </div>
