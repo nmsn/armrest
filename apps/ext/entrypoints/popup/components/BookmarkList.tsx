@@ -13,7 +13,7 @@ export function BookmarkList({
   emptyText = "暂无书签"
 }: BookmarkListProps) {
   return (
-    <div className="flex-1 min-w-0 overflow-y-auto scrollbar-hide">
+    <div className="flex-1 min-w-0 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
       {bookmarks.length === 0 ? (
         <div className="h-full flex items-center justify-center text-[10px] text-muted">
           {emptyText}
