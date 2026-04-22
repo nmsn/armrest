@@ -75,7 +75,7 @@ export function BookmarkItem({
       className={`flex flex-col items-center justify-center aspect-square ${sizeClasses.container} rounded-lg hover:bg-accent/5 transition-colors cursor-pointer group w-full h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2`}
     >
       <div
-        className={`${sizeClasses.icon} flex items-center justify-center shrink-0`}
+        className={`${sizeClasses.icon} flex items-center justify-center shrink-0 overflow-hidden`}
         style={{ backgroundColor: bookmark.logo ? '' : (bookmark.color || getRandomColor(BOOKMARK_COLORS)) }}
       >
         {showFallback ? (

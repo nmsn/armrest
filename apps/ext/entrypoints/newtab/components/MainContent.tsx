@@ -45,9 +45,6 @@ export function MainContent({
       <div className="app-card" style={{ height: "256px" }}>
         <div className="app-card-header">
           <span className="app-card-title">Bookmarks</span>
-          <button onClick={onAddBookmark} className="app-card-action">
-            Edit
-          </button>
         </div>
         <BookmarkGrid
           bookmarks={bookmarks}
