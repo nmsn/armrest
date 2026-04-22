@@ -1,12 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Loader2, Bookmark, Clock } from "lucide-react"
+import { toast } from "sonner"
 import { getBookmarks, BookmarkFolder, addBookmark } from "@/lib/bookmarks"
 import { addReadLaterCard, generateRandomCardVisual } from "@/lib/readlater"
 import { FolderSidebar, BookmarkList } from "./components"
 import { getThemeConfig, applyTheme, type ThemeMode } from "@/lib/theme"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/sonner"
 
 const ITEMS_PER_PAGE = 8
+type PageToastType = "SAVED" | "READ_LATER" | "SAVE_FAILED" | "READ_LATER_FAILED"
+const UNSUPPORTED_PAGE_TOAST =
+  "当前页面不支持注入提示（如 chrome://、about:、扩展页）。操作已完成，请在弹窗内查看结果。"
+const SEND_MESSAGE_FAILED_TOAST = "当前页面无法显示侧边提示，请在弹窗内查看结果。"
 
 export default function Popup() {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
@@ -82,6 +88,28 @@ export default function Popup() {
     setCurrentPage(page)
   }
 
+  const isInjectablePage = (url: string) => {
+    try {
+      const { protocol } = new URL(url)
+      return protocol === "http:" || protocol === "https:" || protocol === "file:"
+    } catch {
+      return false
+    }
+  }
+
+  const notifyPageToast = async (tab: chrome.tabs.Tab | undefined, type: PageToastType, title: string) => {
+    if (!tab?.id) return
+    if (!tab.url || !isInjectablePage(tab.url)) {
+      toast.message(UNSUPPORTED_PAGE_TOAST)
+      return
+    }
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type, title })
+    } catch {
+      toast.message(SEND_MESSAGE_FAILED_TOAST)
+    }
+  }
+
   const handleAddToBookmark = async () => {
     if (!selectedFolderId) return
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
@@ -93,8 +121,10 @@ export default function Popup() {
         color: '#6366F1',
       })
       await loadData()
+      await notifyPageToast(tab, "SAVED", tab.title)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "添加书签失败")
+      await notifyPageToast(tab, "SAVE_FAILED", tab.title)
+      toast.error(err instanceof Error ? err.message : "添加书签失败")
     }
   }
 
@@ -108,8 +138,10 @@ export default function Popup() {
         title: tab.title,
         ...generateRandomCardVisual(),
       })
+      await notifyPageToast(tab, "READ_LATER", tab.title)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "添加稍后阅读失败")
+      await notifyPageToast(tab, "READ_LATER_FAILED", tab.title)
+      toast.error(err instanceof Error ? err.message : "添加稍后阅读失败")
     }
   }
 
@@ -128,7 +160,7 @@ export default function Popup() {
       </div>
     )
   }
-  
+
   return (
     <TooltipProvider>
       <div className={`flex flex-col h-[280px] w-[320px] bg-background text-foreground rounded-xl ${themeMode === "dark" ? "dark" : ""}`}>
@@ -166,6 +198,7 @@ export default function Popup() {
           </button>
         </div>
       </div>
+      <Toaster richColors position="top-center" />
     </TooltipProvider>
   )
 }

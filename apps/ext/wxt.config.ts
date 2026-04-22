@@ -3,6 +3,9 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 export default defineConfig({
+  runner: {
+    startUrls: ['https://www.baidu.com'],
+  },
   manifest: {
     name: 'Armrest',
     description: 'Browser extension with custom new tab page',
