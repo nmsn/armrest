@@ -10,9 +10,6 @@ import { Toaster } from "@/components/ui/sonner"
 
 const ITEMS_PER_PAGE = 8
 type PageToastType = "SAVED" | "READ_LATER" | "SAVE_FAILED" | "READ_LATER_FAILED"
-const UNSUPPORTED_PAGE_TOAST =
-  "当前页面不支持注入提示（如 chrome://、about:、扩展页）。操作已完成，请在弹窗内查看结果。"
-const SEND_MESSAGE_FAILED_TOAST = "当前页面无法显示侧边提示，请在弹窗内查看结果。"
 
 export default function Popup() {
   const [folders, setFolders] = useState<BookmarkFolder[]>([])
@@ -21,6 +18,7 @@ export default function Popup() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [themeMode, setThemeMode] = useState<ThemeMode>("system")
+  const [isInjectable, setIsInjectable] = useState(true)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -76,6 +74,16 @@ export default function Popup() {
     setCurrentPage(0)
   }, [selectedFolderId])
 
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+      if (tab?.url && isInjectablePage(tab.url)) {
+        setIsInjectable(true)
+      } else {
+        setIsInjectable(false)
+      }
+    })
+  }, [])
+
   const handleOpenUrl = (url: string) => {
     window.open(url, "_blank")
   }
@@ -99,14 +107,11 @@ export default function Popup() {
 
   const notifyPageToast = async (tab: chrome.tabs.Tab | undefined, type: PageToastType, title: string) => {
     if (!tab?.id) return
-    if (!tab.url || !isInjectablePage(tab.url)) {
-      toast.message(UNSUPPORTED_PAGE_TOAST)
-      return
-    }
+    if (!tab.url || !isInjectablePage(tab.url)) return
     try {
       await chrome.tabs.sendMessage(tab.id, { type, title })
     } catch {
-      toast.message(SEND_MESSAGE_FAILED_TOAST)
+      // silently fail
     }
   }
 
@@ -181,22 +186,24 @@ export default function Popup() {
             emptyText="暂无书签"
           />
         </div>
-        <div className="flex items-center gap-4 px-4 py-2 border-t border-border">
-          <button
-            onClick={handleAddToBookmark}
-            className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-80 transition-opacity"
-            title="添加到书签"
-          >
-            <Bookmark className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleAddToReadLater}
-            className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-80 transition-opacity"
-            title="稍后阅读"
-          >
-            <Clock className="w-4 h-4" />
-          </button>
-        </div>
+        {isInjectable && (
+          <div className="flex items-center gap-4 px-4 py-2 border-t border-border">
+            <button
+              onClick={handleAddToBookmark}
+              className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-80 transition-opacity"
+              title="添加到书签"
+            >
+              <Bookmark className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleAddToReadLater}
+              className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-80 transition-opacity"
+              title="稍后阅读"
+            >
+              <Clock className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
       <Toaster richColors position="top-center" />
     </TooltipProvider>
