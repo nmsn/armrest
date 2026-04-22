@@ -97,22 +97,32 @@ export function BookmarkItem({
     </button>
   )
 
+  const hasContextMenu = onEdit || onDelete
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <ContextMenu>
-          <ContextMenuTrigger asChild>
-            {buttonContent}
-          </ContextMenuTrigger>
-          <ContextMenuContent>
-            <ContextMenuItem onClick={() => onEdit?.(bookmark)}>
-              编辑
-            </ContextMenuItem>
-            <ContextMenuItem onClick={() => onDelete?.(bookmark)} className="text-red-500 focus:text-red-500">
-              删除
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+        {hasContextMenu ? (
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              {buttonContent}
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              {onEdit && (
+                <ContextMenuItem onClick={() => onEdit(bookmark)}>
+                  编辑
+                </ContextMenuItem>
+              )}
+              {onDelete && (
+                <ContextMenuItem onClick={() => onDelete(bookmark)} className="text-red-500 focus:text-red-500">
+                  删除
+                </ContextMenuItem>
+              )}
+            </ContextMenuContent>
+          </ContextMenu>
+        ) : (
+          buttonContent
+        )}
       </TooltipTrigger>
       <TooltipContent className="max-w-xs">
         <div className="font-medium">{bookmark.name}</div>
