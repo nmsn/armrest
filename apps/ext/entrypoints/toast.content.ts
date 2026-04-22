@@ -3,10 +3,10 @@ export default {
   runAt: 'document_start',
   main(ctx) {
     const messages: Record<string, string> = {
-      SAVED: '已添加到书签',
-      READ_LATER: '已添加到稍后阅读',
-      SAVE_FAILED: '收藏便签失败',
-      READ_LATER_FAILED: '添加稍后阅读失败',
+      SAVED: '添加成功',
+      READ_LATER: '收藏成功',
+      SAVE_FAILED: '添加失败',
+      READ_LATER_FAILED: '收藏失败',
     }
 
     function injectStyles() {
@@ -17,9 +17,9 @@ export default {
           top: 18px; right: 18px;
           background: #1c1c1e;
           color: #fff;
-          border-radius: 12px;
-          padding: 10px 18px;
-          font: 500 15px -apple-system, sans-serif;
+          border-radius: 10px;
+          padding: 8px 14px;
+          font: 500 13px -apple-system, sans-serif;
           box-shadow: 0 4px 24px rgba(0,0,0,.35);
           opacity: 0;
           transform: translateY(-10px) scale(.95);
