@@ -7,7 +7,7 @@ import { BookmarkService } from '../services/bookmark';
 import type { AppEnv } from '../app/types';
 
 const bookmarkSchema = z.object({
-  folderId: z.string(),
+  folderId: z.string().optional().default(''),
   name: z.string().min(1),
   url: z.string().url(),
   logo: z.string().optional(),

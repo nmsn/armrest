@@ -39,7 +39,7 @@ export class BookmarkService {
     await this.db.insert(schema.bookmarks).values({
       id,
       userId: input.userId,
-      folderId: input.folderId,
+      folderId: input.folderId || null,
       name: input.name,
       url: input.url,
       logo: input.logo,
