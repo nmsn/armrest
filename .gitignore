@@ -36,8 +36,8 @@ yarn-error.log*
 # Local files
 *.local
 
-# Local SQLite database
-apps/server/dev.db
+# Wrangler local state
+.wrangler/
 
 # Worktrees
 .worktrees/
