@@ -3,7 +3,12 @@ import type { AppEnv } from './app/types';
 
 export default {
   async fetch(request: Request, env: AppEnv['Bindings'], ctx: ExecutionContext) {
-    const app = createApp(env);
-    return app.fetch(request, { Bindings: env });
+    try {
+      const app = createApp(env);
+      return await app.fetch(request, env, ctx);
+    } catch (err) {
+      console.error('Unhandled error:', err);
+      return new Response('Internal Server Error', { status: 500 });
+    }
   }
 };

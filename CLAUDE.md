@@ -51,7 +51,7 @@ pnpm deploy           # Deploy to Cloudflare Workers
 ### Backend (Hono + Cloudflare Workers)
 - **Production**: Uses D1 database via `getDb(env)` in `src/db/index.ts`
 - **Local Dev**: `src/dev.ts` uses local SQLite via `@libsql/client` for development
-- **Auth**: better-auth with GitHub OAuth provider
+- **Auth**: Simulated local user (better-auth removed — incompatible with Workers runtime)
 - **Routes**: `src/routes/` (auth, bookmarks, weather, sync)
 
 ### Database Schema (Drizzle + SQLite/D1)
@@ -68,6 +68,15 @@ pnpm deploy           # Deploy to Cloudflare Workers
 - `GET /api/weather` - Weather proxy
 - `GET /api/quote` - Daily quote proxy
 - `POST /auth/*` - better-auth handlers
+
+## Commit Safety
+
+**Before committing, always scan staged changes for sensitive information:**
+- Keys, secrets, tokens (GitHub client secrets, API keys, auth secrets)
+- Passwords, DB credentials, CF account IDs
+- `.dev.vars`, `.env`, `*.pem`, and other credential files
+
+If any sensitive value is detected in `git diff --cached`, **abort the commit** and warn the user. Do NOT commit these files even with `--force` or if the user asks — remind them they'll be exposed in git history.
 
 ## Lint Configuration
 

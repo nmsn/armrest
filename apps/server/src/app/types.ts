@@ -1,5 +1,3 @@
-import type { Auth } from '../auth';
-
 export interface AppBindings {
   readonly DB: D1Database;
   readonly GITHUB_CLIENT_ID: string;
@@ -10,7 +8,6 @@ export interface AppBindings {
 }
 
 export interface AppVariables {
-  readonly auth: Auth;
   readonly userId: string;
 }
 

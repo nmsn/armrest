@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 import { authContextMiddleware } from '../middleware/auth-context';
-import { authRouter } from '../routes/auth';
 import { bookmarksRouter } from '../routes/bookmarks';
 import { weatherRouter } from '../routes/weather';
 import { syncRouter } from '../routes/sync';
@@ -36,13 +35,6 @@ export const createApp = (env?: Partial<AppEnv['Bindings']>, localBindings?: Loc
   app.use('/*', authContextMiddleware);
 
   app.get('/', (c) => c.json({ status: 'ok', version: '1.0.0' }));
-
-  app.all('/auth/*', async (c) => {
-    const auth = c.get('auth');
-    return auth.handler(c.req.raw);
-  });
-
-  app.route('/auth', authRouter());
   app.route('/api/bookmarks', bookmarksRouter);
   app.route('/api/bookmarks/sync', syncRouter);
   app.route('/api', weatherRouter);
