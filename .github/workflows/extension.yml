@@ -1,0 +1,41 @@
+name: Deploy Extension
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/ext/**'
+      - '.github/workflows/extension.yml'
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: apps/ext/pnpm-lock.yaml
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+        working-directory: apps/ext
+
+      - name: 构建插件
+        run: pnpm build
+        working-directory: apps/ext
+
+      - name: 上传到 Chrome Web Store
+        uses: vinceac/wxt-chrome-action@v1
+        with:
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
