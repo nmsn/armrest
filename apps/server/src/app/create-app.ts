@@ -12,21 +12,18 @@ import { metadataRouter } from '../routes/metadata';
 import { cronRouter } from '../routes/cron';
 import { translateRouter } from '../routes/translate';
 import type { AppEnv } from './types';
-import type { LocalBindings } from '../dev/create-local-bindings';
 
-export const createApp = (env?: Partial<AppEnv['Bindings']>, localBindings?: LocalBindings): Hono<AppEnv> => {
+export const createApp = (env?: Partial<AppEnv['Bindings']>): Hono<AppEnv> => {
   const app = new Hono<AppEnv>();
 
   app.use('/*', cors({ origin: ['chrome-extension://*', 'http://localhost:*'], credentials: true }));
 
-  // Inject env bindings for local development
-  if (env || localBindings) {
+  // Inject env bindings for local development / testing
+  if (env) {
     app.use('/*', async (c, next) => {
       c.env = {
         ...c.env,
         ...env,
-        // @ts-expect-error localBindings is only present in dev mode
-        ...(localBindings ? { localDb: localBindings.localDb } : {}),
       } as AppEnv['Bindings'];
       await next();
     });

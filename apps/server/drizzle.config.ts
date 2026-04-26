@@ -3,8 +3,9 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
   schema: './src/db/schema.ts',
   out: './src/db/migrations',
-  driver: 'libsql',
+  driver: 'd1',
   dbCredentials: {
-    url: 'file:./dev.db',
+    wranglerConfigPath: './wrangler.toml',
+    dbName: 'armrest-db',
   },
 });
