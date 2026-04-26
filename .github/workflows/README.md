@@ -6,12 +6,15 @@
 |--------|------|
 | `CLOUDFLARE_API_TOKEN` | 具有 Workers 部署权限的 Cloudflare API Token |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 账号 ID（在 Workers 仪表盘查找） |
+| `CLOUDFLARE_DATABASE_ID` | D1 Database ID（用于数据库迁移） |
 
 ### 设置步骤
 1. 进入 [Cloudflare Dashboard](https://dash.cloudflare.com) → API Tokens
 2. 创建自定义 Token，选择 "Workers Bundled Script" 模板
 3. 从 Workers 概览页面复制账号 ID
-4. 将两个 secret 添加到 GitHub 仓库：Settings → Secrets and variables → Actions
+4. 进入 [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages → D1 Databases
+5. 创建或选择现有的 D1 Database，复制 Database ID
+6. 将三个 secret 添加到 GitHub 仓库：Settings → Secrets and variables → Actions
 
 ## 插件上传 (extension.yml)
 
