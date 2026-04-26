@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
-import Clock from "./Clock"
+import { ClockCalendar } from "./Clock"
 import { Weather } from "./Weather"
 import { FolderList } from "./FolderList"
 import { Logo } from "./Logo"
 import type { BookmarkFolder } from "@/lib/bookmarks"
+import { VerticalBraunClock } from "./DotMatrixClock"
 
 interface SidebarProps {
   folders: BookmarkFolder[]
@@ -46,7 +47,10 @@ export function Sidebar({
 
       {/* Clock */}
       <div className="app-card" style={{ height: "172px" }}>
-        <Clock />
+        <div className="flex flex-col justify-between h-full">
+          <VerticalBraunClock size="sm" />
+          <ClockCalendar />
+        </div>
       </div>
 
       {/* Weather */}
