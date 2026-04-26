@@ -2,16 +2,13 @@ name = "armrest-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
-[site]
-bucket = "./dist"
-
 [[d1_databases]]
 binding = "DB"
 database_name = "armrest-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "cf82a0eb-70b5-4605-bbb9-ba0bf07f94cc"
 
 [vars]
-NODE_ENV = "development"
+NODE_ENV = "production"
 
 [triggers]
 crons = ["0 8 * * *"]

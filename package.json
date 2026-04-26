@@ -10,8 +10,11 @@
     "build:server": "pnpm --filter @armrest/server build",
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
+    "db:generate": "pnpm --filter @armrest/server db:generate",
+    "db:migrate": "pnpm --filter @armrest/server db:migrate",
     "db:push": "pnpm --filter @armrest/server db:push",
     "db:studio": "pnpm --filter @armrest/server db:studio",
+    "deploy:server": "pnpm --filter @armrest/server deploy",
     "cron:run": "pnpm --filter @armrest/server cron:run"
   },
   "devDependencies": {
