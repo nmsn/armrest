@@ -11,4 +11,4 @@ database_id = "cf82a0eb-70b5-4605-bbb9-ba0bf07f94cc"
 NODE_ENV = "production"
 
 [triggers]
-crons = ["0 8 * * *"]
+crons = ["0 0 * * *"]

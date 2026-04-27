@@ -1,7 +1,7 @@
 // apps/server/src/routes/cron.ts
 import { Hono } from 'hono';
 
-import { cleanExpired, setQuote, setHistory, setNews } from '../services/daily-cache';
+import { cleanExpired, setQuote, setHistory, setNews, getQuote, getHistory, getNews } from '../services/daily-cache';
 import type { AppEnv } from '../app/types';
 
 const router = new Hono<AppEnv>();
@@ -32,34 +32,59 @@ router.post('/fetch', async (c) => {
 
     const today = new Date().toISOString().split('T')[0];
 
-    const [quoteData, historyData, newsData] = await Promise.all([
-      fetchSixtyData('https://60s.viki.moe/v2/hitokoto'),
-      fetchSixtyData('https://60s.viki.moe/v2/today-in-history'),
-      fetchSixtyData('https://60s.viki.moe/v2/ai-news'),
-    ]);
+    const tasks: Promise<void>[] = [];
 
-    if (quoteData?.hitokoto) {
-      await setQuote(env, quoteData.hitokoto as string, today);
-      console.log('[cron] Saved quote');
-    }
-
-    if (historyData?.items) {
-      const events = (historyData.items as Array<HistoryItem>).map(e => ({ year: e.year || '', title: e.title || '' }));
-      await setHistory(env, events, today);
-      console.log('[cron] Saved history');
-    }
-
-    if (newsData?.news && (newsData.news as Array<NewsItem>).length > 0) {
-      const news = (newsData.news as Array<NewsItem>).map(n => ({ title: n.title || '', source: n.source || '', url: n.url || '' }));
-      await setNews(env, news, today);
-      console.log('[cron] Saved news');
+    const existingQuote = await getQuote(env);
+    if (existingQuote) {
+      console.log('[cron] Quote already exists for today, skipping');
     } else {
-      console.log('[cron] No news data available (API returned empty)');
+      tasks.push(
+        fetchSixtyData('https://60s.viki.moe/v2/hitokoto').then(async (quoteData) => {
+          if (quoteData?.hitokoto) {
+            await setQuote(env, quoteData.hitokoto as string, today);
+            console.log('[cron] Saved quote');
+          }
+        }),
+      );
     }
+
+    const existingHistory = await getHistory(env);
+    if (existingHistory) {
+      console.log('[cron] History already exists for today, skipping');
+    } else {
+      tasks.push(
+        fetchSixtyData('https://60s.viki.moe/v2/today-in-history').then(async (historyData) => {
+          if (historyData?.items) {
+            const events = (historyData.items as Array<HistoryItem>).map(e => ({ year: e.year || '', title: e.title || '' }));
+            await setHistory(env, events, today);
+            console.log('[cron] Saved history');
+          }
+        }),
+      );
+    }
+
+    const existingNews = await getNews(env);
+    if (existingNews) {
+      console.log('[cron] News already exists for today, skipping');
+    } else {
+      tasks.push(
+        fetchSixtyData('https://60s.viki.moe/v2/ai-news').then(async (newsData) => {
+          if (newsData?.news && (newsData.news as Array<NewsItem>).length > 0) {
+            const news = (newsData.news as Array<NewsItem>).map(n => ({ title: n.title || '', source: n.source || '', url: n.url || '' }));
+            await setNews(env, news, today);
+            console.log('[cron] Saved news');
+          } else {
+            console.log('[cron] No news data available (API returned empty)');
+          }
+        }),
+      );
+    }
+
+    await Promise.all(tasks);
 
     const duration = Date.now() - start;
     console.log(`[cron] Completed in ${duration}ms`);
-    return c.json({ success: true, duration });
+    return c.json({ success: true, duration, skipped: { quote: !!existingQuote, history: !!existingHistory, news: !!existingNews } });
   } catch (err) {
     const duration = Date.now() - start;
     console.error(`[cron] Failed after ${duration}ms:`, err);
