@@ -2,6 +2,7 @@
 import { Hono } from 'hono';
 
 import { getQuote, setQuote } from '../../services/daily-cache';
+import { defer } from '../../services/defer';
 import type { RuntimeContext } from '../../services/runtime-context';
 import type { AppEnv } from '../../app/types';
 
@@ -39,12 +40,7 @@ router.get('/', async (c) => {
     if (result.code === 200 && result.data?.hitokoto) {
       const today = new Date().toISOString().split('T')[0];
       // 异步更新缓存
-      setTimeout(async () => {
-        try {
-          await setQuote(env, result.data!.hitokoto!, today);
-          console.log(`[60s] Quote cached for today`);
-        } catch (e) { console.error('[60s] Failed to cache quote:', e); }
-      }, 0);
+      defer(c.executionCtx, setQuote(env, result.data!.hitokoto!, today));
 
       return c.json({ data: { content: result.data.hitokoto, date: today }, error: null });
     }

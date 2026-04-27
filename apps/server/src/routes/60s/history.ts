@@ -2,6 +2,7 @@
 import { Hono } from 'hono';
 
 import { getHistory, setHistory } from '../../services/daily-cache';
+import { defer } from '../../services/defer';
 import type { RuntimeContext } from '../../services/runtime-context';
 import type { AppEnv } from '../../app/types';
 
@@ -44,12 +45,7 @@ router.get('/', async (c) => {
       const events = result.data.items.map((e: { year?: string; title?: string }) => ({ year: e.year || '', title: e.title || '' }));
 
       // 异步更新缓存
-      setTimeout(async () => {
-        try {
-          await setHistory(env, events, today);
-          console.log(`[60s] History cached for today`);
-        } catch (e) { console.error('[60s] Failed to cache history:', e); }
-      }, 0);
+      defer(c.executionCtx, setHistory(env, events, today));
 
       return c.json({ data: { events, date: today }, error: null });
     }

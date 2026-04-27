@@ -2,6 +2,7 @@
 import { Hono } from 'hono';
 
 import { getItNews, setItNews } from '../../services/daily-cache';
+import { defer } from '../../services/defer';
 import type { RuntimeContext } from '../../services/runtime-context';
 import type { AppEnv } from '../../app/types';
 
@@ -55,12 +56,7 @@ router.get('/', async (c) => {
       }));
 
       // 异步更新缓存
-      setTimeout(async () => {
-        try {
-          await setItNews(env, news, today);
-          console.log(`[60s] IT news cached for today`);
-        } catch (e) { console.error('[60s] Failed to cache it-news:', e); }
-      }, 0);
+      defer(c.executionCtx, setItNews(env, news, today));
 
       return c.json({ data: { news }, error: null });
     }

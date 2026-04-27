@@ -14,7 +14,7 @@
     "db:migrate": "pnpm --filter @armrest/server db:migrate",
     "db:push": "pnpm --filter @armrest/server db:push",
     "db:studio": "pnpm --filter @armrest/server db:studio",
-    "deploy:server": "pnpm --filter @armrest/server deploy",
+    "deploy:server": "pnpm --filter @armrest/server run deploy",
     "cron:run": "pnpm --filter @armrest/server cron:run"
   },
   "devDependencies": {
@@ -26,7 +26,8 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-typescript": "^0.14.0",
     "jsdom": "^29.0.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "wrangler": "^4.85.0"
   },
   "dependencies": {
     "gsap": "^3.14.2"

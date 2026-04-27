@@ -2,6 +2,7 @@
 import { Hono } from 'hono';
 
 import { getHackerNews, setHackerNews } from '../../services/daily-cache';
+import { defer } from '../../services/defer';
 import type { RuntimeContext } from '../../services/runtime-context';
 import type { AppEnv } from '../../app/types';
 
@@ -56,12 +57,7 @@ router.get('/', async (c) => {
         }));
 
       // 异步更新缓存
-      setTimeout(async () => {
-        try {
-          await setHackerNews(env, stories);
-          console.log(`[60s] Hacker News cached (${stories.length} stories)`);
-        } catch (e) { console.error('[60s] Failed to cache hacker-news:', e); }
-      }, 0);
+      defer(c.executionCtx, setHackerNews(env, stories));
 
       return c.json({ data: { stories }, error: null });
     }
