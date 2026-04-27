@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "wxt",
     "build": "wxt build",
+    "zip": "wxt zip",
+    "build:zip": "wxt build && wxt zip",
     "preview": "wxt preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
